@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/App';
 
-// The header and footer show the script "Mahana" wordmark. An uploaded logo (Admin → Settings → Logo) is shown
-// beside it in the header instead; the logo artwork file (images/mahana-logo.png) is kept for future use.
+// No built-in logo image: the script "Mahana" wordmark is shown until a logo is uploaded (Admin → Settings → Logo).
 export const DEFAULT_LOGO = null;
 
 // Emblem: nested zari-style diamonds, the Mahana ornament (used in empty frames, loaders and badges).
@@ -22,38 +20,19 @@ export function LogoTile({ size = 38 }) {
   return <span className="logo-tile" style={{ width: size, height: size }}><Emblem size={Math.round(size * 0.62)} /></span>;
 }
 
-// Remembers a logo URL that failed to load, so every logo on the page falls back to the wordmark together.
-const broken = new Set();
-export function useLogo() {
-  const { site } = useApp();
-  const custom = site.branding?.logo || null;
-  const src = custom;
-  const [, bump] = useState(0);
-  const onError = () => { broken.add(src); bump(n => n + 1) };
-  return { src: broken.has(src) ? null : src, isDefault: !custom, onError };
-}
-
-// Script "Mahana" over BOUTIQUE & TAILORS; an uploaded logo (if any) sits beside it as a round badge.
+// Script "Mahana" over a small, widely spaced BOUTIQUE & TAILORS, as on the business card.
 export default function Wordmark({ to = '/', className = '', onClick }) {
   const { site } = useApp();
-  const { src, isDefault, onError } = useLogo();
-  const name = site.store?.name || 'Mahana Boutique & Tailors';
-  if (src) return (
-    <Link to={to} onClick={onClick} className={`wordmark has-logo ${className}`} aria-label={`${name}, home`} data-cursor="HOME">
-      <span className={`wm-badge ${isDefault ? 'is-monogram' : ''}`}>
-        <img className="wm-logo" src={src} fetchpriority="high" decoding="async" alt="" onError={onError} />
-      </span>
-      <span className="wm-text" aria-hidden="true"><span className="wm-a">Mahana</span><span className="wm-b">BOUTIQUE &amp; TAILORS</span></span>
+  const logo = site.branding?.logo || DEFAULT_LOGO;
+  if (logo) return (
+    <Link to={to} onClick={onClick} className={`wordmark has-logo ${className}`} aria-label="Home" data-cursor="HOME">
+      <img className="wm-logo" src={logo} fetchpriority="high" decoding="async" alt={site.branding?.logoAlt || site.store?.name || 'MAHANA BOUTIQUE & TAILORS'} />
+      <span className="wm-text" aria-hidden="true"><b>{(site.store?.name || 'Mahana Boutique & Tailors').split(' ')[0]}</b><i>{(site.store?.name || 'Mahana Boutique & Tailors').split(' ').slice(1).join(' ') || 'BOUTIQUE'}</i></span>
     </Link>
   );
   return (
-    <Link to={to} onClick={onClick} className={`wordmark ${className}`} aria-label={`${name}, home`} data-cursor="HOME">
+    <Link to={to} onClick={onClick} className={`wordmark ${className}`} aria-label="MAHANA BOUTIQUE & TAILORS — home" data-cursor="HOME">
       <span className="wm-a">Mahana</span><span className="wm-b">BOUTIQUE &amp; TAILORS</span>
     </Link>
   );
-}
-
-// The large script wordmark for the footer.
-export function FullLogo() {
-  return <div className="foot-mark" aria-hidden="true"><span>Mahana</span><small>BOUTIQUE &amp; TAILORS</small></div>;
 }
