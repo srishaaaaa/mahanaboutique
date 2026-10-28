@@ -69,40 +69,32 @@
 .home .eq-links svg { color: var(--m-rose) }
 .home .eq-card { background: linear-gradient(150deg, #f7f6fd, #fdf7fa); border: 1px solid rgba(232, 138, 171, .25); box-shadow: var(--m-shadow) }
 
-/* ---- hero: an arch photo frame. The photos from Admin → Storefront images fill it one at a time (HeroSlides) and the
-   arch leans with the pointer. ---- */
-.bh .bh-model.is-photo .bh-arch { transform: perspective(1400px) rotateY(calc(var(--px, 0) * 6deg)) rotateX(calc(var(--py, 0) * -4deg)); transition: transform .2s linear }
-.bh-addphoto { position: absolute; z-index: 6; left: 50%; bottom: 9%; translate: -50% 0; white-space: nowrap; padding: 11px 20px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .18em;
+/* ---- hero: the photos from Admin → Storefront images fill the right half, fading into the indigo on the left and
+   bottom (the original layout's mask), one after another (HeroSlides). ---- */
+.bh-addphoto { position: absolute; z-index: 6; left: 50%; bottom: 12%; translate: -50% 0; white-space: nowrap; padding: 11px 20px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .18em;
   background: var(--m-pink-grad); color: var(--m-indigo); box-shadow: 0 12px 30px rgba(232, 138, 171, .35) }
 .bh-addphoto:hover { filter: brightness(1.06) }
 @media (min-width: 700px) {
-  .bh .bh-model { display: flex; align-items: flex-end; justify-content: center; padding-top: 118px }
-  .bh .bh-model::before { inset: 10% 4% 0 10% }
-  .bh .bh-model .bh-arch { position: relative; width: min(470px, 62%); height: 100%; max-height: 700px; margin: 0 auto; overflow: visible; border-radius: 999px 999px 0 0;
-    background: linear-gradient(180deg, rgba(125, 116, 216, .16), rgba(28, 26, 82, .35)) !important;
-    -webkit-mask-image: none !important; mask-image: none !important; box-shadow: 0 40px 90px rgba(4, 3, 24, .5), inset 0 0 0 1px rgba(243, 191, 209, .2) !important }
-  .bh .bh-model .bh-arch img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; border-radius: 999px 999px 0 0 }
-  .bh .bh-model .bh-arch::before { content: ''; position: absolute; z-index: 2; inset: -18px -18px 0; border: 1.5px solid rgba(243, 191, 209, .7); border-bottom: 0; border-radius: 999px 999px 0 0; pointer-events: none;
-    box-shadow: 0 0 24px rgba(232, 138, 171, .25), inset 0 0 24px rgba(232, 138, 171, .12) }
-  .bh .bh-model .bh-arch::after { content: ''; position: absolute; z-index: -1; right: -26%; bottom: 0; width: 52%; height: 60%; border-radius: 999px 999px 0 0; pointer-events: none;
-    background: linear-gradient(180deg, rgba(154, 150, 226, .38), rgba(46, 43, 123, .15)); box-shadow: inset 0 0 0 1px rgba(243, 191, 209, .18) }
+  .bh .bh-model .bh-arch { border-radius: 0 !important; box-shadow: none !important; background: transparent !important }
 }
 
-.hs { position: absolute; inset: 0; z-index: 1; overflow: hidden; border-radius: inherit; background: var(--m-indigo) }
-.bh .bh-model .bh-arch .hs img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; border-radius: 0; opacity: 0; scale: 1.08; transition: opacity 1.4s ease, scale 7s ease-out }
-.bh .bh-model .bh-arch .hs img.on { opacity: 1; scale: 1 }
-.hs-dots { position: absolute; z-index: 3; left: 50%; bottom: 22px; translate: -50% 0; display: flex; gap: 8px; padding: 7px 10px; border-radius: 999px; background: rgba(15, 13, 51, .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px) }
+.hs { position: absolute; inset: 0; z-index: 1; overflow: hidden; border-radius: inherit }
+/* a new photo drifts in from the right and slowly settles; the previous one dissolves underneath */
+.bh .bh-model .bh-arch .hs img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 18%; border-radius: 0; filter: none;
+  opacity: 0; scale: 1.12; translate: 4% 0; transition: opacity 1.6s ease, translate 1.8s cubic-bezier(.22, 1, .36, 1), scale 9s ease-out }
+.bh .bh-model .bh-arch .hs img.on { z-index: 1; opacity: 1; scale: 1.02; translate: 0 0 }
+.hs-dots { position: absolute; z-index: 3; left: 50%; bottom: 26px; translate: -50% 0; display: flex; gap: 8px; padding: 7px 10px; border-radius: 999px; background: rgba(15, 13, 51, .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px) }
 .hs-dots button { width: 8px; height: 8px; padding: 0; border-radius: 999px; background: rgba(251, 227, 236, .5); transition: width .4s ease, background .4s ease }
 .hs-dots button.on { width: 22px; background: #fbe3ec }
 @media (max-width: 699px) { .hs-dots { bottom: auto; top: 96px; left: auto; right: 16px; translate: none } }
-.bh .bh-model.is-empty .bh-arch { background: linear-gradient(180deg, rgba(125, 116, 216, .2), rgba(28, 26, 82, .35)) !important }
+@media (prefers-reduced-motion: reduce) { .bh .bh-model .bh-arch .hs img { transition: opacity .6s ease; scale: 1; translate: 0 0 } }
 
 /* hero: sparkles instead of falling petals; no flower ornaments */
 .bh .bh-lotus { display: none !important }
 .bh .bh-petals i { width: 5px !important; height: 5px !important; border-radius: 50% !important; background: #fbe3ec !important; box-shadow: 0 0 10px 3px rgba(232, 138, 171, .55) }
 
 @media (prefers-reduced-motion: reduce) {
-  .hs img.on, .fx-silk, .fx-ring svg, .fx-spark, .home .blank .emblem { animation: none }
+  .fx-silk, .fx-ring svg, .fx-spark, .home .blank .emblem { animation: none }
 }
 
 /* ---- Choose your world: a fanned hand of cards (positions set in CollectionsFlow) ---- */
@@ -115,3 +107,9 @@
 .home .cf-card.is-active .cf-txt > :nth-child(2) { transition-delay: .06s } .home .cf-card.is-active .cf-txt > :nth-child(3) { transition-delay: .12s } .home .cf-card.is-active .cf-txt > :nth-child(4) { transition-delay: .18s }
 .home .cf-floor { bottom: 40px; height: 90px; left: 20%; right: 20% }
 
+
+/* phones keep the full set of hero sparkles, a touch larger and brighter for small screens */
+@media (max-width: 699px) {
+  .bh .bh-petals { z-index: 4 }
+  .bh .bh-petals i:nth-child(n) { display: block; width: 6px !important; height: 6px !important; box-shadow: 0 0 12px 4px rgba(232, 138, 171, .7) }
+}
