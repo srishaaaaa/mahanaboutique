@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useApp } from '../../context/App';
@@ -10,7 +10,7 @@ import { Magnetic } from '../Motion';
 import { ProductMedia } from '../ProductCard3D';
 import BlankFrame from '../BlankFrame';
 import EditorialTypography from './EditorialTypography';
-import Showcase3D from './Showcase3D';
+import HeroSlides from './HeroSlides';
 
 const rise = d => ({ initial: { opacity: 0, y: 24 }, transition: { duration: 0.9, delay: d, ease: [0.22, 1, 0.36, 1] } });
 const CHIPS = [['ALL', '/shop?category=sarees'], ['SILK', '/search?q=silk'], ['COTTON', '/search?q=cotton'], ['FESTIVE', '/collections/festive-edit'], ['BRIDAL', '/collections/bridal-silk-sarees']];
@@ -27,12 +27,6 @@ const Motif = ({ className = '' }) => (
 // Editorial hero: a large ivory panel with an oversized serif headline, a model photograph that overlaps the panel,
 // a textile inset, and a "For you" discovery panel layered behind. Photographs are managed in
 // Admin → Storefront images; until they are added the frames stay blank. Discovery items are real products.
-// Fades in when loaded; framed on the focus point set in Admin → Storefront images (default: keeps faces in view).
-function HeroPhoto({ src, alt, pos }) {
-  const [ok, setOk] = useState(false);
-  return <img src={src} alt={alt} fetchpriority="high" decoding="async" className={ok ? 'is-in' : ''} style={{ objectPosition: pos || '50% 18%' }} onLoad={() => setOk(true)} ref={el => { if (el && el.complete && el.naturalWidth && !ok) setOk(true) }} />;
-}
-
 export default function BoutiqueHero() {
   const { entered, catalog, site, user } = useApp();
   const staff = ['owner', 'admin'].includes(user?.role);
@@ -41,6 +35,8 @@ export default function BoutiqueHero() {
   usePointerVars(ref, !reduced);
   const show = entered; // entrance waits for the intro to finish
   const b = site.branding || {};
+  // Arch photos: the Hero model photo first, then the slideshow photos, all from Admin → Storefront images.
+  const slides = [...(b.heroModel ? [{ image: b.heroModel, alt: b.heroAlt || 'A model draped in a saree', pos: b.heroModelPos || '50% 18%' }] : []), ...(b.showcase || [])];
   const picks = catalog.featured.slice(0, 6);
   const anim = d => ({ ...rise(d), animate: show ? { opacity: 1, y: 0 } : undefined });
 
@@ -98,12 +94,10 @@ export default function BoutiqueHero() {
           <div className="bh-tint" aria-hidden="true" />
         </div>
 
-        <motion.figure className={`bh-model has-photo ${b.heroModel ? "is-photo" : "is-showcase"}`} initial={{ opacity: 0, y: 40 }} animate={show ? { opacity: 1, y: 0 } : undefined} transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.figure className={`bh-model has-photo ${slides.length ? "is-photo" : "is-empty"}`} initial={{ opacity: 0, y: 40 }} animate={show ? { opacity: 1, y: 0 } : undefined} transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>
           <span className={`bh-arch ${site.status === 'loading' ? 'skel' : ''}`}>
-            {site.status === 'loading' ? null : b.heroModel
-              ? <HeroPhoto src={b.heroModel} alt={b.heroAlt || 'A model draped in a saree'} pos={b.heroModelPos} />
-              : <Showcase3D photos={b.showcase} />}
-            {site.status !== 'loading' && !b.heroModel && staff && <Link className="bh-addphoto" to="/admin/storefront">+ ADD HERO PHOTO</Link>}
+            {site.status !== 'loading' && slides.length > 0 && <HeroSlides photos={slides} reduced={reduced} />}
+            {site.status !== 'loading' && !slides.length && staff && <Link className="bh-addphoto" to="/admin/storefront">+ ADD HERO PHOTOS</Link>}
           </span>
         </motion.figure>
       </div>

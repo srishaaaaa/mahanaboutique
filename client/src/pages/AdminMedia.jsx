@@ -132,7 +132,7 @@ export function AdminStorefront() {
               onUpload={f => run('logo', async () => { const up = await uploadImage(f); const next = { ...b, logo: up.url }; await saveBranding(next); setB(next) }, 'Logo updated.')}
               onReset={() => run('logo', async () => { const next = { ...b, logo: null, logoAlt: '' }; await saveBranding(next); setB(next) }, 'Logo removed. The text wordmark is back.')} />
             <Slot title="Hero model photo" accept="image/png,image/webp,image/jpeg" busy={busy === 'hero'} value={b.heroModel} fallback="" pos={b.heroModelPos} onPos={v => run('hero', async () => { const next = { ...b, heroModelPos: v }; await saveBranding(next); setB(next) }, 'Focus saved.')} alt={b.heroAlt} onAlt={v => setB({ ...b, heroAlt: v })}
-              hint="The photograph that fills the right half of the hero on tablets and desktops (and the arch on phones). A tall, high-quality photo works best; set the focus point so the face stays in view. It fills the arch frame; until you add one, the arch shows the 3D carousel (photos below)."
+              hint="The photograph that fills the right half of the hero on tablets and desktops (and the arch on phones). A tall, high-quality photo works best; set the focus point so the face stays in view. It is the first photo in the hero arch; add more under Hero slideshow photos below."
               onUpload={f => run('hero', async () => { const up = await uploadImage(f); const next = { ...b, heroModel: up.url }; await saveBranding(next); setB(next) }, 'Hero model updated.')}
               onReset={() => run('hero', async () => { const next = { ...b, heroModel: null, heroAlt: '' }; await saveBranding(next); setB(next) }, 'Hero model removed.')} />
             <Slot title="Textile close-up" accept="image/jpeg,image/png,image/webp" busy={busy === 'textile'} value={b.textileImage} fallback="" pos={b.textilePos} onPos={v => run('textile', async () => { const next = { ...b, textilePos: v }; await saveBranding(next); setB(next) }, 'Position saved.')} alt={b.textileAlt} onAlt={v => setB({ ...b, textileAlt: v })}
@@ -153,18 +153,18 @@ export function AdminStorefront() {
 
         {b && (
           <section className="adm-block">
-            <h2 className="serif adm-h2">Hero carousel photos</h2>
-            <p className="muted small">Up to 8 photos for the turning 3D cards in the hero arch (shown until a Hero model photo is added). Portrait photos work best: sarees, fabrics, close-ups of zari or tailoring. Empty cards show a silk swatch.</p>
+            <h2 className="serif adm-h2">Hero slideshow photos</h2>
+            <p className="muted small">Up to 8 photos shown one after another in the hero arch, each fading in with a slow zoom (after the Hero model photo, if you added one). Tall portrait photos work best, with the face in the upper part.</p>
             <ul className="adm-covers">{Array.from({ length: 8 }, (_, i) => {
               const ph = (b.showcase || [])[i];
-              const save = list => run(`show${i}`, async () => { const next = { ...b, showcase: list }; await saveBranding(next); setB(next) }, 'Carousel photos saved.');
-              const upload = f => run(`show${i}`, async () => { const up = await uploadImage(f); const list = [...(b.showcase || [])]; if (ph) list[i] = { ...ph, image: up.url }; else list.push({ image: up.url, alt: '' }); const next = { ...b, showcase: list }; await saveBranding(next); setB(next) }, 'Carousel photo added.');
+              const save = list => run(`show${i}`, async () => { const next = { ...b, showcase: list }; await saveBranding(next); setB(next) }, 'Slideshow saved.');
+              const upload = f => run(`show${i}`, async () => { const up = await uploadImage(f); const list = [...(b.showcase || [])]; if (ph) list[i] = { ...ph, image: up.url }; else list.push({ image: up.url, alt: '' }); const next = { ...b, showcase: list }; await saveBranding(next); setB(next) }, 'Photo added to the slideshow.');
               const pos = ph ? i : (b.showcase || []).length;
               if (!ph && i > pos) return null;
               return (
                 <li key={i}>
-                  <div className="adm-cover">{ph ? <img src={ph.image} alt="" /> : <i>Empty card</i>}</div>
-                  <b>Card {i + 1}</b>
+                  <div className="adm-cover">{ph ? <img src={ph.image} alt="" /> : <i>Empty</i>}</div>
+                  <b>Photo {i + 1}</b>
                   {ph && <input className="adm-alt" placeholder="Describe the photo (for screen readers)" value={ph.alt || ''} maxLength={200} onChange={e => setB({ ...b, showcase: b.showcase.map((x, j) => j === i ? { ...x, alt: e.target.value } : x) })} onBlur={() => save(b.showcase)} />}
                   <div className="adm-act">
                     <label className="btn dark pill adm-file">{busy === `show${i}` ? '…' : ph ? 'REPLACE' : 'UPLOAD'}<input type="file" hidden accept="image/jpeg,image/png,image/webp" onChange={e => { const f = e.target.files[0]; e.target.value = ''; f && upload(f) }} /></label>
