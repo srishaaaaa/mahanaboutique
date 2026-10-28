@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/App';
 
-// The Mahana logo (client/public/images/mahana-logo.png) is the default; an uploaded logo (Admin → Settings → Logo)
-// replaces it. If no image can be loaded, the script "Mahana" wordmark is shown instead.
-export const DEFAULT_LOGO = '/images/mahana-logo.png';
+// The header and footer show the script "Mahana" wordmark. An uploaded logo (Admin → Settings → Logo) is shown
+// beside it in the header instead; the logo artwork file (images/mahana-logo.png) is kept for future use.
+export const DEFAULT_LOGO = null;
 
 // Emblem: nested zari-style diamonds, the Mahana ornament (used in empty frames, loaders and badges).
 export function Emblem({ size = 28, className = '', glow = false }) {
@@ -27,13 +27,13 @@ const broken = new Set();
 export function useLogo() {
   const { site } = useApp();
   const custom = site.branding?.logo || null;
-  const src = custom || DEFAULT_LOGO;
+  const src = custom;
   const [, bump] = useState(0);
   const onError = () => { broken.add(src); bump(n => n + 1) };
   return { src: broken.has(src) ? null : src, isDefault: !custom, onError };
 }
 
-// Logo badge (the "M" monogram of the Mahana logo) beside the script "Mahana" over BOUTIQUE & TAILORS.
+// Script "Mahana" over BOUTIQUE & TAILORS; an uploaded logo (if any) sits beside it as a round badge.
 export default function Wordmark({ to = '/', className = '', onClick }) {
   const { site } = useApp();
   const { src, isDefault, onError } = useLogo();
@@ -53,9 +53,7 @@ export default function Wordmark({ to = '/', className = '', onClick }) {
   );
 }
 
-// The full logo artwork for large placements (footer). Falls back to the script wordmark.
+// The large script wordmark for the footer.
 export function FullLogo() {
-  const { src, isDefault, onError } = useLogo();
-  if (src && isDefault) return <div className="full-logo"><img src={src} alt="Mahana Boutique & Tailors, where fashion finds you" loading="lazy" decoding="async" onError={onError} /></div>;
   return <div className="foot-mark" aria-hidden="true"><span>Mahana</span><small>BOUTIQUE &amp; TAILORS</small></div>;
 }
