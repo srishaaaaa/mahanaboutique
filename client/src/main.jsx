@@ -7,6 +7,7 @@ import './styles.css';
 import './home.css';
 import './boutique.css';
 import './nav.css';
+import './mahana.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

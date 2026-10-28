@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/App';
 import { api } from '../lib/api';
-import { Emblem } from './Wordmark';
+import { Emblem, FullLogo } from './Wordmark';
 import { brand } from '../config/content';
 
 const Ig = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none" /></svg>;
@@ -78,7 +78,7 @@ export default function LuxuryFooter() {
             <Newsletter />
           </div>
         </div>
-        <div className="foot-mark" aria-hidden="true"><span>Mahana</span><small>BOUTIQUE &amp; TAILORS</small></div>
+        <FullLogo />
         <div className="foot-base">
           <span>© {new Date().getFullYear()} MAHANA BOUTIQUE & TAILORS. All Rights Reserved</span>
           <span>Powered by <strong>{brand.credit}</strong> © {new Date().getFullYear()}</span>

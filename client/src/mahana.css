@@ -1,0 +1,224 @@
+/* ============ Mahana homepage: the hero's deep indigo + pink carried through every section, with depth ============ */
+:root {
+  --m-ink: #0f0d33; --m-deep: #14123d; --m-indigo: #1c1a52; --m-royal: #2e2b7b;
+  --m-pink: #e88aab; --m-pink-l: #f3bfd1; --m-blush: #fbe3ec;
+  --m-text: rgba(240, 237, 255, .88); --m-muted: rgba(222, 218, 250, .64); --m-line: rgba(232, 138, 171, .22);
+  --m-glass: linear-gradient(150deg, rgba(255, 255, 255, .085), rgba(255, 255, 255, .02));
+  --m-glass-line: rgba(255, 255, 255, .11);
+  --m-shadow: 0 30px 70px rgba(4, 3, 24, .55);
+  --m-pink-grad: linear-gradient(100deg, #f8d3c6 0%, #f3bfd1 38%, #e88aab 100%);
+}
+
+/* ---- one continuous indigo canvas behind every section ---- */
+.home { position: relative; isolation: isolate; background:
+  radial-gradient(60% 40% at 85% 22%, rgba(125, 116, 216, .22), transparent 70%),
+  radial-gradient(50% 30% at 10% 48%, rgba(232, 138, 171, .12), transparent 70%),
+  radial-gradient(60% 35% at 90% 78%, rgba(125, 116, 216, .18), transparent 70%),
+  linear-gradient(180deg, #2a2770 0%, var(--m-indigo) 14%, #17154a 45%, var(--m-deep) 75%, var(--m-ink) 100%) }
+.home > :not(.fx-orn) { position: relative; z-index: 1 }
+.home > :is(.cu, .ed, .cc, .cf, .details, .svc, .story3, .reviews, .insta, .studio, .eq) { background: transparent !important; color: var(--m-text) }
+.home > .tk { z-index: 2; background: linear-gradient(90deg, var(--m-royal), #3a3592 50%, var(--m-royal)); box-shadow: 0 18px 40px rgba(5, 4, 30, .45) }
+
+/* section headings: pink gradient serif, like the hero headline */
+.home > section:not(.bh) h2 { font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: -.01em;
+  background: var(--m-pink-grad); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 8px 26px rgba(232, 138, 171, .22)) }
+.home > section:not(.bh) h3 { color: var(--m-blush) }
+.home :is(.cu-label, .ed-label, .eq-label, .eyebrow, .insta-head .eyebrow, .cc-title) { color: var(--m-pink-l) }
+.home :is(.cu-label, .ed-label, .eq-label) i { background: var(--m-pink) }
+.home :is(.cu-sub, .cu-mat, .ed-p, .svc-item p, .insta-sub, .studio-lead, .cu-empty, .studio-row > span > span, .muted) { color: var(--m-muted) }
+
+/* buttons on dark */
+.home > section:not(.bh) :is(.btn.solid, .bh-btn) { background: var(--m-pink-grad); color: var(--m-indigo); border-color: transparent; box-shadow: 0 14px 34px rgba(232, 138, 171, .3) }
+.home > section:not(.bh) :is(.btn.solid, .bh-btn):hover:not(:disabled) { background: linear-gradient(100deg, #fbe3ec, #f0aec4 60%, #e88aab); color: var(--m-ink); filter: brightness(1.05) }
+.home > section:not(.bh) .bh-btn b { background: rgba(28, 26, 82, .14); color: var(--m-indigo) }
+.home > section:not(.bh) :is(.btn.dark, .btn.pill:not(.solid), .ivory-sec .btn:not(.solid)) { border-color: rgba(243, 191, 209, .55); color: var(--m-blush); background: rgba(255, 255, 255, .03) }
+.home > section:not(.bh) :is(.btn.dark, .btn.pill:not(.solid), .ivory-sec .btn:not(.solid)):hover:not(:disabled) { background: var(--m-pink); color: var(--m-indigo); border-color: var(--m-pink) }
+.home > section:not(.bh) :is(.bh-link, .cu-all, .cu-enq) { color: var(--m-pink-l); border-color: currentColor }
+.home > section:not(.bh) :is(.bh-link, .cu-all, .cu-enq):hover { color: #fff }
+.home > section:not(.bh) .icon-btn { border-color: rgba(243, 191, 209, .45); color: var(--m-blush); background: rgba(255, 255, 255, .04) }
+.home > section:not(.bh) .icon-btn:hover { background: var(--m-pink); color: var(--m-indigo) }
+
+/* ---- 3D tilt (driven by HomeFx) ---- */
+.home :is(.cu-grid, .cc-grid, .rv-track, .svc-grid, .insta-grid, .ed-in, .story3, .studio, .eq-in, .eq) { perspective: 1300px }
+.home .fx-on { will-change: rotate, translate; z-index: 2 }
+.fx-glare { position: absolute; inset: 0; z-index: 4; border-radius: inherit; pointer-events: none; opacity: var(--go, 0);
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, .28), rgba(243, 191, 209, .1) 30%, transparent 62%); mix-blend-mode: screen }
+.home :is(.svc-item, .ed-photo, .insta-tile, .story3-card, .studio-card, .rv-card, .cc-card, .cu-photo) { position: relative }
+
+/* ---- floating parallax ornaments ---- */
+.fx-orn { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none }
+.fx-orn > span { position: absolute; display: block; will-change: translate }
+.fx-orn svg { width: 100%; height: 100%; display: block; overflow: visible }
+.fx-silk { color: rgba(232, 138, 171, .34); filter: drop-shadow(0 0 22px rgba(232, 138, 171, .18)); animation: fx-sway 14s ease-in-out infinite alternate }
+.fx-silk.flip { color: rgba(154, 150, 226, .34); animation-duration: 17s }
+.fx-ring { color: rgba(243, 191, 209, .32) }
+.fx-ring.spin svg { animation: fx-spin 40s linear infinite } .fx-ring.rev svg { animation-direction: reverse; animation-duration: 55s }
+.fx-spark { border-radius: 50%; background: radial-gradient(circle, #fff 0, var(--m-pink-l) 30%, rgba(232, 138, 171, 0) 70%); box-shadow: 0 0 18px 4px rgba(232, 138, 171, .35); animation: fx-twinkle 4.5s ease-in-out infinite }
+.fx-spark:nth-child(3n) { animation-delay: -1.5s } .fx-spark:nth-child(3n+1) { animation-delay: -3s }
+@keyframes fx-sway { from { rotate: -4deg } to { rotate: 5deg } }
+@keyframes fx-spin { to { rotate: 360deg } }
+@keyframes fx-twinkle { 0%, 100% { opacity: .35; scale: .7 } 50% { opacity: 1; scale: 1.15 } }
+
+/* ---- Trending (cu) ---- */
+.home .cu-name { color: #fff } .home .cu-name:hover { color: var(--m-pink-l) }
+.home .cu-photo { background: var(--m-royal); box-shadow: 0 0 0 1px rgba(243, 191, 209, .22), var(--m-shadow); border-radius: 26px }
+.home .cu-heart { background: rgba(20, 18, 61, .55); color: var(--m-pink-l); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 0 0 1px rgba(255, 255, 255, .14) }
+.home .cu-heart.on, .home .cu-heart:hover { background: var(--m-pink); color: var(--m-indigo) }
+.home .cu-pill { border-color: rgba(243, 191, 209, .55); color: var(--m-blush) }
+.home .cu-pill:hover { background: var(--m-pink); color: var(--m-indigo); border-color: var(--m-pink) }
+.home .cu-out { background: var(--m-indigo); color: var(--m-pink-l) }
+.home .cu-tabs button { border-color: rgba(243, 191, 209, .4); color: var(--m-blush) }
+.home .cu-search input { background: rgba(255, 255, 255, .06); border-color: var(--m-glass-line); color: #fff }
+
+/* ---- Editorial (ed): a glass panel ---- */
+.home .ed-in { background: var(--m-glass); border: 1px solid var(--m-glass-line); box-shadow: var(--m-shadow), inset 0 1px 0 rgba(255, 255, 255, .08); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px) }
+.home .ed-photo { background: rgba(255, 255, 255, .05); box-shadow: 0 0 0 1px rgba(243, 191, 209, .25), 0 24px 50px rgba(4, 3, 24, .45) }
+.home .ed-copy hr { border-top-color: var(--m-line) }
+.home .ed-facts strong { color: var(--m-pink-l) } .home .ed-facts span, .home .ed-facts small { color: var(--m-muted) }
+
+/* ---- empty photo frames on dark ---- */
+.home .blank { background: linear-gradient(160deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .015)); color: rgba(232, 138, 171, .55); border: 1px dashed rgba(232, 138, 171, .3) }
+.home .blank-note { color: var(--m-muted) } .home .blank-note a { color: var(--m-pink-l) }
+.home .insta-empty { background: none; border: 0 }
+.home .blank .emblem { filter: drop-shadow(0 0 12px rgba(232, 138, 171, .45)); animation: fx-spin 30s linear infinite }
+
+/* ---- Categories (cc): arches with a pink rim ---- */
+.home .cc-bar { border-top-color: var(--m-line) }
+.home .cc-sort select { background-color: rgba(255, 255, 255, .06); color: #fff; border-color: var(--m-glass-line) }
+.home .cc-sort select option { color: var(--m-indigo) }
+.home .cc-card { background: var(--m-royal); box-shadow: 0 0 0 6px rgba(255, 255, 255, .035), 0 0 0 7.5px rgba(232, 138, 171, .75), 0 0 40px rgba(232, 138, 171, .15), var(--m-shadow) }
+.home .cc-card::after { background: linear-gradient(0deg, rgba(15, 13, 51, .7), transparent 48%) }
+.home .cc-plate { background: rgba(20, 18, 61, .6); color: #fff; border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px) }
+.home .cc-plate * { color: inherit } .home .cc-plate :is(span, small, em) { color: var(--m-pink-l) }
+.home .cc-go { background: rgba(251, 227, 236, .92); color: var(--m-indigo) }
+
+/* ---- Collections flow (cf) ---- */
+.home .cf { --ink: #fff }
+.home .cf-head, .home .cf-nav { color: var(--m-text) }
+.home .cf-shade { background: linear-gradient(0deg, rgba(15, 13, 51, .9) 4%, rgba(15, 13, 51, .08) 58%, rgba(15, 13, 51, .2)) }
+.home .cf-card { box-shadow: 0 0 0 1px rgba(243, 191, 209, .25), var(--m-shadow) }
+.home .cf-card::after { background: rgb(15 13 51 / calc(var(--dim, 0) * 100%)) }
+.home .cf-floor { background: radial-gradient(closest-side, rgba(232, 138, 171, .35), transparent); filter: blur(16px) }
+.home .cf-go { background: rgba(255, 255, 255, .14); color: #fff } .home .cf-card:hover .cf-go { background: var(--m-pink); color: var(--m-indigo) }
+
+/* ---- Services (svc): glass cards ---- */
+.home .svc-grid { border-top-color: var(--m-line) }
+.home .svc-item { padding: 28px 26px 30px; border-radius: 26px; background: var(--m-glass); border: 1px solid var(--m-glass-line); box-shadow: 0 20px 50px rgba(4, 3, 24, .35) }
+.home .svc-item h3 { color: var(--m-blush) }
+.home .svc-ico { background: radial-gradient(circle at 35% 30%, #3a3592, var(--m-indigo)); color: var(--m-pink-l); box-shadow: 0 0 0 1px rgba(243, 191, 209, .35), 0 0 30px rgba(232, 138, 171, .25) }
+
+/* ---- Shop story ---- */
+.home .story3-card { box-shadow: 0 0 0 1px rgba(243, 191, 209, .3), 0 40px 90px rgba(4, 3, 24, .6) }
+
+/* ---- Reviews ---- */
+.home .rev-pill { background: rgba(255, 255, 255, .07); color: var(--m-text); border: 1px solid var(--m-glass-line); box-shadow: none; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px) }
+.home .rv-card { box-shadow: 0 0 0 1px rgba(243, 191, 209, .22), var(--m-shadow) }
+.home .rv-card::after { background: linear-gradient(0deg, rgba(15, 13, 51, .92) 6%, rgba(15, 13, 51, .1) 58%, rgba(15, 13, 51, .3)) }
+.home .rv-tag { background: rgba(15, 13, 51, .6) }
+
+/* ---- Instagram ---- */
+.home .insta-bh { border-bottom-color: var(--m-line) }
+.home .insta-handle { color: var(--m-pink-l) }
+.home .insta-tile:not(.insta-empty) { box-shadow: 0 0 0 1px rgba(243, 191, 209, .22), var(--m-shadow) }
+
+/* ---- Visit us (studio): glass card around the live map ---- */
+.home .studio-card { background: rgba(28, 26, 82, .55); border: 1px solid var(--m-glass-line); box-shadow: var(--m-shadow); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px) }
+.home .studio-info { color: var(--m-text) }
+.home .studio-row strong { color: #fff } .home .studio-row svg { color: var(--m-pink-l) }
+
+/* ---- Enquiry ---- */
+.home .eq-form, .home .eq form { box-shadow: 0 0 0 1px rgba(243, 191, 209, .3), 0 0 60px rgba(232, 138, 171, .12), var(--m-shadow) }
+
+/* ---- hero: an arch photo frame. The uploaded model photo fills it and leans with the pointer; until then it holds a
+   3D carousel of silk swatches. ---- */
+.bh .bh-model.is-photo .bh-arch { transform: perspective(1400px) rotateY(calc(var(--px, 0) * 6deg)) rotateX(calc(var(--py, 0) * -4deg)); transition: transform .2s linear }
+.bh-addphoto { position: absolute; z-index: 6; left: 50%; bottom: 9%; translate: -50% 0; white-space: nowrap; padding: 11px 20px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .18em;
+  background: var(--m-pink-grad); color: var(--m-indigo); box-shadow: 0 12px 30px rgba(232, 138, 171, .35) }
+.bh-addphoto:hover { filter: brightness(1.06) }
+@media (min-width: 700px) {
+  .bh .bh-model { display: flex; align-items: flex-end; justify-content: center; padding-top: 118px }
+  .bh .bh-model::before { inset: 10% 4% 0 10% }
+  .bh .bh-model .bh-arch { position: relative; width: min(470px, 62%); height: 100%; max-height: 700px; margin: 0 auto; overflow: visible; border-radius: 999px 999px 0 0;
+    background: linear-gradient(180deg, rgba(125, 116, 216, .16), rgba(28, 26, 82, .35)) !important;
+    -webkit-mask-image: none !important; mask-image: none !important; box-shadow: 0 40px 90px rgba(4, 3, 24, .5), inset 0 0 0 1px rgba(243, 191, 209, .2) !important }
+  .bh .bh-model .bh-arch img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; border-radius: 999px 999px 0 0 }
+  .bh .bh-model .bh-arch::before { content: ''; position: absolute; z-index: 2; inset: -18px -18px 0; border: 1.5px solid rgba(243, 191, 209, .7); border-bottom: 0; border-radius: 999px 999px 0 0; pointer-events: none;
+    box-shadow: 0 0 24px rgba(232, 138, 171, .25), inset 0 0 24px rgba(232, 138, 171, .12) }
+  .bh .bh-model .bh-arch::after { content: ''; position: absolute; z-index: -1; right: -26%; bottom: 0; width: 52%; height: 60%; border-radius: 999px 999px 0 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(154, 150, 226, .38), rgba(46, 43, 123, .15)); box-shadow: inset 0 0 0 1px rgba(243, 191, 209, .18) }
+  .bh .bh-model.is-showcase .bh-arch .s3d { overflow: visible }
+}
+
+.s3d { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none }
+.s3d-glow { position: absolute; width: 80%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(232, 138, 171, .38), rgba(125, 116, 216, .18) 45%, transparent 70%); filter: blur(20px); animation: s3d-breathe 6s ease-in-out infinite }
+.s3d-stage { position: relative; width: 420px; height: 460px; perspective: 1000px; scale: var(--s3d-scale, 1) }
+.s3d-tilt { position: absolute; inset: 0; transform-style: preserve-3d;
+  transform: rotateX(calc(-10deg + var(--py, 0) * 8deg)) rotateY(calc(var(--px, 0) * 16deg)); animation: s3d-float 7s ease-in-out infinite }
+.s3d-ring { position: absolute; left: 50%; top: 46%; width: 0; height: 0; transform-style: preserve-3d; animation: s3d-turn 36s linear infinite }
+.s3d-card { position: absolute; width: 118px; height: 176px; margin: -88px 0 0 -59px; border-radius: 16px; overflow: hidden; backface-visibility: visible;
+  background:
+    repeating-linear-gradient(118deg, rgba(255, 255, 255, .08) 0 2px, transparent 2px 10px),
+    radial-gradient(120% 80% at 30% 20%, color-mix(in srgb, var(--b) 55%, transparent), transparent 60%),
+    linear-gradient(165deg, var(--a), color-mix(in srgb, var(--a) 60%, #0f0d33));
+  box-shadow: 0 0 0 1px rgba(251, 227, 236, .45), 0 18px 40px rgba(4, 3, 24, .45), 0 0 26px rgba(232, 138, 171, .18) }
+.s3d-sheen { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .32) 45%, transparent 60%); animation: s3d-sheen 5s ease-in-out infinite }
+.s3d-zari { position: absolute; left: 0; right: 0; bottom: 14px; height: 18px; border-block: 1px solid rgba(251, 227, 236, .8);
+  background: repeating-linear-gradient(45deg, rgba(251, 227, 236, .75) 0 3px, transparent 3px 9px), repeating-linear-gradient(-45deg, rgba(251, 227, 236, .5) 0 3px, transparent 3px 9px) }
+.s3d-mono { position: absolute; left: 50%; top: 46%; translate: -50% -55%; font: 400 132px/1 'Great Vibes', cursive; color: #fbe3ec; transform: translateZ(0);
+  text-shadow: 0 0 30px rgba(232, 138, 171, .85), 0 0 60px rgba(125, 116, 216, .5) }
+.s3d-base { position: absolute; left: 50%; top: 82%; width: 420px; height: 420px; margin: -210px 0 0 -210px; border-radius: 50%; transform: rotateX(90deg);
+  background: radial-gradient(circle, rgba(232, 138, 171, .3), rgba(46, 43, 123, .2) 50%, transparent 70%); box-shadow: inset 0 0 0 1.5px rgba(243, 191, 209, .55), 0 0 40px rgba(232, 138, 171, .25) }
+.s3d-base.b2 { width: 500px; height: 500px; margin: -250px 0 0 -250px; background: none; box-shadow: inset 0 0 0 1px rgba(154, 150, 226, .35) }
+.s3d-sparks { position: absolute; inset: 0 }
+.s3d-sparks i { position: absolute; bottom: 14%; width: 5px; height: 5px; border-radius: 50%; background: #fbe3ec; box-shadow: 0 0 12px 3px rgba(232, 138, 171, .7); opacity: 0; animation: s3d-rise 7s ease-in infinite }
+.s3d-sparks i:nth-child(1) { left: 22% } .s3d-sparks i:nth-child(2) { left: 38%; animation-delay: -1.2s } .s3d-sparks i:nth-child(3) { left: 55%; animation-delay: -2.5s }
+.s3d-sparks i:nth-child(4) { left: 70%; animation-delay: -3.6s } .s3d-sparks i:nth-child(5) { left: 30%; animation-delay: -4.4s } .s3d-sparks i:nth-child(6) { left: 63%; animation-delay: -5.3s }
+.s3d-sparks i:nth-child(7) { left: 47%; animation-delay: -6.1s } .s3d-sparks i:nth-child(8) { left: 16%; animation-delay: -2s } .s3d-sparks i:nth-child(9) { left: 78%; animation-delay: -4.9s }
+@keyframes s3d-turn { to { transform: rotateY(360deg) } }
+@keyframes s3d-float { 0%, 100% { translate: 0 0 } 50% { translate: 0 -12px } }
+@keyframes s3d-breathe { 0%, 100% { opacity: .75; scale: .95 } 50% { opacity: 1; scale: 1.05 } }
+@keyframes s3d-sheen { 0%, 100% { translate: -60% 0 } 50% { translate: 60% 0 } }
+@keyframes s3d-rise { 0% { opacity: 0; translate: 0 0 } 15% { opacity: 1 } 100% { opacity: 0; translate: 0 -320px } }
+@media (max-width: 1279px) { .s3d-stage { --s3d-scale: .82 } }
+@media (max-width: 899px) { .s3d-stage { --s3d-scale: .66 } }
+@media (max-width: 699px) { .bh .bh-model.is-showcase { opacity: .5 } .s3d-stage { --s3d-scale: .6 } .bh-addphoto { display: none } }
+
+/* hero: sparkles instead of falling petals; no flower ornaments */
+.bh .bh-lotus { display: none !important }
+.bh .bh-petals i { width: 5px !important; height: 5px !important; border-radius: 50% !important; background: #fbe3ec !important; box-shadow: 0 0 10px 3px rgba(232, 138, 171, .55) }
+
+@media (prefers-reduced-motion: reduce) {
+  .s3d-tilt, .s3d-ring, .s3d-glow, .s3d-sheen, .fx-silk, .fx-ring svg, .fx-spark, .home .blank .emblem { animation: none }
+  .s3d-sparks { display: none }
+}
+
+/* ---- logo ---- */
+.wm-badge { position: relative; flex: none; width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background: #1c0e3c; box-shadow: 0 0 0 2px rgba(232, 138, 171, .55), 0 8px 20px rgba(28, 26, 82, .3) }
+.wm-badge .wm-logo { width: 100%; height: 100%; object-fit: cover; border-radius: 0; box-shadow: none }
+.wm-badge.is-monogram .wm-logo { position: absolute; width: 240%; height: auto; max-width: none; left: -70%; top: -24% }
+.wordmark.has-logo { gap: 12px }
+.wordmark.has-logo .wm-text { display: grid; gap: 2px }
+.wordmark.has-logo .wm-a { font-size: 32px }
+.wordmark.has-logo .wm-b { font-size: 7.5px }
+@media (max-width: 1179px) { .site-header .wordmark.has-logo .wm-text { display: none } }
+.mobile-menu .mm-top .wm-badge { width: 56px; height: 56px }
+.full-logo { display: flex; justify-content: center; margin: clamp(30px, 4vw, 56px) auto clamp(18px, 2.4vw, 32px) }
+.full-logo img { width: min(440px, 80vw); height: auto; display: block;
+  -webkit-mask-image: radial-gradient(closest-side, #000 72%, transparent 100%); mask-image: radial-gradient(closest-side, #000 72%, transparent 100%) }
+
+/* ---- fixes ---- */
+.home :is(.map-card, .map-open, .map-here) { color: var(--m-indigo) }
+.home .map-card :is(strong, b, span, a, small) { color: inherit } .home .map-card .muted { color: rgba(28, 26, 82, .6) }
+.home .cc-card .cc-go { display: none } /* clipped by the arch; the whole card is the link */
+.home .cc-title { font-family: var(--sans, 'Archivo', system-ui, sans-serif); font-size: 13px; font-weight: 700; letter-spacing: .22em; background: none; -webkit-text-fill-color: currentColor; color: var(--m-pink-l); filter: none }
+
+/* ---- Choose your world: a fanned hand of cards (positions set in CollectionsFlow) ---- */
+.home .cf-track { padding-top: 70px; padding-bottom: 150px; perspective-origin: 50% 20% }
+.home .cf-card { -webkit-box-reflect: unset; transition: box-shadow .5s ease }
+.home .cf-card.is-active { box-shadow: 0 0 0 1.5px rgba(243, 191, 209, .85), 0 0 60px rgba(232, 138, 171, .35), 0 40px 80px rgba(4, 3, 24, .6) }
+.home .cf-txt > * { transition: opacity .55s ease, translate .55s cubic-bezier(.22, 1, .36, 1) }
+.home .cf-card:not(.is-active) .cf-txt > * { opacity: .5; translate: 0 10px }
+.home .cf-card:not(.is-active) .cf-go { opacity: 0 }
+.home .cf-card.is-active .cf-txt > :nth-child(2) { transition-delay: .06s } .home .cf-card.is-active .cf-txt > :nth-child(3) { transition-delay: .12s } .home .cf-card.is-active .cf-txt > :nth-child(4) { transition-delay: .18s }
+.home .cf-floor { bottom: 40px; height: 90px; left: 20%; right: 20% }

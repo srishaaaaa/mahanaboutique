@@ -13,6 +13,7 @@ import EnquirySection from '../components/EnquirySection';
 import InstagramStrip from '../components/InstagramStrip';
 import StoreLocationMap from '../components/StoreLocationMap';
 import ServiceHighlights from '../components/ServiceHighlights';
+import HomeFx from '../components/HomeFx';
 import { useSiteText } from '../lib/siteText';
 import { scrollToEl } from '../components/SmoothScroll';
 import { brand, media } from '../config/content';
@@ -65,6 +66,7 @@ export default function Home() {
 
   return (
     <div className="home">
+      <HomeFx />
       <BoutiqueHero />
       <Ticker />
       <FeaturedCollections />

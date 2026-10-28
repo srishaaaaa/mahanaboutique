@@ -10,14 +10,17 @@ import { Magnetic } from '../Motion';
 import { ProductMedia } from '../ProductCard3D';
 import BlankFrame from '../BlankFrame';
 import EditorialTypography from './EditorialTypography';
+import Showcase3D from './Showcase3D';
 
 const rise = d => ({ initial: { opacity: 0, y: 24 }, transition: { duration: 0.9, delay: d, ease: [0.22, 1, 0.36, 1] } });
 const CHIPS = [['ALL', '/shop?category=sarees'], ['SILK', '/search?q=silk'], ['COTTON', '/search?q=cotton'], ['FESTIVE', '/collections/festive-edit'], ['BRIDAL', '/collections/bridal-silk-sarees']];
 
-// A lotus drawn with a few petals; used as an ornament (divider, corners, caption).
-const Lotus = ({ className = '' }) => (
+// A zari-style diamond motif; used as a small ornament (divider, caption).
+const Motif = ({ className = '' }) => (
   <svg className={className} viewBox="0 0 200 120" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" aria-hidden="true">
-    {[-62, -32, 0, 32, 62].map(r => <path key={r} d="M100 112C74 92 68 52 100 8c32 44 26 84 0 104Z" transform={`rotate(${r} 100 112)`} fill="currentColor" fillOpacity=".09" />)}
+    <path d="M100 18 140 60 100 102 60 60Z" fill="currentColor" fillOpacity=".1" />
+    <path d="M100 40 120 60 100 80 80 60Z" fill="currentColor" fillOpacity=".35" />
+    <path d="M44 60 56 48 68 60 56 72ZM132 60 144 48 156 60 144 72Z" fill="currentColor" fillOpacity=".2" />
   </svg>
 );
 
@@ -31,7 +34,8 @@ function HeroPhoto({ src, alt, pos }) {
 }
 
 export default function BoutiqueHero() {
-  const { entered, catalog, site } = useApp();
+  const { entered, catalog, site, user } = useApp();
+  const staff = ['owner', 'admin'].includes(user?.role);
   const reduced = useReduced();
   const ref = useRef();
   usePointerVars(ref, !reduced);
@@ -44,9 +48,8 @@ export default function BoutiqueHero() {
   return (
     <section ref={ref} className="bh" data-hero aria-label="MAHANA BOUTIQUE & TAILORS">
       <span className="bh-petals" aria-hidden="true">{Array.from({ length: 12 }, (_, i) => <i key={i} />)}</span>
-      <Lotus className="bh-lotus l" /><Lotus className="bh-lotus r" />
       <span className="bh-side-l" aria-hidden="true">SAREES · ANARKALIS · LEHENGAS · KURTAS</span>
-      <span className="bh-side-r" aria-hidden="true"><Lotus className="bh-mini" />TIMELESS<br />SAREES<br />FOR MODERN<br />WOMEN</span>
+      <span className="bh-side-r" aria-hidden="true"><Motif className="bh-mini" />TIMELESS<br />SAREES<br />FOR MODERN<br />WOMEN</span>
       <p className="bh-brand" aria-hidden="true"><b>{(site.store?.name || 'Mahana Boutique & Tailors').split(' ')[0]}</b><i>{(site.store?.name || 'Mahana Boutique & Tailors').split(' ').slice(1).join(' ') || 'BOUTIQUE'}</i></p>
       <div className="bh-wrap">
         <aside className="bh-discover" aria-labelledby="bh-for">
@@ -71,7 +74,7 @@ export default function BoutiqueHero() {
             <EditorialTypography lines={['Tradition,', 'redefined.']} show={show} className="bh-h" label="Tradition, redefined." />
             <i className="bh-spark s1" aria-hidden="true" /><i className="bh-spark s2" aria-hidden="true" />
           </div>
-          <div className="bh-orn" aria-hidden="true"><Lotus /></div>
+          <div className="bh-orn" aria-hidden="true"><Motif /></div>
           <div className="bh-row">
           <div className="bh-col">
           <motion.p className="bh-desc" {...anim(0.7)}>Traditional Indian wear, accessories, custom design and tailoring. Where fashion finds you.</motion.p>
@@ -95,11 +98,12 @@ export default function BoutiqueHero() {
           <div className="bh-tint" aria-hidden="true" />
         </div>
 
-        <motion.figure className="bh-model has-photo" initial={{ opacity: 0, y: 40 }} animate={show ? { opacity: 1, y: 0 } : undefined} transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.figure className={`bh-model has-photo ${b.heroModel ? "is-photo" : "is-showcase"}`} initial={{ opacity: 0, y: 40 }} animate={show ? { opacity: 1, y: 0 } : undefined} transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}>
           <span className={`bh-arch ${site.status === 'loading' ? 'skel' : ''}`}>
             {site.status === 'loading' ? null : b.heroModel
               ? <HeroPhoto src={b.heroModel} alt={b.heroAlt || 'A model draped in a saree'} pos={b.heroModelPos} />
-              : <BlankFrame label="Model photo" className="tall" hint="A full-length photo works best." />}
+              : <Showcase3D />}
+            {site.status !== 'loading' && !b.heroModel && staff && <Link className="bh-addphoto" to="/admin/storefront">+ ADD HERO PHOTO</Link>}
           </span>
         </motion.figure>
       </div>

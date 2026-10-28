@@ -21,17 +21,21 @@ export default function CollectionsFlow() {
 
   const apply = useCallback(() => {
     const t = track.current; if (!t) return;
-    const c = t.getBoundingClientRect(), mid = c.left + c.width / 2;
+    const mid = t.scrollLeft + t.clientWidth / 2;
     let best = 0, bd = Infinity;
     [...t.children].forEach((el, i) => {
-      const r = el.getBoundingClientRect(), d = (r.left + r.width / 2 - mid) / r.width, ad = Math.abs(d);
+      // Layout positions (not on-screen boxes), so the card's own transform never feeds back into the maths.
+      const w = el.offsetWidth, d = (el.offsetLeft + w / 2 - mid) / w, ad = Math.abs(d);
       if (ad < bd) { bd = ad; best = i }
+      el.classList.toggle('is-active', ad < 0.5);
       if (reduced) return;
-      const k = Math.min(ad, 2), n = Math.min(ad, 1);
-      // Side cards tilt toward the centre and sink back a little. They stay opaque (no see-through overlaps);
-      // depth comes from a soft darkening (--dim) instead. Updated every frame with no CSS transition, so it tracks the scroll exactly.
-      el.style.transform = `translate3d(${-d * r.width * 0.14}px, 0, ${-k * 60}px) rotateY(${-Math.sign(d) * n * 24}deg) scale(${1 - k * 0.06})`;
-      el.style.setProperty('--dim', (k * 0.22).toFixed(3));
+      const k = Math.min(ad, 3), lift = Math.max(0, 1 - ad) * 18;
+      // A fanned hand of cards: every card pivots from a point far below the row, so the cards spread in an arc,
+      // overlap toward the centre and sink back; the centre card rises out of the fan.
+      // Updated every frame with no CSS transition, so it tracks the scroll exactly.
+      el.style.transformOrigin = '50% 185%';
+      el.style.transform = `translate3d(${-d * w * 0.36}px, ${k * k * 5 - lift}px, ${-k * 50}px) rotateZ(${(d * 7.5).toFixed(3)}deg) scale(${(1 - Math.min(ad, 2) * 0.07).toFixed(4)})`;
+      el.style.setProperty('--dim', (Math.min(ad, 2) * 0.24).toFixed(3));
       el.style.zIndex = String(100 - Math.round(ad * 10));
     });
     setActive(best);
