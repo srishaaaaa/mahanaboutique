@@ -115,3 +115,4 @@
   .dpos-pills { grid-template-columns: repeat(2, 1fr) }
   .inv-ps-row { grid-template-columns: 1fr 1fr } .inv-ps-foot { gap: 14px }
 }
+.adm-alt { width: 100%; padding: 7px 10px; border: 1px solid #e3e1e6; border-radius: 10px; font: inherit; font-size: 12px }

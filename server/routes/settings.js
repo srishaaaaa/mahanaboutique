@@ -36,6 +36,8 @@ export const brandingSchema = z.object({
   storyImage: z.string().max(500).nullable().default(null), storyAlt: z.string().trim().max(200).nullable().default(null),
   heroModel: z.string().max(500).nullable().default(null), heroModelPos: z.string().regex(/^\d{1,3}% \d{1,3}%$/).nullable().default(null), textilePos: z.string().regex(/^\d{1,3}% \d{1,3}%$/).nullable().default(null), editorialPos: z.string().regex(/^\d{1,3}% \d{1,3}%$/).nullable().default(null), storyPos: z.string().regex(/^\d{1,3}% \d{1,3}%$/).nullable().default(null), textileImage: z.string().max(500).nullable().default(null), editorialImage: z.string().max(500).nullable().default(null),
   textileAlt: z.string().trim().max(200).nullable().default(null), editorialAlt: z.string().trim().max(200).nullable().default(null),
+  // Photos on the turning cards of the hero's 3D carousel (shown until a hero model photo is added). Empty cards show silk swatches.
+  showcase: z.array(z.object({ image: z.string().max(500), alt: z.string().trim().max(200).default('') })).max(8).default([]),
 });
 // Homepage picks chosen in Admin → Storefront images: the trending products (in order) and which collections appear in "Choose your world".
 const slugList = max => z.array(z.string().trim().min(1).max(120)).max(max).default([]);

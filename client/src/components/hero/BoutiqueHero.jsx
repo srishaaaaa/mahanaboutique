@@ -102,7 +102,7 @@ export default function BoutiqueHero() {
           <span className={`bh-arch ${site.status === 'loading' ? 'skel' : ''}`}>
             {site.status === 'loading' ? null : b.heroModel
               ? <HeroPhoto src={b.heroModel} alt={b.heroAlt || 'A model draped in a saree'} pos={b.heroModelPos} />
-              : <Showcase3D />}
+              : <Showcase3D photos={b.showcase} />}
             {site.status !== 'loading' && !b.heroModel && staff && <Link className="bh-addphoto" to="/admin/storefront">+ ADD HERO PHOTO</Link>}
           </span>
         </motion.figure>
