@@ -1,0 +1,391 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { one, rows } from '../db/index.js';
+import { HttpError, wrap } from '../lib/http.js';
+import { audit } from '../lib/orders.js';
+import { hasCostColumns } from '../lib/cost.js';
+import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
+
+const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
+const paise = z.number().int().min(0).max(100_000_000);
+const text = n => z.string().trim().max(n);
+const channel = z.enum(['retail', 'wholesale']).default('retail');
+const gstFilter = z.enum(['all', 'gst', 'nongst']).default('all');
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date());
+
+// Stitching measurements on a service line (Billing → Add service → Measurements). Sizes are in cm.
+const cm = z.number().min(0).max(500);
+const measure = z.object({
+  frontNeck: text(60).optional(), backNeck: text(60).optional(), sleeveType: text(40).optional(), sleeveLength: text(40).optional(), dueDate: date.optional(),
+  cm: z.object({ front_neck: cm, back_neck: cm, shoulder: cm, sleeve_length: cm, arm_hole_curve: cm, shoulder_to_waist: cm, chest: cm, waist: cm, blouse_length: cm, side_cut: cm, front_cut: cm, back_cut: cm }).partial().default({}),
+  remarks: z.array(text(200).min(1)).max(20).default([]),
+});
+const item = z.union([
+  z.object({ variantId: z.number().int().positive(), qty: z.number().int().min(1).max(999) }),
+  // free-text line (retail "Item name / description", services, and every wholesale line): cashier-entered price, no stock
+  z.object({ name: text(160).min(1), sku: text(60).optional(), price: paise, qty: z.number().int().min(1).max(99999), taxRate: z.number().int().min(0).max(28).default(0), measure: measure.optional() }),
+]);
+const saleBody = z.object({
+  idempotencyKey: z.string().min(8).max(80),
+  channel,
+  source: z.enum(['offline', 'online']).default('offline'),
+  billDate: date.optional(),
+  items: z.array(item).min(1).max(100),
+  customerName: text(120).default(''),
+  customerPhone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits').default(''),
+  customerAddress: text(300).default(''),
+  customerDob: date.optional(),
+  isGst: z.boolean().default(true),
+  gstRate: z.number().int().min(0).max(28).optional(), // flat GST % for the whole bill; omitted = each item's own rate
+  discountType: z.enum(['percent', 'fixed']).default('fixed'),
+  discountValue: paise.default(0),
+  couponCode: text(40).optional(),
+  deliveryFee: paise.default(0),
+  paymentMode: z.enum(['cash', 'upi', 'card', 'split']),
+  cashTendered: paise.optional(),
+  payments: z.object({ cash: paise.default(0), upi: paise.default(0), card: paise.default(0) }).default({}),
+  paymentRef: text(80).optional(),
+  notes: text(500).optional(),
+});
+const settingsBody = z.object({
+  gstin: text(15).regex(/^([0-9A-Za-z-]{8,15})?$/, 'Enter a valid GST registration number').default(''), // Singapore GST Reg. No. (e.g. M90312345A)
+  showGstRetail: z.boolean().default(false),
+  showGstWholesale: z.boolean().default(false),
+  deliveryPresets: z.array(z.object({ name: text(60).min(1), fee: paise })).max(20).default([]),
+  state: text(60).default('Singapore'),
+  terms: text(600).default('Custom-stitched and altered garments are made to order and are non-returnable.'),
+  // Shop details printed on POS bills. Blank means "use the website's store details".
+  shopName: text(80).default(''), shopAddress: text(400).default(''), shopPhone: text(30).default(''), shopEmail: text(120).default(''),
+  ownerName: text(80).default(''), ownerPhone: text(30).default(''), whatsapp: text(30).default(''), city: text(80).default(''), hours: text(120).default(''), shopNameTamil: text(80).default(''), instagram: text(60).default(''),
+  accent: z.string().regex(/^(#[0-9a-fA-F]{6})?$/, 'Pick a colour').default(''), // one accent colour for the POS; blank = the default
+});
+const couponBody = z.object({
+  code: text(40).regex(/^[A-Za-z0-9_-]{3,40}$/, 'Use 3-40 letters, digits, - or _'),
+  discountType: z.enum(['percent', 'fixed']), discountValue: z.number().int().min(1).max(100_000_000),
+  minOrder: paise.default(0), expiresOn: date.nullable().default(null), usageLimit: z.number().int().min(1).nullable().default(null),
+}).refine(c => c.discountType !== 'percent' || c.discountValue <= 100, { message: 'Percent discount cannot exceed 100', path: ['discountValue'] });
+const wsItem = z.object({ code: text(60).min(1), company: text(120).default(''), colour: text(60).default('') });
+const customerBody = z.object({ name: text(120).default(''), phone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits'), dob: date.nullable().default(null), notes: text(300).nullable().default(null) });
+const expenseBody = z.object({ title: text(120).min(1), category: text(60).default('General'), amount: z.number().int().min(1).max(100_000_000), paymentMode: z.enum(['cash', 'upi', 'card']).default('cash'), notes: text(300).nullable().default(null), date: date.optional() });
+const productPatch = z.object({ name: text(160).min(1), price: paise, costPrice: paise.optional(), taxRate: z.number().int().min(0).max(28), categorySlug: text(80).nullable().default(null), status: z.enum(['draft', 'active', 'archived']),
+  description: text(4000).optional(), material: text(80).optional(), featured: z.boolean().optional(), collections: z.array(text(120).min(1)).max(50).optional() });
+const variantPatch = z.object({ size: text(40).min(1), color: text(40).min(1), sku: text(80).min(1), price: paise.nullable(), active: z.boolean() }).partial();
+const variantBody = z.object({ size: text(40).min(1), color: text(40).default('Default'), sku: text(80).min(1), stock: z.number().int().min(0).max(1_000_000).default(0) });
+const colourBody = z.object({ color: text(40).min(1), price: paise.nullable().default(null),
+  sizes: z.array(z.object({ size: text(40).min(1), stock: z.number().int().min(0).max(1_000_000).default(0), sku: text(80).optional() })).min(1).max(30) });
+const slugify = x => String(x).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const stockBody = z.object({ variantId: z.number().int().positive(), type: z.enum(['restock', 'return', 'loss', 'reconcile']), qty: z.number().int().min(0).max(1_000_000), note: text(100).optional() })
+  .refine(b => b.type === 'reconcile' || b.qty >= 1, { message: 'Enter a quantity of at least 1', path: ['qty'] });
+const advanceBody = z.object({
+  items: z.array(item).min(1).max(100), customerDob: date.optional(),
+  customerName: text(120).default(''), customerPhone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits').default(''), customerAddress: text(300).default(''),
+  isGst: z.boolean().default(false), gstRate: z.number().int().min(0).max(28).optional(),
+  discountType: z.enum(['percent', 'fixed']).default('fixed'), discountValue: paise.default(0), deliveryFee: paise.default(0),
+  deposit: paise, depositMode: z.enum(['cash', 'upi', 'card', 'split']).default('cash'), depositSplit: z.object({ cash: paise.default(0), upi: paise.default(0), card: paise.default(0) }).optional(), deliveryDate: date.nullable().optional(), notes: text(500).optional(),
+});
+const id = z.coerce.number().int().positive();
+
+const SETTINGS_DEFAULT = settingsBody.parse({});
+const DEFAULT_BDAY = { offers: [{ id: 'o1', text: '10% off on your next purchase' }], selected: 'o1',
+  message: 'Hi {name}! 🎂 Happy Birthday!\n\nHere\'s a special treat from {shop}:\n🎁 {offer}\n\nVisit us in store or call {phone}.\nFollow us on Instagram @{instagram}\n\n– {shop}' };
+const bdayBody = z.object({ offers: z.array(z.object({ id: text(20).min(1), text: text(120).min(1) })).max(20), selected: text(20).default(''), message: text(1000).min(1) });
+const DEFAULT_EXPENSE_CATEGORIES = ['Electricity', 'Marketing', 'Miscellaneous', 'Packing', 'Rent', 'Repairs & Maintenance', 'Salaries', 'Stationery', 'Tea & Snacks', 'Transport'];
+
+// Mahana POS API. Roles are enforced here on the server (and re-read from the database on every request by auth.role):
+// owner/admin/cashier may bill and look things up; only owner/admin may void bills, view reports and manage coupons, settings,
+// customers' edits, expenses, products and the wholesale catalogue; inventory staff may also adjust stock.
+export default function pos({ db, auth }) {
+  const r = Router();
+  const biller = auth.role('owner', 'admin', 'cashier');
+  const manager = auth.role('owner', 'admin');
+  const stockers = auth.role('owner', 'admin', 'inventory');
+
+  r.get('/pos/shop', biller, wrap(async (_req, res) => res.json(await shopInfo(db))));
+  r.get('/pos/settings', manager, wrap(async (_req, res) => res.json({ ...SETTINGS_DEFAULT, ...(await getSetting(db, 'invoice', {})) })));
+  r.put('/pos/settings', manager, wrap(async (req, res) => {
+    const v = settingsBody.parse(req.body);
+    await putSetting(db, 'invoice', v); await audit(db, req.user.id, 'pos.settings', 'pos_settings', 'invoice');
+    res.json(v);
+  }));
+
+  // ---- retail catalogue (billing search) ----
+  r.get('/pos/catalog', biller, wrap(async (req, res) => {
+    const { q, limit } = z.object({ q: text(80).default(''), limit: z.coerce.number().int().min(1).max(300).default(40) }).parse(req.query);
+    res.json(await searchVariants(db, q, limit));
+  }));
+
+  // ---- sales ----
+  r.post('/pos/sales', biller, wrap(async (req, res) => {
+    const sale = await createSale(db, req.user, saleBody.parse(req.body));
+    res.status(sale.duplicate ? 200 : 201).json(sale);
+  }));
+  r.get('/pos/sales', biller, wrap(async (req, res) => {
+    const f = z.object({ q: text(80).default(''), name: text(80).default(''), phone: text(20).default(''), source: z.enum(['all', 'offline', 'online']).default('all'), from: date.optional(), to: date.optional(), channel, gst: gstFilter }).parse(req.query);
+    // Cashiers only see today's bills; owner/admin can search the full history.
+    if (req.user.role === 'cashier') f.from = f.to = today();
+    res.json(await listSales(db, f));
+  }));
+  r.get('/pos/sales/:invoice', biller, wrap(async (req, res) => {
+    const sale = await getSale(db, req.params.invoice);
+    if (!sale) throw new HttpError(404, 'Invoice not found');
+    res.json(sale);
+  }));
+  r.post('/pos/sales/:invoice/void', manager, wrap(async (req, res) => {
+    const { reason } = z.object({ reason: text(200).min(3, 'Give a reason') }).parse(req.body);
+    res.json(await voidSale(db, req.user, req.params.invoice, reason));
+  }));
+  r.get('/pos/reports', manager, wrap(async (req, res) => {
+    const { from, to, channel: ch, gst } = z.object({ from: date, to: date, channel, gst: gstFilter }).parse(req.query);
+    if (from > to) throw new HttpError(400, 'From date is after To date');
+    res.json(await report(db, from, to, ch, gst));
+  }));
+
+  // ---- advance orders (deposit now, bill on collection) ----
+  r.post('/pos/advances', biller, wrap(async (req, res) => res.status(201).json(await createAdvance(db, req.user, advanceBody.parse(req.body)))));
+  r.get('/pos/advances', biller, wrap(async (req, res) => res.json(await listAdvances(db, z.object({ status: z.enum(['all', 'pending', 'ready', 'completed', 'cancelled']).default('all'), q: text(80).default('') }).parse(req.query)))));
+  r.get('/pos/advances/:code', biller, wrap(async (req, res) => {
+    const a = await getAdvance(db, req.params.code);
+    if (!a) throw new HttpError(404, 'Advance order not found');
+    res.json(a);
+  }));
+  r.patch('/pos/advances/:code/status', biller, wrap(async (req, res) => {
+    const { status } = z.object({ status: z.enum(['pending', 'ready', 'cancelled']) }).parse(req.body);
+    if (status === 'cancelled' && !['owner', 'admin'].includes(req.user.role)) throw new HttpError(403, 'Only an owner or admin can cancel an advance order');
+    res.json(await setAdvanceStatus(db, req.user, req.params.code, status));
+  }));
+  r.post('/pos/advances/:code/finalize', biller, wrap(async (req, res) => {
+    const d = z.object({ balanceMode: z.enum(['cash', 'upi', 'card', 'split']).default('cash'), balanceSplit: z.object({ cash: paise.default(0), upi: paise.default(0), card: paise.default(0) }).optional(), paymentRef: text(80).optional() }).parse(req.body);
+    res.json(await finalizeAdvance(db, req.user, req.params.code, d));
+  }));
+
+  // ---- coupons ----
+  r.get('/pos/coupons', manager, wrap(async (_req, res) => res.json(await rows(db, `
+    SELECT id, code, discount_type AS "discountType", discount_value AS "discountValue", min_order AS "minOrder", expires_on::text AS "expiresOn",
+           usage_limit AS "usageLimit", used_count AS "usedCount", active FROM pos_coupons ORDER BY id DESC`))));
+  // Cashiers can validate a code at the till; the final check is repeated inside the sale transaction.
+  r.get('/pos/coupons/check', biller, wrap(async (req, res) => {
+    const q = z.object({ code: text(40).min(1), subtotal: z.coerce.number().int().min(0) }).parse(req.query);
+    const c = await one(db, 'SELECT * FROM pos_coupons WHERE upper(code) = upper($1)', [q.code]);
+    const problem = couponProblem(c, q.subtotal);
+    if (problem) throw new HttpError(400, problem, 'bad_coupon');
+    res.json({ code: c.code, discountType: c.discount_type, discountValue: c.discount_value });
+  }));
+  r.post('/pos/coupons', manager, wrap(async (req, res) => {
+    const c = couponBody.parse(req.body);
+    const row = await one(db, `INSERT INTO pos_coupons (code, discount_type, discount_value, min_order, expires_on, usage_limit) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+      [c.code, c.discountType, c.discountValue, c.minOrder, c.expiresOn, c.usageLimit]).catch(e => { if (e.code === '23505') throw new HttpError(409, 'That coupon code already exists'); throw e });
+    await audit(db, req.user.id, 'pos.coupon.create', 'pos_coupon', row.id, { code: c.code });
+    res.status(201).json({ id: row.id });
+  }));
+  r.patch('/pos/coupons/:id', manager, wrap(async (req, res) => {
+    const { active } = z.object({ active: z.boolean() }).parse(req.body);
+    const u = await db.query('UPDATE pos_coupons SET active = $2 WHERE id = $1 RETURNING id', [id.parse(req.params.id), active]);
+    if (!u.rows.length) throw new HttpError(404, 'Coupon not found');
+    res.json({ ok: true });
+  }));
+  r.delete('/pos/coupons/:id', manager, wrap(async (req, res) => {
+    const d = await db.query('DELETE FROM pos_coupons WHERE id = $1 RETURNING code', [id.parse(req.params.id)]);
+    if (!d.rows.length) throw new HttpError(404, 'Coupon not found');
+    await audit(db, req.user.id, 'pos.coupon.delete', 'pos_coupon', req.params.id, { code: d.rows[0].code });
+    res.json({ ok: true });
+  }));
+
+  // ---- customers (name, mobile, date of birth) ----
+  r.get('/pos/customers', biller, wrap(async (req, res) => res.json(await listCustomers(db, z.object({ q: text(80).default('') }).parse(req.query).q))));
+  r.get('/pos/customers/lookup', biller, wrap(async (req, res) => {
+    const { phone } = z.object({ phone: text(20) }).parse(req.query);
+    const p = normPhone(phone);
+    res.json(p ? (await one(db, 'SELECT id, name, phone, dob::text AS dob FROM pos_customers WHERE phone = $1', [p])) : null);
+  }));
+  const dupCustomer = e => { if (e.code === '23505') throw new HttpError(409, 'A customer with that mobile number already exists'); throw e };
+  r.post('/pos/customers', biller, wrap(async (req, res) => {
+    const c = customerBody.parse(req.body); const p = normPhone(c.phone);
+    if (!p) throw new HttpError(400, 'Enter a valid mobile number');
+    const row = await one(db, 'INSERT INTO pos_customers (name, phone, dob, notes) VALUES ($1,$2,$3,$4) RETURNING id', [c.name, p, c.dob, c.notes]).catch(dupCustomer);
+    res.status(201).json({ id: row.id });
+  }));
+  r.patch('/pos/customers/:id', manager, wrap(async (req, res) => {
+    const c = customerBody.parse(req.body); const p = normPhone(c.phone);
+    if (!p) throw new HttpError(400, 'Enter a valid mobile number');
+    const row = await one(db, 'UPDATE pos_customers SET name = $2, phone = $3, dob = $4, notes = $5, updated_at = now() WHERE id = $1 RETURNING id', [id.parse(req.params.id), c.name, p, c.dob, c.notes]).catch(dupCustomer);
+    if (!row) throw new HttpError(404, 'Customer not found');
+    res.json({ ok: true });
+  }));
+  r.delete('/pos/customers/:id', manager, wrap(async (req, res) => {
+    const d = await db.query('DELETE FROM pos_customers WHERE id = $1 RETURNING id', [id.parse(req.params.id)]);
+    if (!d.rows.length) throw new HttpError(404, 'Customer not found');
+    res.json({ ok: true });
+  }));
+  r.get('/pos/birthday-offer', manager, wrap(async (_req, res) => res.json({ ...DEFAULT_BDAY, ...(await getSetting(db, 'birthday_offer', {})) })));
+  r.put('/pos/birthday-offer', manager, wrap(async (req, res) => {
+    const v = bdayBody.parse(req.body); if (v.selected && !v.offers.some(o => o.id === v.selected)) v.selected = v.offers[0]?.id ?? '';
+    await putSetting(db, 'birthday_offer', v); await audit(db, req.user.id, 'pos.birthday_offer', 'pos_settings', 'birthday_offer'); res.json(v);
+  }));
+  r.get('/pos/birthdays', manager, wrap(async (req, res) => {
+    const { days } = z.object({ days: z.coerce.number().int().min(1).max(366).default(30) }).parse(req.query);
+    res.json(await birthdays(db, days));
+  }));
+
+  r.get('/pos/stock/movements', stockers, wrap(async (req, res) => {
+    const f = z.object({ from: date.default(() => today()), to: date.default(() => today()), q: text(80).default(''), type: z.enum(['all', 'opening', 'sale', 'online', 'restock', 'loss', 'count', 'manual']).default('all') }).parse(req.query);
+    res.json(await stockMovements(db, f));
+  }));
+
+  // ---- inventory: products with variants, stock adjustments (new products use the existing POST /admin/products) ----
+  r.get('/pos/categories', biller, wrap(async (_req, res) => res.json(await rows(db, 'SELECT id, name, slug FROM categories WHERE active ORDER BY display_order, name'))));
+  r.get('/pos/products', biller, wrap(async (req, res) => res.json(await listProducts(db, z.object({ q: text(80).default('') }).parse(req.query).q))));
+  r.get('/pos/products/:id', biller, wrap(async (req, res) => {
+    const p = (await listProducts(db, '', id.parse(req.params.id)))[0];
+    if (!p) throw new HttpError(404, 'Product not found');
+    res.json(p);
+  }));
+  r.patch('/pos/products/:id', manager, wrap(async (req, res) => {
+    const d = productPatch.parse(req.body);
+    const cat = d.categorySlug ? await one(db, 'SELECT id FROM categories WHERE slug = $1', [d.categorySlug]) : null;
+    if (d.categorySlug && !cat) throw new HttpError(400, 'Unknown category');
+    const u = await db.query('UPDATE products SET name = $2, base_price = $3, tax_rate = $4, category_id = $5, status = $6, updated_at = now() WHERE id = $1 RETURNING id', [id.parse(req.params.id), d.name, d.price, d.taxRate, cat?.id ?? null, d.status]);
+    if (!u.rows.length) throw new HttpError(404, 'Product not found');
+    if (d.costPrice !== undefined) {
+      if (await hasCostColumns(db)) await db.query('UPDATE products SET cost_price = $2 WHERE id = $1', [id.parse(req.params.id), d.costPrice]);
+      else if (d.costPrice > 0) throw new HttpError(409, 'Cost prices need a one-time database update first (migration 019).', 'cost_not_ready');
+    }
+    const pid = id.parse(req.params.id);
+    if (d.description !== undefined || d.material !== undefined || d.featured !== undefined)
+      await db.query(`UPDATE products SET description = COALESCE($2, description), material = CASE WHEN $3::text IS NULL THEN material ELSE NULLIF($3, '') END, featured = COALESCE($4, featured) WHERE id = $1`,
+        [pid, d.description ?? null, d.material ?? null, d.featured ?? null]);
+    // Collections this piece belongs to: added at the end of a new collection, kept in place in ones it was already in.
+    if (d.collections) await db.tx(async t => {
+      const ids = (await rows(t, 'SELECT id FROM collections WHERE slug = ANY($1)', [d.collections])).map(r => r.id);
+      await t.query('DELETE FROM collection_products WHERE product_id = $1 AND NOT (collection_id = ANY($2::int[]))', [pid, ids]);
+      for (const c of ids) await t.query(`INSERT INTO collection_products (collection_id, product_id, display_order)
+        SELECT $1, $2, COALESCE(MAX(display_order), -1) + 1 FROM collection_products WHERE collection_id = $1 ON CONFLICT (collection_id, product_id) DO NOTHING`, [c, pid]);
+    });
+    await audit(db, req.user.id, 'pos.product.edit', 'product', req.params.id, { name: d.name });
+    res.json({ ok: true });
+  }));
+  // One size / colour row: rename it, change its SKU or its own price (null = the product price), hide or show it.
+  r.patch('/pos/products/:id/variants/:vid', manager, wrap(async (req, res) => {
+    const d = variantPatch.parse(req.body); const pid = id.parse(req.params.id), vid = id.parse(req.params.vid);
+    const u = await db.query(`UPDATE product_variants SET size = COALESCE($3, size), color = COALESCE($4, color), sku = COALESCE($5, sku),
+        price_override = CASE WHEN $6 THEN $7::int ELSE price_override END, active = COALESCE($8, active) WHERE id = $2 AND product_id = $1 RETURNING id`,
+      [pid, vid, d.size ?? null, d.color ?? null, d.sku ?? null, d.price !== undefined, d.price ?? null, d.active ?? null])
+      .catch(e => { if (e.code === '23505') throw new HttpError(409, 'That SKU or size/colour already exists for this product'); throw e });
+    if (!u.rows.length) throw new HttpError(404, 'Size not found');
+    await audit(db, req.user.id, 'pos.variant.edit', 'product', pid, { variant: vid, ...d });
+    res.json({ ok: true });
+  }));
+  r.delete('/pos/products/:id/variants/:vid', manager, wrap(async (req, res) => {
+    const pid = id.parse(req.params.id), vid = id.parse(req.params.vid);
+    const n = await one(db, 'SELECT COUNT(*)::int AS n FROM product_variants WHERE product_id = $1', [pid]);
+    if (n.n <= 1) throw new HttpError(400, 'A product needs at least one size. Add another before removing this one.', 'last_variant');
+    const d = await db.query('DELETE FROM product_variants WHERE id = $2 AND product_id = $1 RETURNING sku', [pid, vid]);
+    if (!d.rows.length) throw new HttpError(404, 'Size not found');
+    await audit(db, req.user.id, 'pos.variant.delete', 'product', pid, { sku: d.rows[0].sku });
+    res.json({ ok: true });
+  }));
+  r.post('/pos/products/:id/variants', manager, wrap(async (req, res) => {
+    const v = variantBody.parse(req.body); const pid = id.parse(req.params.id);
+    const out = await db.tx(async t => {
+      if (!(await one(t, 'SELECT 1 AS x FROM products WHERE id = $1', [pid]))) throw new HttpError(404, 'Product not found');
+      const row = await one(t, 'INSERT INTO product_variants (product_id, sku, size, color, stock_quantity) VALUES ($1,$2,$3,$4,$5) RETURNING id', [pid, v.sku, v.size, v.color, v.stock]);
+      if (v.stock) await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason) VALUES ($1,$2,$3)', [row.id, v.stock, 'initial_stock']);
+      await audit(t, req.user.id, 'pos.variant.add', 'product', pid, { sku: v.sku });
+      return row;
+    }).catch(e => { if (e.code === '23505') throw new HttpError(409, 'That SKU or size/colour already exists for this product'); throw e });
+    res.status(201).json(out);
+  }));
+  // A colour option = one new variant per size, all in one transaction, optionally with its own price.
+  r.post('/pos/products/:id/colours', manager, wrap(async (req, res) => {
+    const d = colourBody.parse(req.body); const pid = id.parse(req.params.id);
+    if (new Set(d.sizes.map(x => x.size.toLowerCase())).size !== d.sizes.length) throw new HttpError(400, 'Each size can only be listed once');
+    const out = await db.tx(async t => {
+      const p = await one(t, 'SELECT slug FROM products WHERE id = $1', [pid]);
+      if (!p) throw new HttpError(404, 'Product not found');
+      if (await one(t, 'SELECT 1 AS x FROM product_variants WHERE product_id = $1 AND lower(color) = lower($2)', [pid, d.color])) throw new HttpError(409, 'That colour already exists on this product');
+      for (const s of d.sizes) {
+        const sku = (s.sku || `${p.slug}-${slugify(d.color)}-${slugify(s.size)}`).toUpperCase();
+        const v = await one(t, 'INSERT INTO product_variants (product_id, sku, size, color, price_override, stock_quantity) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id', [pid, sku, s.size, d.color, d.price, s.stock]);
+        if (s.stock) await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason) VALUES ($1,$2,$3)', [v.id, s.stock, 'initial_stock']);
+      }
+      await audit(t, req.user.id, 'pos.colour.add', 'product', pid, { color: d.color, sizes: d.sizes.length });
+      return { created: d.sizes.length };
+    }).catch(e => { if (e.code === '23505') throw new HttpError(409, 'A SKU for that colour / size already exists'); throw e });
+    res.status(201).json(out);
+  }));
+  r.delete('/pos/products/:id/colours', manager, wrap(async (req, res) => {
+    const { color } = z.object({ color: text(40).min(1) }).parse(req.query); const pid = id.parse(req.params.id);
+    await db.tx(async t => {
+      const all = await rows(t, 'SELECT id, color FROM product_variants WHERE product_id = $1', [pid]);
+      const mine = all.filter(v => v.color.toLowerCase() === color.toLowerCase());
+      if (!mine.length) throw new HttpError(404, 'Colour not found');
+      if (mine.length === all.length) throw new HttpError(400, 'A product needs at least one colour — add another before removing this one', 'last_colour');
+      await t.query('DELETE FROM product_variants WHERE product_id = $1 AND lower(color) = lower($2)', [pid, color]);
+      await t.query('UPDATE product_images SET color = NULL WHERE product_id = $1 AND lower(color) = lower($2)', [pid, color]);
+      await audit(t, req.user.id, 'pos.colour.remove', 'product', pid, { color });
+    });
+    res.json({ ok: true });
+  }));
+  r.post('/pos/stock', stockers, wrap(async (req, res) => res.json(await adjustStock(db, req.user, stockBody.parse(req.body)))));
+
+  // ---- expenses (money out, subtracted in analytics) ----
+  r.get('/pos/expenses', manager, wrap(async (req, res) => {
+    const { from, to } = z.object({ from: date, to: date }).parse(req.query);
+    res.json(await listExpenses(db, from, to));
+  }));
+  r.post('/pos/expenses', manager, wrap(async (req, res) => {
+    const e = expenseBody.parse(req.body);
+    if (e.date && e.date > today()) throw new HttpError(400, 'Expense date cannot be in the future');
+    const row = await one(db, 'INSERT INTO pos_expenses (title, category, amount, payment_mode, notes, expense_date, created_by) VALUES ($1,$2,$3,$4,$5,COALESCE($6::date, (now() AT TIME ZONE \'Asia/Singapore\')::date),$7) RETURNING id',
+      [e.title, e.category, e.amount, e.paymentMode, e.notes, e.date ?? null, req.user.id]);
+    await audit(db, req.user.id, 'pos.expense.create', 'pos_expense', row.id, { amount: e.amount });
+    res.status(201).json({ id: row.id });
+  }));
+  // expense categories live in the POS settings (no database change needed). Existing expenses keep the name they were saved with.
+  const catName = z.object({ name: text(60).min(1) });
+  const loadCats = async () => { const c = await getSetting(db, 'expense_categories', null); return Array.isArray(c) ? c : DEFAULT_EXPENSE_CATEGORIES };
+  r.get('/pos/expense-categories', manager, wrap(async (_req, res) => res.json(await loadCats())));
+  r.post('/pos/expense-categories', manager, wrap(async (req, res) => {
+    const { name } = catName.parse(req.body); const cats = await loadCats();
+    if (cats.some(c => c.toLowerCase() === name.toLowerCase())) throw new HttpError(409, 'That category already exists');
+    if (cats.length >= 60) throw new HttpError(400, 'You can keep up to 60 categories');
+    const next = [...cats, name].sort((a, b) => a.localeCompare(b)); await putSetting(db, 'expense_categories', next);
+    await audit(db, req.user.id, 'pos.expense_category.add', 'pos_settings', name); res.status(201).json(next);
+  }));
+  r.delete('/pos/expense-categories', manager, wrap(async (req, res) => {
+    const { name } = catName.parse(req.query); const cats = await loadCats();
+    if (!cats.includes(name)) throw new HttpError(404, 'Category not found');
+    const next = cats.filter(c => c !== name); await putSetting(db, 'expense_categories', next);
+    await audit(db, req.user.id, 'pos.expense_category.remove', 'pos_settings', name); res.json(next);
+  }));
+  r.delete('/pos/expenses/:id', manager, wrap(async (req, res) => {
+    const d = await db.query('DELETE FROM pos_expenses WHERE id = $1 RETURNING id', [id.parse(req.params.id)]);
+    if (!d.rows.length) throw new HttpError(404, 'Expense not found');
+    await audit(db, req.user.id, 'pos.expense.delete', 'pos_expense', req.params.id);
+    res.json({ ok: true });
+  }));
+
+  // ---- wholesale catalogue ----
+  r.get('/pos/ws/items', biller, wrap(async (req, res) => {
+    const { q } = z.object({ q: text(80).default('') }).parse(req.query);
+    const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
+    res.json(await rows(db, `SELECT id, code, company, colour FROM pos_ws_items WHERE $1 = '' OR code ILIKE $2 OR company ILIKE $2 OR colour ILIKE $2 ORDER BY upper(code), id LIMIT 500`, [q.trim(), like]));
+  }));
+  const dup = e => { if (e.code === '23505') throw new HttpError(409, 'That code / company / colour already exists'); throw e };
+  r.post('/pos/ws/items', manager, wrap(async (req, res) => {
+    const d = wsItem.parse(req.body);
+    res.status(201).json(await one(db, 'INSERT INTO pos_ws_items (code, company, colour) VALUES ($1,$2,$3) RETURNING id, code, company, colour', [d.code, d.company, d.colour]).catch(dup));
+  }));
+  r.patch('/pos/ws/items/:id', manager, wrap(async (req, res) => {
+    const d = wsItem.parse(req.body);
+    const row = await one(db, 'UPDATE pos_ws_items SET code = $2, company = $3, colour = $4 WHERE id = $1 RETURNING id, code, company, colour', [id.parse(req.params.id), d.code, d.company, d.colour]).catch(dup);
+    if (!row) throw new HttpError(404, 'Item not found');
+    res.json(row);
+  }));
+  r.delete('/pos/ws/items/:id', manager, wrap(async (req, res) => {
+    const d = await db.query('DELETE FROM pos_ws_items WHERE id = $1 RETURNING id', [id.parse(req.params.id)]);
+    if (!d.rows.length) throw new HttpError(404, 'Item not found');
+    res.json({ ok: true });
+  }));
+
+  return r;
+}

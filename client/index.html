@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1c1a52">
+<meta name="description" content="Mahana Boutique &amp; Tailors, Singapore. Traditional Indian wear, accessories, custom design and tailoring. Where fashion finds you.">
+<title>Mahana Boutique &amp; Tailors</title>
+<link rel="icon" href="/favicon.ico" sizes="48x48 32x32 16x16">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500&family=Archivo:wght@400;500;600;700;800;900&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500&family=Archivo:wght@400;500;600;700;800;900&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet"></noscript>
+<script>
+// Start the homepage data requests now, in parallel with the JS bundle. api() picks these up instead of fetching again.
+(function(){try{var H={"Content-Type":"application/json","X-Requested-With":"dhanya"},P={};["/store","/categories","/collections","/products?featured=1&limit=12"].forEach(function(p){P[p]=fetch("/api"+p,{credentials:"include",headers:H}).catch(function(){return null})});window.__pre=P}catch(e){}})();
+</script>
+<style>
+html,body{margin:0;background:#1c1a52}
+.boot{position:fixed;inset:0;display:grid;place-content:center;justify-items:center;gap:18px;background:radial-gradient(60% 50% at 50% 42%,#2e2b7b 0,#1c1a52 100%);color:#f5f5fa;font-family:'Playfair Display',Georgia,serif}
+.boot svg{width:84px;height:84px;animation:boot-spin 6s linear infinite}
+.boot b{font:400 52px/1 'Great Vibes',cursive;color:#e88aab}
+.boot small{font:500 10px/1 Archivo,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:#e88aab}
+.boot i{display:block;width:150px;height:2px;border-radius:2px;background:rgba(232, 138, 171,.22);overflow:hidden;position:relative}
+.boot i::after{content:'';position:absolute;inset:0;width:40%;background:#e88aab;border-radius:2px;animation:boot-bar 1.3s ease-in-out infinite}
+@keyframes boot-spin{to{transform:rotate(360deg)}}
+@keyframes boot-bar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+@media (prefers-reduced-motion:reduce){.boot svg,.boot i::after{animation:none}}
+</style>
+</head>
+<body>
+<div id="root"><div class="boot" role="status" aria-label="Loading Mahana Boutique &amp; Tailors">
+<svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#e88aab" stroke-width="1.5"><ellipse cx="32" cy="32" rx="9" ry="26"/><ellipse cx="32" cy="32" rx="9" ry="26" transform="rotate(45 32 32)"/><ellipse cx="32" cy="32" rx="9" ry="26" transform="rotate(90 32 32)"/><ellipse cx="32" cy="32" rx="9" ry="26" transform="rotate(135 32 32)"/></g></svg>
+<b>Mahana</b><small>BOUTIQUE &amp; TAILORS</small><i></i></div></div>
+<noscript>Mahana Boutique &amp; Tailors needs JavaScript to run.</noscript>
+<script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

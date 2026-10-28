@@ -1,0 +1,38 @@
+// Editable brand + media configuration.
+// Nothing here is invented history: only the positioning supplied in the brief.
+export const brand = {
+  positioning: 'Traditional Indian wear, accessories, custom design and tailoring.',
+  promise: 'Where fashion finds you.',
+  credit: 'Cenexa Systems', // shown in the footer as "Powered by …"; change or clear to suit
+  // Our Story copy: brand voice only (values, categories). Replace with the boutique's own words when ready.
+  story: [
+    'At MAHANA BOUTIQUE & TAILORS, fashion is more than clothing. It is a quiet celebration of elegance, tradition and modern femininity: contemporary luxury with an Indian soul.',
+    'Our collection brings timeless craftsmanship together with a contemporary eye: sarees of every kind, chosen for festivals, weddings and every occasion in between.',
+    'We believe every woman deserves to feel beautiful, confident and effortlessly herself, which is why we look for sarees that balance comfort, luxury and grace while honouring the authenticity of Indian fashion.',
+  ],
+  personality: ['Ethereal', 'Elegant', 'Mysterious', 'Artistic', 'Confident', 'Luxurious'],
+};
+
+// Drop real photography into client/public/images/ and reference it here.
+// While an entry is null the site renders deterministic generative placeholders.
+export const media = {
+  heroCenter: '/images/hero-center.jpg',      // the plain centre photograph of the hero (replace in Admin → Storefront images)
+  heroCutout: '/images/hero-cutout.png',   // transparent cut-out of the hero model (soft-feathered edges)
+  heroSides: [
+    { src: '/images/hero-side-1.jpg', alt: 'A model in a crimson Banarasi saree with a gold border, one hand on her hip' },
+    { src: '/images/hero-side-2.jpg', alt: 'A model in a red saree with gold detailing against a deep green wall' },
+  ],
+  heroDepth: '/images/hero-depth.png',        // estimated depth map of the cut-out (drives the 3D mesh)
+  heroCutoutWebp: '/images/hero-cutout.webp',
+  heroAlt: 'A woman in an ivory saree with a gold lace border, seen in profile with her hair in a bun',
+  storyImage: '/images/story.jpg',
+  storyAlt: 'A woman in a red silk saree with gold buttis, her pallu lifting behind her as she turns',
+  details: [],                                  // real texture / embroidery close-ups; the "World of Details" section appears only when filled
+};
+// Boutique location, opening hours and social links are managed in the admin (store settings), not here.
+
+// Campaign wording: edit here to change the hero pill and the ticker.
+export const campaign = {
+  label: 'NEW COLLECTION 2026',
+  ticker: ['MAHANA BOUTIQUE & TAILORS', 'WHERE FASHION FINDS YOU', 'TRADITIONAL INDIAN WEAR', 'CUSTOM DESIGN & TAILORING'],
+};
