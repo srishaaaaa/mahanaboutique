@@ -6,6 +6,7 @@ import { api, apiRetry } from '../lib/api';
 import { useModal } from '../lib/hooks';
 import { Reveal } from './Motion';
 import { ProductMedia } from './ProductCard3D';
+import { Eyebrow, Divider } from './NightParts';
 
 const EMPTY = { count: 0, average: 0, items: [], hasMore: false, page: 1, onlySamples: false };
 
@@ -84,7 +85,7 @@ export default function CustomerReviews() {
     const SPEED = 35;
     let raf, last = 0, pos = el.scrollLeft, hold = 0, stopped = false, visible = true;
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; pos = el.scrollLeft }); io.observe(el); // no work while off screen
-    const toggle = e => { if (e.type === 'keydown' && !(e.key === 'Enter' || e.key === ' ')) return; if (e.type === 'click' && !e.target.closest('.rv-card')) return; if (e.type === 'keydown') e.preventDefault(); stopped = !stopped; pos = el.scrollLeft };
+    const toggle = e => { if (e.type === 'keydown' && !(e.key === 'Enter' || e.key === ' ')) return; if (e.type === 'click' && !e.target.closest('.nr-card')) return; if (e.type === 'keydown') e.preventDefault(); stopped = !stopped; pos = el.scrollLeft };
     const tick = t => {
       raf = requestAnimationFrame(tick);
       const dt = Math.min(t - last, 64) / 1000; last = t;
@@ -105,34 +106,37 @@ export default function CustomerReviews() {
   const slide = d => track.current?.scrollBy({ left: d * Math.min(360, innerWidth * 0.8), behavior: 'smooth' });
   const viewMore = async () => { setMore(true); await load(data.page + 1); setMore(false); setTimeout(() => slide(1), 150) };
   return (
-    <section className="reviews light-sec" aria-labelledby="rev-h">
-      <Reveal className="rev-head">
-        <p className="eyebrow">OUR COMMUNITY</p>
-        <h2 id="rev-h">LOVED BEYOND THE FIRST LOOK.</h2>
-        <div className="rev-bar">
-          {data.count > 0 && <span className="rev-pill"><Stars n={Math.round(data.average)} /><strong>{data.average.toFixed(1)} / 5</strong><span className="muted">FROM {data.count} {data.onlySamples ? 'SAMPLE' : 'VERIFIED'} {data.count === 1 ? 'REVIEW' : 'REVIEWS'}</span></span>}
-          <button className="btn solid pill" onClick={() => setReviewOpen(true)} data-cursor="WRITE">WRITE A REVIEW</button>
+    <section className="nx nx-rev" aria-labelledby="rev-h">
+      <Reveal className="nx-head center nx-in">
+        <Eyebrow>OUR COMMUNITY</Eyebrow>
+        <h2 id="rev-h" className="nx-h">LOVED BEYOND THE FIRST LOOK.</h2>
+        <Divider />
+        <div className="nr-bar">
+          {data.count > 0 && <span className="nr-score"><strong>{data.average.toFixed(1)}</strong><span><Stars n={Math.round(data.average)} /><small>FROM {data.count} {data.onlySamples ? 'SAMPLE' : 'VERIFIED'} {data.count === 1 ? 'REVIEW' : 'REVIEWS'}</small></span></span>}
+          <button className="nx-btn" onClick={() => setReviewOpen(true)} data-cursor="WRITE"><span>WRITE A REVIEW</span><b aria-hidden="true"><i>→</i></b></button>
         </div>
       </Reveal>
-      {data.count === 0 && <p className="muted center rev-empty">No reviews yet. Purchased a piece? Be the first to share your thoughts.</p>}
+      {data.count === 0 && <p className="nx-empty">No reviews yet. Purchased a piece? Be the first to share your thoughts.</p>}
       {data.items.length > 0 && (
         <>
-          <ul className="rv-track" ref={track} tabIndex={0} aria-label="Customer reviews">
+          <ul className="nr-track" ref={track} tabIndex={0} aria-label="Customer reviews">
             {data.items.map(r => (
-              <li key={r.id} className="rv-card">
-                <div className="rv-bg" aria-hidden="true"><ProductMedia p={{ slug: r.product_slug || String(r.product_name), name: r.product_name, image: r.product_image }} view={String(r.id).length % 4} /></div>
-                <div className="rv-top"><span className="rv-stars"><Stars n={r.rating} size={13} /></span><Link className="rv-tag" to={r.product_slug ? `/product/${r.product_slug}` : '/shop'}>{r.product_name}</Link></div>
-                <div className="rv-body">
-                  <blockquote className="quote">“{r.body}”</blockquote>
-                  <p className="rv-by"><strong>{r.author}</strong><span>{r.demo ? 'Sample review' : 'Verified purchase'}</span></p>
+              <li key={r.id} className="nr-card">
+                <span className="nr-mark" aria-hidden="true">“</span>
+                <span className="nr-stars"><Stars n={r.rating} size={14} /></span>
+                <blockquote className="nr-quote">{r.body}</blockquote>
+                <div className="nr-foot">
+                  <span className="nr-thumb" aria-hidden="true"><ProductMedia p={{ slug: r.product_slug || String(r.product_name), name: r.product_name, image: r.product_image }} view={String(r.id).length % 4} /></span>
+                  <p className="nr-by"><strong>{r.author}</strong><span>{r.demo ? 'Sample review' : 'Verified purchase'}</span></p>
                 </div>
+                <Link className="nr-tag" to={r.product_slug ? `/product/${r.product_slug}` : '/shop'}>{r.product_name}</Link>
               </li>
             ))}
           </ul>
-          <div className="rv-nav">
-            <button className="icon-btn lg" onClick={() => slide(-1)} aria-label="Previous reviews">‹</button>
-            {data.hasMore && <button className="btn dark pill" onClick={viewMore} disabled={more}>{more ? 'LOADING…' : 'VIEW MORE REVIEWS'}</button>}
-            <button className="icon-btn lg" onClick={() => slide(1)} aria-label="Next reviews">›</button>
+          <div className="nx-nav center">
+            <button className="nx-circle" onClick={() => slide(-1)} aria-label="Previous reviews">←</button>
+            {data.hasMore && <button className="nx-ghost" onClick={viewMore} disabled={more}>{more ? 'LOADING…' : 'VIEW MORE REVIEWS'}</button>}
+            <button className="nx-circle" onClick={() => slide(1)} aria-label="Next reviews">→</button>
           </div>
         </>
       )}

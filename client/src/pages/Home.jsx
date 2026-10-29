@@ -14,6 +14,7 @@ import InstagramStrip from '../components/InstagramStrip';
 import StoreLocationMap from '../components/StoreLocationMap';
 import ServiceHighlights from '../components/ServiceHighlights';
 import HomeFx from '../components/HomeFx';
+import { Eyebrow, Divider } from '../components/NightParts';
 import { useSiteText } from '../lib/siteText';
 import { scrollToEl } from '../components/SmoothScroll';
 import { brand, media } from '../config/content';
@@ -24,20 +25,23 @@ function Story() {
   const t = useSiteText();
   const b = site.branding || {};
   return (
-    <section className="story3" id="story" aria-labelledby="story-h">
-      <Reveal className="story3-card">
-        <img className="story3-img" style={b.storyPos ? { objectPosition: b.storyPos } : undefined} src={b.storyImage || media.storyImage} alt={b.storyAlt || media.storyAlt} loading="lazy" width="736" height="920" />
-        <svg className="story3-arch" viewBox="0 0 400 520" fill="none" stroke="currentColor" strokeWidth="1.1" aria-hidden="true">
-          <path d="M40 520V230c0-26 14-40 32-46 8-20 22-30 42-28 10-20 28-28 46-24 8-16 22-22 40-22s32 6 40 22c18-4 36 4 46 24 20-2 34 8 42 28 18 6 32 20 32 46v290" />
-          <path d="M72 520V240c0-20 10-30 26-36 6-16 18-22 34-20 8-16 22-22 38-18 6-12 18-18 30-18s24 6 30 18c16-4 30 2 38 18 16-2 28 4 34 20 16 6 26 16 26 36v280" opacity=".55" />
-        </svg>
-        <div className="story3-panel">
-          <span className="story3-logo"><b>Mahana</b></span>
-          <h2 id="story-h" className="story3-h">{t.storyTitle}</h2>
-          {t.story.map((p, i) => <p key={i} className="story3-p">{p}</p>)}
-          <Magnetic><Link to="/about" className="story3-link" data-cursor="DISCOVER">Discover more <span aria-hidden="true">→</span></Link></Magnetic>
-        </div>
-      </Reveal>
+    <section className="nx nx-story" id="story" aria-labelledby="story-h">
+      <div className="nx-in ny-in">
+        <Reveal className="ny-photo">
+          <img className="ny-img" style={b.storyPos ? { objectPosition: b.storyPos } : undefined} src={b.storyImage || media.storyImage} alt={b.storyAlt || media.storyAlt} loading="lazy" width="736" height="920" />
+          <svg className="ny-orn" viewBox="0 0 400 520" fill="none" stroke="currentColor" strokeWidth="1.1" aria-hidden="true">
+            <path d="M40 520V230c0-26 14-40 32-46 8-20 22-30 42-28 10-20 28-28 46-24 8-16 22-22 40-22s32 6 40 22c18-4 36 4 46 24 20-2 34 8 42 28 18 6 32 20 32 46v290" />
+            <path d="M72 520V240c0-20 10-30 26-36 6-16 18-22 34-20 8-16 22-22 38-18 6-12 18-18 30-18s24 6 30 18c16-4 30 2 38 18 16-2 28 4 34 20 16 6 26 16 26 36v280" opacity=".55" />
+          </svg>
+        </Reveal>
+        <Reveal className="ny-copy" delay={0.1}>
+          <span className="ny-script" aria-hidden="true">Mahana</span>
+          <h2 id="story-h" className="nx-h">{t.storyTitle}</h2>
+          <Divider />
+          {t.story.map((p, i) => <p key={i} className={`nx-p ${i === 0 ? 'ny-lead' : ''}`}>{p}</p>)}
+          <Magnetic><Link to="/about" className="nx-btn" data-cursor="DISCOVER"><span>Discover more</span><b aria-hidden="true"><i>→</i></b></Link></Magnetic>
+        </Reveal>
+      </div>
     </section>
   );
 }
@@ -45,9 +49,11 @@ function Story() {
 function Details() {
   if (!media.details.length) return null; // appears only when genuine close-up photography is configured
   return (
-    <section className="ivory-sec details" aria-labelledby="det-h">
-      <Reveal className="sec-head"><p className="eyebrow">A WORLD OF DETAILS</p><h2 id="det-h" className="serif">Texture, thread, finish.</h2></Reveal>
-      <div className="details-grid">{media.details.map((d, i) => <Reveal key={d.src} delay={i * 0.06}><img src={d.src} alt={d.alt} loading="lazy" /></Reveal>)}</div>
+    <section className="nx nx-details" aria-labelledby="det-h">
+      <div className="nx-in">
+        <Reveal className="nx-head center"><Eyebrow>A WORLD OF DETAILS</Eyebrow><h2 id="det-h" className="nx-h">Texture, thread, finish.</h2><Divider /></Reveal>
+        <div className="nd-grid">{media.details.map((d, i) => <Reveal key={d.src} delay={i * 0.06}><img src={d.src} alt={d.alt} loading="lazy" /></Reveal>)}</div>
+      </div>
     </section>
   );
 }

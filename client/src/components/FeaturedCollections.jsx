@@ -8,6 +8,7 @@ import { useApp } from '../context/App';
 import { Reveal } from './Motion';
 import { useSiteText } from '../lib/siteText';
 import { ProductMedia } from './ProductCard3D';
+import { Eyebrow, Divider } from './NightParts';
 
 const LIMIT = 4;
 
@@ -24,22 +25,23 @@ function Item({ p, i }) {
     setBusy(false);
   };
   return (
-    <li className={`cu-item cu-${i}`}>
-      <div className="cu-photo">
+    <li className={`nt-item nt-${i}`}>
+      <div className="nt-photo">
         <Link to={`/product/${p.slug}`} data-cursor="VIEW" aria-label={`${p.name}, ${inr(p.price)}`}><ProductMedia p={p} priority={i < 3} /></Link>
-        <button className={`cu-heart ${liked ? 'on' : ''}`} onClick={() => toggleWish(p.slug, p.name)} aria-pressed={liked} aria-label={liked ? `Remove ${p.name} from wishlist` : `Save ${p.name} to wishlist`}>
+        <span className="nt-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+        <button className={`nt-heart ${liked ? 'on' : ''}`} onClick={() => toggleWish(p.slug, p.name)} aria-pressed={liked} aria-label={liked ? `Remove ${p.name} from wishlist` : `Save ${p.name} to wishlist`}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.3A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.6c0 5.7-7.5 10.3-7.5 10.3Z" /></svg>
         </button>
-        {out && <span className="cu-out">SOLD OUT</span>}
+        {out && <span className="nt-out">SOLD OUT</span>}
       </div>
-      <div className="cu-meta">
-        <Link to={`/product/${p.slug}`} className="cu-name">{p.name}</Link>
-        {p.material && <span className="cu-mat">{p.material}</span>}
-        <div className="cu-row">
+      <div className="nt-meta">
+        <Link to={`/product/${p.slug}`} className="nt-name">{p.name}</Link>
+        {p.material && <span className="nt-mat">{p.material}</span>}
+        <div className="nt-row">
           {!out
-            ? <button className="cu-pill" onClick={add} disabled={busy} aria-label={p.single_variant ? `Add ${p.name} to bag for ${inr(p.price)}` : `Choose a size for ${p.name}, ${inr(p.price)}`}><b aria-hidden="true">+</b> {inr(p.price)}</button>
-            : <span className="cu-pill off">{inr(p.price)}</span>}
-          {enquire && <a className="cu-enq" href={enquire} target="_blank" rel="noopener noreferrer" aria-label={`Enquire about ${p.name} on WhatsApp`}>ENQUIRE</a>}
+            ? <button className="nt-pill" onClick={add} disabled={busy} aria-label={p.single_variant ? `Add ${p.name} to bag for ${inr(p.price)}` : `Choose a size for ${p.name}, ${inr(p.price)}`}><b aria-hidden="true">+</b> {inr(p.price)}</button>
+            : <span className="nt-pill off">{inr(p.price)}</span>}
+          {enquire && <a className="nt-enq" href={enquire} target="_blank" rel="noopener noreferrer" aria-label={`Enquire about ${p.name} on WhatsApp`}>ENQUIRE</a>}
         </div>
       </div>
     </li>
@@ -70,24 +72,25 @@ export default function FeaturedCollections() {
   const items = waiting ? [] : (key ? picked : catalog.featured).slice(0, LIMIT);
 
   return (
-    <section className="cu" id="collection" aria-labelledby="edit-h">
-      <div className="cu-in">
-        <Reveal className="cu-head">
+    <section className="nx nx-trend" id="collection" aria-labelledby="edit-h">
+      <div className="nx-in">
+        <Reveal className="nx-head split">
           <div>
-            <p className="cu-label"><i aria-hidden="true" />{t.trendingEyebrow}</p>
-            <h2 id="edit-h">{t.trendingTitle}</h2>
-            <p className="cu-sub">{t.trendingSub}</p>
+            <Eyebrow>{t.trendingEyebrow}</Eyebrow>
+            <h2 id="edit-h" className="nx-h">{t.trendingTitle}</h2>
+            <p className="nx-sub">{t.trendingSub}</p>
           </div>
-          <Link className="cu-all" to="/shop?category=sarees" data-cursor="VIEW">VIEW ALL →</Link>
+          <Link className="nx-more" to="/shop?category=sarees" data-cursor="VIEW">VIEW ALL <span aria-hidden="true">→</span></Link>
         </Reveal>
+        <Divider className="wide" />
 
         {items.length > 0 && (
-          <motion.ul key={key || 'featured'} className="cu-grid" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+          <motion.ul key={key || 'featured'} className="nt-grid" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
             {items.map((p, i) => <Item key={p.id} p={p} i={i} />)}
           </motion.ul>
         )}
-        {catalog.status === 'error' && <p className="cu-empty">The collection could not be loaded right now. <button className="btn pill" onClick={loadCatalog}>TRY AGAIN</button></p>}
-        {!waiting && catalog.status === 'ready' && !items.length && <p className="cu-empty">New arrivals are being prepared. Please return soon.</p>}
+        {catalog.status === 'error' && <p className="nx-empty">The collection could not be loaded right now. <button className="nx-ghost" onClick={loadCatalog}>TRY AGAIN</button></p>}
+        {!waiting && catalog.status === 'ready' && !items.length && <p className="nx-empty">New arrivals are being prepared. Please return soon.</p>}
       </div>
     </section>
   );

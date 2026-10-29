@@ -5,6 +5,7 @@ import { useReduced } from '../lib/hooks';
 import { ProductMedia } from './ProductCard3D';
 import { useSiteText } from '../lib/siteText';
 import { Reveal } from './Motion';
+import { Eyebrow } from './NightParts';
 
 // A 3D coverflow of the real collections. Cards turn toward the centre, sink into depth and cast a soft
 // reflection. It is a normal scroll-snap track underneath (swipe, wheel, arrows, keyboard all work); the
@@ -56,13 +57,13 @@ export default function CollectionsFlow() {
   };
   if (!cols.length) return null;
   return (
-    <section className="cf" aria-labelledby="cf-h">
-      <Reveal className="cf-head">
-        <div><p className="eyebrow">{t.worldEyebrow}</p><h2 id="cf-h">{t.worldTitle}</h2></div>
-        <div className="cf-nav">
-          <span aria-live="polite">{String(active + 1).padStart(2, '0')} / {String(cols.length).padStart(2, '0')}</span>
-          <button className="icon-btn lg" onClick={() => go(-1)} aria-label="Previous collection" disabled={active === 0}>‹</button>
-          <button className="icon-btn lg" onClick={() => go(1)} aria-label="Next collection" disabled={active === cols.length - 1}>›</button>
+    <section className="nx nx-cf cf" aria-labelledby="cf-h">
+      <Reveal className="nx-head split nx-in">
+        <div><Eyebrow>{t.worldEyebrow}</Eyebrow><h2 id="cf-h" className="nx-h">{t.worldTitle}</h2></div>
+        <div className="nx-nav">
+          <span aria-live="polite"><b>{String(active + 1).padStart(2, '0')}</b> / {String(cols.length).padStart(2, '0')}</span>
+          <button className="nx-circle" onClick={() => go(-1)} aria-label="Previous collection" disabled={active === 0}>←</button>
+          <button className="nx-circle" onClick={() => go(1)} aria-label="Next collection" disabled={active === cols.length - 1}>→</button>
         </div>
       </Reveal>
       <div className="cf-stage">

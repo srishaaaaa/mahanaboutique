@@ -4,7 +4,7 @@ import { useFinePointer, useReduced } from '../lib/hooks';
 // Homepage depth effects, without React re-renders:
 // 1. Cards tilt in 3D toward the pointer with a soft light glare (mouse/trackpad only).
 // 2. Silk ribbon, diamond and sparkle ornaments float behind the sections and drift at their own speed while scrolling.
-const TILT = '.cu-photo, .cc-card, .rv-card, .svc-item, .insta-tile:not(.insta-empty), .ed-photo, .story3-card, .studio-card, .eq-form';
+const TILT = '.nt-photo, .nk-card, .nr-card, .ns-item, .ni-tile:not(.is-empty), .ne-arch, .ny-photo, .nq-card';
 const BIG = 700; // wide panels tilt less
 
 // A length of silk ribbon: three flowing strands with a soft fill between them.

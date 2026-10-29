@@ -17,11 +17,12 @@ export default function ServiceHighlights() {
     [<User key="u" />, 'Saved for you', 'Sign in to keep your bag and wishlist with you on every device.'],
   ];
   return (
-    <section className="svc" aria-label="Why shop with MAHANA">
-      <ul className="svc-grid">
+    <section className="nx nx-svc" aria-label="Why shop with MAHANA">
+      <ul className="nx-in ns-grid">
         {items.map(([icon, title, body], i) => (
-          <Reveal as="li" key={title} delay={i * 0.07} className="svc-item">
-            <span className="svc-ico">{icon}</span>
+          <Reveal as="li" key={title} delay={i * 0.07} className="ns-item">
+            <span className="ns-ico">{icon}</span>
+            <span className="ns-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             <h3>{title}</h3>
             <p>{body}</p>
           </Reveal>
