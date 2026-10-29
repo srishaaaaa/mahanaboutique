@@ -591,3 +591,27 @@
 @media (max-width: 600px) {
   .home > .nx-ed::after, .home > .nx-story::after { background-size: 300px, 320px }
 }
+
+/* =====================================================================
+   Hero finishing touches (layout unchanged): a faint turning rangoli behind
+   the photo, and a thin double pink frame with diamond corners around the words.
+   ===================================================================== */
+@media (min-width: 900px) {
+  .bh .bh-model::after { content: ''; position: absolute; z-index: 0; left: 58%; top: 52%; width: min(780px, 56vw); aspect-ratio: 1; translate: -50% -50%; pointer-events: none; opacity: .3;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23f3bfd1' stroke-width='.45'%3E%3Ccircle cx='100' cy='100' r='97' stroke-opacity='.6'/%3E%3Ccircle cx='100' cy='100' r='89' stroke-dasharray='1.2 4' stroke-opacity='.9'/%3E%3Crect x='42' y='42' width='116' height='116' stroke-opacity='.5'/%3E%3Crect x='42' y='42' width='116' height='116' transform='rotate(45 100 100)' stroke-opacity='.5'/%3E%3Ccircle cx='100' cy='100' r='60' stroke-opacity='.45'/%3E%3Cpath d='M100 14Q124 100 100 186Q76 100 100 14ZM14 100Q100 76 186 100Q100 124 14 100Z' stroke-opacity='.45'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+    animation: fx-spin 120s linear infinite }
+  .bh .bh-model .bh-arch { z-index: 1 }
+}
+@media (min-width: 1101px) {
+  .bh .bh-panel { position: relative }
+  .bh .bh-panel::before, .bh .bh-panel::after { content: ''; position: absolute; z-index: -1; pointer-events: none; border-radius: 34px }
+  .bh .bh-panel::before { top: 118px; bottom: 58px; left: calc(clamp(64px, 7.5vw, 140px) - 36px); right: 2px; border: 1px solid rgba(243, 191, 209, .32);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat 16px 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 16px top 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat left 16px bottom 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 16px bottom 16px,
+      linear-gradient(160deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .01)) }
+  .bh .bh-panel::after { top: 128px; bottom: 68px; left: calc(clamp(64px, 7.5vw, 140px) - 26px); right: 12px; border: 1px solid rgba(243, 191, 209, .14); border-radius: 26px }
+}
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) { .bh .bh-model::after { animation: none } }
