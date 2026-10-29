@@ -715,3 +715,135 @@
 .home .nm-card .nx-eyebrow { color: #f8d9e4; border-color: rgba(248, 217, 228, .45) }
 .home .nm-card .nx-ghost { color: #f8d9e4; border-color: rgba(243, 191, 209, .45) }
 .home .nm-card .nx-ghost:hover { background: rgba(243, 191, 209, .12); color: #fff }
+
+/* ---- review cards: the reviewed piece's photo fills the card; stars + piece name on top, the quote over a rose fade below ---- */
+.home .nr-card.has-photo { position: relative; overflow: hidden; isolation: isolate; min-height: 0; height: clamp(440px, 34vw, 500px); padding: 18px; justify-content: space-between; gap: 0;
+  background: #c75a85; border: 1px solid rgba(255, 255, 255, .4); box-shadow: 0 0 0 1px rgba(232, 138, 171, .35), 0 26px 60px rgba(173, 66, 110, .28) }
+.nr-bg { position: absolute; inset: 0; z-index: -2 }
+.nr-bg > * { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; transition: transform 1.2s var(--n-ease) }
+.home .nr-card.has-photo:hover .nr-bg > * { transform: scale(1.05) }
+.home .nr-card.has-photo::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(0deg, rgba(122, 32, 72, .95) 0%, rgba(160, 52, 96, .72) 34%, rgba(160, 52, 96, 0) 62%), linear-gradient(180deg, rgba(40, 10, 26, .35), transparent 22%) }
+.nr-top { display: flex; align-items: center; justify-content: space-between; gap: 10px }
+.home .nr-card.has-photo .nr-stars { display: inline-flex; padding: 7px 12px; border-radius: 999px; background: #fff; box-shadow: 0 6px 16px rgba(0, 0, 0, .18) }
+.home .nr-card.has-photo .nr-stars .stars { color: #e0709a }
+.home .nr-card.has-photo .nr-tag { min-width: 0; max-width: 62%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, .35); background: rgba(70, 18, 44, .45);
+  color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font: 700 10.5px var(--n-sans); letter-spacing: .06em; text-transform: none }
+.nr-body { position: relative; display: grid; gap: 14px }
+.home .nr-card.has-photo .nr-mark { position: static; display: block; height: 34px; margin-bottom: -10px; font: 400 70px/1 var(--n-serif); color: rgba(255, 233, 201, .9) }
+.home .nr-card.has-photo .nr-quote { flex: none; color: #fff; font-size: 17.5px; -webkit-line-clamp: 4; text-shadow: 0 2px 12px rgba(60, 14, 36, .35) }
+.home .nr-card.has-photo .nr-by { padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .3) }
+.home .nr-card.has-photo .nr-by strong { color: #fff } .home .nr-card.has-photo .nr-by span { color: #ffe6ef }
+@media (max-width: 600px) { .home .nr-card.has-photo { height: 440px } }
+
+/* ticker band stays indigo (as under the hero) */
+.home > .tk { background: linear-gradient(90deg, #2e2b7b, #3a3592 50%, #2e2b7b); box-shadow: 0 14px 34px rgba(28, 26, 82, .22); border-color: rgba(243, 191, 209, .22) }
+.home > .tk .tk-run li { color: var(--n-blush) } .home > .tk .tk-run i { color: var(--n-rose); text-shadow: 0 0 12px rgba(232, 138, 171, .8) }
+
+/* ---- editorial + story boxes: warm beige instead of pink (same diamonds, lattice, sparkles and double border) ---- */
+.home > :is(.nx-ed, .nx-story) { background: #fff }
+.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in) { border-color: rgba(196, 140, 110, .45);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat 22px 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat right 22px top 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat left 22px bottom 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat right 22px bottom 22px,
+    radial-gradient(2px 2px at 12% 18%, #c9a36b, transparent), radial-gradient(1.5px 1.5px at 46% 9%, #c9a36b, transparent), radial-gradient(2px 2px at 88% 30%, #c9a36b, transparent),
+    radial-gradient(1.5px 1.5px at 62% 88%, #c9a36b, transparent), radial-gradient(2px 2px at 30% 76%, #c9a36b, transparent), radial-gradient(1.5px 1.5px at 94% 72%, #c9a36b, transparent),
+    radial-gradient(45% 60% at 28% 40%, rgba(255, 250, 242, .7), transparent 70%),
+    radial-gradient(40% 55% at 85% 85%, rgba(214, 180, 150, .35), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M22 2 42 22 22 42 2 22Z' fill='none' stroke='%23b07a5a' stroke-opacity='.12'/%3E%3C/svg%3E"),
+    linear-gradient(150deg, #f6eee4 0%, #f0e5d8 50%, #e8d8c6 100%);
+  box-shadow: 0 34px 80px rgba(120, 80, 50, .16) }
+.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in)::after { border-color: rgba(196, 140, 110, .35) }
+.home > :is(.nx-ed, .nx-story) .nx-h { color: var(--r-ink); text-shadow: none }
+.home > :is(.nx-ed, .nx-story) .nx-h em { color: #c4507a }
+.home > :is(.nx-ed, .nx-story) .nx-p { color: rgba(66, 36, 32, .8) }
+.home > .nx-story .ny-copy .ny-lead { color: #6e2a46 }
+.home > :is(.nx-ed, .nx-story) .nx-eyebrow { color: var(--r-ink); border-color: rgba(196, 80, 122, .4); background: rgba(255, 255, 255, .5) }
+.home > :is(.nx-ed, .nx-story) .nx-eyebrow i { background: var(--n-grad); box-shadow: 0 0 10px rgba(232, 138, 171, .5) }
+.home > :is(.nx-ed, .nx-story) .nx-div { color: #c4507a }
+.home > :is(.nx-ed, .nx-story) .nx-div i { background: linear-gradient(90deg, transparent, rgba(196, 80, 122, .6)) }
+.home > :is(.nx-ed, .nx-story) .nx-div i:last-child { background: linear-gradient(90deg, rgba(196, 80, 122, .6), transparent) }
+.home > :is(.nx-ed, .nx-story) .nx-btn { background: var(--n-grad); color: #1c1a52; box-shadow: 0 12px 30px rgba(236, 154, 182, .4), inset 0 1px 0 rgba(255, 255, 255, .55) }
+.home > :is(.nx-ed, .nx-story) .nx-btn b { background: rgba(28, 26, 82, .14) }
+.home > :is(.nx-ed, .nx-story) .nx-link { color: var(--r-ink) } .home > :is(.nx-ed, .nx-story) .nx-link:hover { color: #c4507a }
+.home > .nx-ed .ne-facts strong { color: #c4507a } .home > .nx-ed .ne-facts span { color: #4a2630 } .home > .nx-ed .ne-facts li + li { border-left-color: rgba(120, 70, 60, .25) }
+.home > .nx-ed .ne-ring { border-color: rgba(196, 80, 122, .5) } .home > .nx-ed .ne-spark { background: var(--n-grad) }
+.home > .nx-story .ny-script { color: #d7688d; text-shadow: none }
+.home > .nx-story .ny-in::before { color: rgba(196, 80, 122, .07) }
+.home > :is(.nx-ed, .nx-story) :is(.ny-photo, .ne-arch) { box-shadow: 0 0 0 1px rgba(196, 140, 110, .5), 0 30px 60px rgba(90, 50, 30, .22) }
+
+/* =====================================================================
+   Beige cards with black text (Dhanya style) instead of pink, on the white.
+   Same decorations; hero, ticker, map and footer keep their own colours.
+   ===================================================================== */
+.home { --b-card: linear-gradient(160deg, #f7efe5 0%, #efe3d4 55%, #e7d6c2 100%); --b-line: rgba(176, 130, 95, .38); --k: #1f1512; --k2: rgba(31, 21, 18, .72) }
+
+/* text on the white: black */
+.home .nx .nx-h { color: var(--k) } .home .nx .nx-h em { color: var(--k) }
+.home .nx-sub, .home .nx-p, .home .nx-empty { color: var(--k2) }
+.home .nx-eyebrow { color: var(--k); border-color: rgba(31, 21, 18, .25); background: #fff }
+.home .nx-link, .home .nx-more { color: var(--k) } .home .nx-link:hover, .home .nx-more:hover { color: #c4507a }
+.home .nx-ghost, .home .nx-circle { color: var(--k); border-color: rgba(31, 21, 18, .3) }
+.home .nx-ghost:hover { background: #f7efe5; border-color: var(--k); color: var(--k) }
+.home .nx-nav > span { color: rgba(31, 21, 18, .5) } .home .nx-nav > span b { color: var(--k) }
+.home .nk-sort select { color: var(--k); border-color: rgba(31, 21, 18, .25) }
+.home .ni-handle, .home .ni-bh h3 { color: var(--k) } .home .ni-count { color: var(--k); border-color: rgba(31, 21, 18, .18) }
+.home .nr-score small { color: rgba(31, 21, 18, .6) }
+.home .ne-facts strong { color: var(--k) } .home .ne-facts span { color: var(--k) }
+
+/* beige cards */
+.home :is(.nt-item, .ns-item, .nr-card, .nq-card, .nq-links a) { background: var(--b-card); border-color: var(--b-line); box-shadow: 0 24px 56px rgba(120, 80, 50, .14) }
+.home .nq-links a:hover { background: linear-gradient(160deg, #faf4ec 0%, #f2e7da 55%, #ead9c6 100%); border-color: rgba(176, 130, 95, .6) }
+.home .nt-name { color: var(--k) } .home .nt-mat { color: var(--k2) } .home .nt-enq { color: var(--k); border-color: rgba(31, 21, 18, .4) }
+.home .nt-pill { background: var(--n-grad); color: var(--k); box-shadow: 0 8px 20px rgba(236, 154, 182, .3) }
+.home .nt-photo::after { background: linear-gradient(0deg, rgba(31, 21, 18, .35), transparent 38%) }
+.home :is(.ns-ico, .nq-ico) { background: var(--n-grad); color: var(--k); box-shadow: 0 0 0 6px rgba(255, 255, 255, .6) }
+.home .ns-item h3 { color: var(--k) } .home .ns-item p { color: var(--k2) } .home .ns-no { color: rgba(176, 130, 95, .3) }
+.home .ns-item::before, .home .nq-card::before { background: linear-gradient(90deg, transparent, rgba(176, 130, 95, .7), transparent) }
+.home .nq-links b { color: var(--k) } .home .nq-links a > span:nth-child(2) { color: var(--k2) } .home .nq-go { color: var(--k) }
+.home .nq-f > span { color: var(--k) }
+.home .nx .nq-f input, .home .nx .nq-f textarea { background: rgba(255, 255, 255, .75); border-color: var(--b-line); color: var(--k) }
+.home .nx .nq-f input::placeholder, .home .nx .nq-f textarea::placeholder { color: rgba(31, 21, 18, .4) }
+.home .nx .nq-f input:focus, .home .nx .nq-f textarea:focus { background: #fff; border-color: #c4507a; box-shadow: 0 0 0 4px rgba(232, 138, 171, .15) }
+.home .nq-card .nx-btn { background: var(--n-grad); color: var(--k) } .home .nq-card .nx-btn b { background: rgba(31, 21, 18, .1) }
+.home .nq-card .nx-link { color: var(--k) }
+.home .nq-msg.ok { color: #1d6b42; background: rgba(126, 226, 168, .25) } .home .nq-msg.error { color: #9b1c3f; background: rgba(255, 120, 150, .18) }
+
+/* review photo cards: beige fade at the bottom with black words */
+.home .nr-card.has-photo { background: #efe3d4; border-color: var(--b-line); box-shadow: 0 26px 60px rgba(120, 80, 50, .18) }
+.home .nr-card.has-photo::after { background: linear-gradient(0deg, #f3e8db 0%, rgba(243, 232, 219, .95) 34%, rgba(243, 232, 219, 0) 60%), linear-gradient(180deg, rgba(31, 21, 18, .25), transparent 22%) }
+.home .nr-card.has-photo .nr-mark { color: #c4507a } .home .nr-card.has-photo .nr-quote { color: var(--k); text-shadow: none }
+.home .nr-card.has-photo .nr-by { border-top-color: var(--b-line) } .home .nr-card.has-photo .nr-by strong { color: var(--k) } .home .nr-card.has-photo .nr-by span { color: rgba(31, 21, 18, .6) }
+
+/* photo cards: beige fade with black words */
+.home .cf3-shade { background: linear-gradient(0deg, #f3e8db 6%, rgba(243, 232, 219, .9) 30%, rgba(243, 232, 219, 0) 56%) }
+.home .cf3-card::after { background: rgb(243 232 219 / calc(var(--dim, 0) * 90%)) }
+.home .cf3-meta { color: rgba(31, 21, 18, .65) } .home .cf3-txt strong { color: var(--k) } .home .cf3-txt em { color: var(--k2) }
+.home .cf3-go { color: var(--k); background: rgba(255, 255, 255, .6); border-color: rgba(31, 21, 18, .3) }
+.home .cf3-card.is-active { box-shadow: 0 0 0 1.5px rgba(176, 130, 95, .7), 0 30px 70px rgba(120, 80, 50, .25) }
+.home .cf3-card.is-active:hover .cf3-go { background: var(--n-grad); color: var(--k) }
+.home .nk-arch::after { background: linear-gradient(0deg, #f3e8db 0, rgba(243, 232, 219, .9) 26%, transparent 52%) }
+.home .nk-txt strong { color: var(--k) } .home .nk-txt em { color: rgba(31, 21, 18, .6) }
+.home .nk-card { border-color: var(--b-line) }
+.home { --n-card: #e9dccb }
+.home .nx .blank { background: linear-gradient(160deg, #f4ebe0, #e7d6c2); border-color: rgba(176, 130, 95, .45); color: rgba(31, 21, 18, .28) }
+.home .nx .blank-note { color: var(--k2) } .home .nx .blank-note a { color: #c4507a }
+.home .ni-tile { box-shadow: 0 0 0 1px var(--b-line), 0 24px 50px rgba(120, 80, 50, .16) }
+.home .ni-tile.is-empty .ni-no { color: rgba(31, 21, 18, .35) }
+
+/* editorial + story boxes: black words on the beige */
+.home > :is(.nx-ed, .nx-story) .nx-h, .home > :is(.nx-ed, .nx-story) .nx-h em { color: var(--k) }
+.home > :is(.nx-ed, .nx-story) .nx-p, .home > .nx-story .ny-copy .ny-lead { color: var(--k2) }
+.home > .nx-story .ny-copy .ny-lead { color: #3a2a22 }
+.home > :is(.nx-ed, .nx-story) .nx-eyebrow, .home > :is(.nx-ed, .nx-story) .nx-link { color: var(--k) }
+.home > :is(.nx-ed, .nx-story) .nx-btn { color: var(--k) }
+.home > .nx-ed .ne-facts strong, .home > .nx-ed .ne-facts span { color: var(--k) }
+
+/* the map card keeps its original night colours */
+.home .nm-card .nx-h { color: var(--n-pink) } .home .nm-card .nx-h em { color: var(--n-blush) }
+.home .nm-card .nx-p { color: var(--n-text) }
+.home .nm-card .nx-eyebrow { color: #f8d9e4; border-color: rgba(248, 217, 228, .45); background: rgba(255, 255, 255, .04) }
+.home .nm-card .nx-ghost { color: #f8d9e4; border-color: rgba(243, 191, 209, .45); background: rgba(255, 255, 255, .03) }
+.home .nm-card .nx-ghost:hover { background: rgba(243, 191, 209, .12); color: #fff }

@@ -129,15 +129,18 @@ export default function CustomerReviews() {
         <>
           <ul className="nr-track" ref={track} tabIndex={0} aria-label="Customer reviews">
             {Array.from({ length: reps }, (_, copy) => data.items.map(r => (
-              <li key={`${copy}-${r.id}`} className="nr-card" aria-hidden={copy > 0 || undefined}>
-                <span className="nr-mark" aria-hidden="true">“</span>
-                <span className="nr-stars"><Stars n={r.rating} size={14} /></span>
-                <blockquote className="nr-quote">{r.body}</blockquote>
-                <div className="nr-foot">
-                  <span className="nr-thumb" aria-hidden="true"><ProductMedia p={{ slug: r.product_slug || String(r.product_name), name: r.product_name, image: r.product_image }} view={String(r.id).length % 4} /></span>
+              <li key={`${copy}-${r.id}`} className="nr-card has-photo" aria-hidden={copy > 0 || undefined}>
+                {/* the reviewed piece's photo fills the card */}
+                <span className="nr-bg" aria-hidden="true"><ProductMedia p={{ slug: r.product_slug || String(r.product_name), name: r.product_name, image: r.product_image }} view={String(r.id).length % 4} /></span>
+                <div className="nr-top">
+                  <span className="nr-stars"><Stars n={r.rating} size={13} /></span>
+                  <Link className="nr-tag" to={r.product_slug ? `/product/${r.product_slug}` : '/shop'} tabIndex={copy > 0 ? -1 : undefined}>{r.product_name}</Link>
+                </div>
+                <div className="nr-body">
+                  <span className="nr-mark" aria-hidden="true">“</span>
+                  <blockquote className="nr-quote">{r.body}</blockquote>
                   <p className="nr-by"><strong>{r.author}</strong><span>{r.demo ? 'Sample review' : 'Verified purchase'}</span></p>
                 </div>
-                <Link className="nr-tag" to={r.product_slug ? `/product/${r.product_slug}` : '/shop'} tabIndex={copy > 0 ? -1 : undefined}>{r.product_name}</Link>
               </li>
             )))}
           </ul>
