@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useApp } from '../context/App';
 import { api, apiRetry } from '../lib/api';
-import { useModal } from '../lib/hooks';
+import { useModal, useReduced } from '../lib/hooks';
 import { Reveal } from './Motion';
 import { ProductMedia } from './ProductCard3D';
 import { Eyebrow, Divider } from './NightParts';
@@ -77,11 +77,17 @@ export default function CustomerReviews() {
   useEffect(() => { const t = 'requestIdleCallback' in window ? requestIdleCallback(() => load(1), { timeout: 3000 }) : setTimeout(() => load(1), 1500); return () => { 'cancelIdleCallback' in window ? cancelIdleCallback(t) : clearTimeout(t) } }, [load]);
 
   // Slow, continuous drift to the left (~35px/s). It never pauses on hover or swipe; tapping (or pressing Enter on) a review stops it,
-  // and tapping a review again sets it moving. At the end it eases back to the start and carries on.
+  // and tapping a review again sets it moving. The cards are repeated, so the row runs round in an endless loop:
+  // when one full set has passed, it jumps back by exactly one set, which looks identical.
   const ready = !!data?.items.length;
+  const reduced = useReduced();
+  const n = data?.items.length || 0;
+  const reps = reduced || !n ? 1 : Math.max(2, Math.ceil(6 / n) + 1); // enough copies to always fill the row
   useEffect(() => {
     const el = track.current;
-    if (!ready || !el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!ready || !el || reduced) return;
+    // width of one full set of cards (from the first card to the first card of the next copy)
+    const setW = () => { const c = el.children, k = c.length / reps; return k >= 1 && c[k] ? c[k].offsetLeft - c[0].offsetLeft : 0 };
     const SPEED = 35;
     let raf, last = 0, pos = el.scrollLeft, hold = 0, stopped = false, visible = true;
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; pos = el.scrollLeft }); io.observe(el); // no work while off screen
@@ -93,15 +99,17 @@ export default function CustomerReviews() {
       const max = el.scrollWidth - el.clientWidth;
       if (max <= 0) return;
       if (Math.abs(el.scrollLeft - pos) > 3) { pos = el.scrollLeft; hold = t + 700 } // moved by the arrows or a swipe: let that settle, then carry on from there
+      const W = setW();
+      if (W > 0 && el.scrollLeft < 1) { el.scrollLeft += W; pos = el.scrollLeft } // went back past the first card: continue from the copy
       if (hold > t) return;
-      if (pos >= max - 1) { hold = t + 1500; pos = 0; el.scrollTo({ left: 0, behavior: 'smooth' }); setTimeout(() => { pos = el.scrollLeft }, 1200); return }
+      if (W > 0 && pos >= W) { pos -= W; el.scrollLeft = pos } // one full set has passed: loop round
       pos += SPEED * dt; el.scrollLeft = pos;
     };
     el.style.scrollSnapType = 'none'; // snapping would fight the drift
     el.addEventListener('click', toggle); el.addEventListener('keydown', toggle);
     raf = requestAnimationFrame(t => { last = t; tick(t) });
     return () => { cancelAnimationFrame(raf); io.disconnect(); el.style.scrollSnapType = ''; el.removeEventListener('click', toggle); el.removeEventListener('keydown', toggle) };
-  }, [ready]);
+  }, [ready, reduced, reps]);
   if (!data) return null;
   const slide = d => track.current?.scrollBy({ left: d * Math.min(360, innerWidth * 0.8), behavior: 'smooth' });
   const viewMore = async () => { setMore(true); await load(data.page + 1); setMore(false); setTimeout(() => slide(1), 150) };
@@ -120,8 +128,8 @@ export default function CustomerReviews() {
       {data.items.length > 0 && (
         <>
           <ul className="nr-track" ref={track} tabIndex={0} aria-label="Customer reviews">
-            {data.items.map(r => (
-              <li key={r.id} className="nr-card">
+            {Array.from({ length: reps }, (_, copy) => data.items.map(r => (
+              <li key={`${copy}-${r.id}`} className="nr-card" aria-hidden={copy > 0 || undefined}>
                 <span className="nr-mark" aria-hidden="true">“</span>
                 <span className="nr-stars"><Stars n={r.rating} size={14} /></span>
                 <blockquote className="nr-quote">{r.body}</blockquote>
@@ -129,9 +137,9 @@ export default function CustomerReviews() {
                   <span className="nr-thumb" aria-hidden="true"><ProductMedia p={{ slug: r.product_slug || String(r.product_name), name: r.product_name, image: r.product_image }} view={String(r.id).length % 4} /></span>
                   <p className="nr-by"><strong>{r.author}</strong><span>{r.demo ? 'Sample review' : 'Verified purchase'}</span></p>
                 </div>
-                <Link className="nr-tag" to={r.product_slug ? `/product/${r.product_slug}` : '/shop'}>{r.product_name}</Link>
+                <Link className="nr-tag" to={r.product_slug ? `/product/${r.product_slug}` : '/shop'} tabIndex={copy > 0 ? -1 : undefined}>{r.product_name}</Link>
               </li>
-            ))}
+            )))}
           </ul>
           <div className="nx-nav center">
             <button className="nx-circle" onClick={() => slide(-1)} aria-label="Previous reviews">←</button>

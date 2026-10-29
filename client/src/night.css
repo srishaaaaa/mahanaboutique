@@ -152,24 +152,38 @@
   box-shadow: 0 0 0 6px #1c1a52, 0 10px 24px rgba(236, 154, 182, .4); transition: transform .45s var(--n-ease) }
 .nk-card:hover .nk-go { transform: rotate(-45deg) }
 
-/* ================= Choose your world (the fanned 3D cards; positions are set in CollectionsFlow) ================= */
-.nx-cf.cf { padding-bottom: clamp(30px, 4vw, 60px); color: var(--n-text) }
+/* ================= Choose your world: 3D coverflow (positions set in CollectionsFlow) ================= */
+.nx-cf { padding-bottom: clamp(50px, 6vw, 90px) }
 .nx-cf .nx-head { margin-bottom: 0 }
-.home .cf-track { padding-top: 70px; padding-bottom: 150px; perspective-origin: 50% 20% }
-.home .cf-card { -webkit-box-reflect: unset; transition: box-shadow .5s ease; box-shadow: 0 0 0 1px rgba(243, 191, 209, .22), 0 30px 60px rgba(4, 3, 24, .5) }
-.home .cf-card.is-active { box-shadow: 0 0 0 1.5px rgba(243, 191, 209, .85), 0 0 60px rgba(232, 138, 171, .35), 0 40px 80px rgba(4, 3, 24, .6) }
-.home .cf-card::after { background: rgb(15 13 51 / calc(var(--dim, 0) * 100%)) }
-.home .cf-shade { background: linear-gradient(0deg, rgba(15, 13, 51, .92) 4%, rgba(15, 13, 51, .08) 58%, rgba(15, 13, 51, .2)) }
-.home .cf-txt .eyebrow { color: var(--n-pink); font-weight: 700; letter-spacing: .22em; font-size: 10.5px }
-.home .cf-txt strong { font-family: var(--n-serif); font-weight: 400; font-size: clamp(26px, 2.3vw, 34px); color: var(--n-blush) }
-.home .cf-txt em { color: var(--n-text); opacity: 1 }
-.home .cf-go { border: 1px solid rgba(243, 191, 209, .4); background: rgba(15, 13, 51, .4) }
-.home .cf-card:hover .cf-go { background: var(--n-grad); color: #1c1a52; border-color: transparent }
-.home .cf-floor { bottom: 40px; height: 90px; left: 20%; right: 20%; background: radial-gradient(closest-side, rgba(232, 138, 171, .34), transparent); filter: blur(16px) }
-.home .cf-txt > * { transition: opacity .55s ease, translate .55s var(--n-ease) }
-.home .cf-card:not(.is-active) .cf-txt > * { opacity: .5; translate: 0 10px }
-.home .cf-card:not(.is-active) .cf-go { opacity: 0 }
-.home .cf-card.is-active .cf-txt > :nth-child(2) { transition-delay: .06s } .home .cf-card.is-active .cf-txt > :nth-child(3) { transition-delay: .12s } .home .cf-card.is-active .cf-txt > :nth-child(4) { transition-delay: .18s }
+.cf3-stage { --cw: min(340px, 68vw); --ch: clamp(440px, 46vw, 540px); position: relative; height: calc(var(--ch) + 120px); margin-top: 10px; perspective: 1400px; perspective-origin: 50% 40%;
+  touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; outline: none; overflow: hidden }
+.cf3-stage.is-drag { cursor: grabbing }
+.cf3-stage:focus-visible { box-shadow: inset 0 0 0 2px rgba(232, 138, 171, .5); border-radius: 24px }
+.cf3-card { position: absolute; left: 50%; top: 50px; width: var(--cw); height: var(--ch); border-radius: 30px; overflow: hidden; isolation: isolate; color: #fff; background: var(--n-card);
+  backface-visibility: hidden; will-change: transform; -webkit-user-drag: none;
+  box-shadow: 0 0 0 1px rgba(243, 191, 209, .22), 0 30px 60px rgba(28, 26, 82, .32);
+  transition: transform .8s var(--n-ease), opacity .5s ease, box-shadow .5s ease }
+.cf3-stage.is-drag .cf3-card { transition: opacity .5s ease, box-shadow .5s ease }
+.cf3-card::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none; background: rgb(15 13 51 / calc(var(--dim, 0) * 100%)) }
+.cf3-card.is-active { box-shadow: 0 0 0 1.5px rgba(243, 191, 209, .9), 0 0 60px rgba(232, 138, 171, .35), 0 40px 80px rgba(28, 26, 82, .45) }
+.cf3-img { position: absolute; inset: 0; z-index: -2 }
+.cf3-img > * { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; transition: transform 1.2s var(--n-ease) }
+.cf3-card.is-active:hover .cf3-img > * { transform: scale(1.06) }
+.cf3-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(15, 13, 51, .92) 4%, rgba(15, 13, 51, .08) 58%, rgba(15, 13, 51, .2)) }
+.cf3-txt { position: absolute; left: 24px; right: 24px; bottom: 24px; z-index: 1; display: grid; gap: 6px }
+.cf3-txt > * { transition: opacity .55s ease, translate .55s var(--n-ease) }
+.cf3-card:not(.is-active) .cf3-txt > * { opacity: .45; translate: 0 10px }
+.cf3-card:not(.is-active) .cf3-go { opacity: 0 }
+.cf3-meta { font: 700 10.5px var(--n-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--n-pink) }
+.cf3-txt strong { font: 400 clamp(26px, 2.3vw, 34px)/1.08 var(--n-serif); color: var(--n-blush) }
+.cf3-txt em { font-style: normal; font-size: 14px; color: var(--n-text) }
+.cf3-go { justify-self: start; margin-top: 8px; padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(243, 191, 209, .4); background: rgba(15, 13, 51, .4); font: 700 11px var(--n-sans); letter-spacing: .2em; transition: background .4s, color .4s, opacity .4s }
+.cf3-card.is-active:hover .cf3-go { background: var(--n-grad); color: #1c1a52; border-color: transparent }
+.cf3-floor { position: absolute; left: 22%; right: 22%; bottom: 6px; height: 80px; z-index: -1; pointer-events: none; border-radius: 50%; background: radial-gradient(closest-side, rgba(232, 138, 171, .34), transparent); filter: blur(16px) }
+.cf3-dots { display: flex; justify-content: center; gap: 8px; margin-top: 6px }
+.cf3-dots button { width: 8px; height: 8px; border-radius: 999px; background: rgba(28, 26, 82, .2); transition: width .4s var(--n-ease), background .4s }
+.cf3-dots button.on { width: 26px; background: var(--n-grad) }
+@media (max-width: 600px) { .cf3-stage { --cw: 72vw; --ch: 118vw; height: calc(var(--ch) + 90px) } .cf3-card { top: 36px } .nx-cf .nx-nav > span { display: none } }
 
 /* ================= Service highlights ================= */
 .nx-svc { padding: clamp(40px, 5vw, 80px) 0 }
