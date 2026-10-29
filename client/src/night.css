@@ -445,3 +445,51 @@
 @media (prefers-reduced-motion: reduce) {
   .fx-silk, .fx-ring svg, .fx-spark, .nf-sky i, .ne-halo, .ne-spark, .nm-pin svg, .nm-pulse, .nx-btn b i { animation: none }
 }
+
+/* =====================================================================
+   White ground: the sections sit on white; the cards stay deep indigo
+   (hero colours), and text placed straight on the white turns indigo.
+   ===================================================================== */
+.home { background: #fff }
+.nx, .home > .nx { background: #fff; color: #14133a }
+.home > .nx::before { opacity: .7 }
+.home > .tk { background: linear-gradient(90deg, #2e2b7b, #3a3592 50%, #2e2b7b); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 14px 34px rgba(28, 26, 82, .22) }
+
+/* indigo cards */
+.nt-item, .ns-item, .nr-card, .nq-card, .nq-links a { background: linear-gradient(165deg, #2c2976 0%, #1c1a52 100%); border-color: rgba(243, 191, 209, .28); box-shadow: 0 24px 56px rgba(28, 26, 82, .2) }
+.nt-item:hover { box-shadow: 0 28px 64px rgba(28, 26, 82, .26), 0 0 40px rgba(232, 138, 171, .2) }
+.nq-links a:hover { background: linear-gradient(165deg, #34318a 0%, #211e60 100%) }
+.ny-photo, .ne-arch, .nm-frame, .ni-tile { box-shadow: 0 0 0 1px rgba(232, 138, 171, .45), 0 28px 60px rgba(28, 26, 82, .22) }
+.nk-card { background: #fff; border-color: rgba(232, 138, 171, .6) }
+.nk-card:hover { box-shadow: 0 0 0 5px rgba(232, 138, 171, .1), 0 20px 50px rgba(28, 26, 82, .18) }
+.nk-go { box-shadow: 0 0 0 6px #fff, 0 10px 24px rgba(236, 154, 182, .4) }
+
+/* text straight on the white */
+.nx .nx-h { color: #1c1a52; text-shadow: none }
+.nx .nx-h em { color: #c4507a }
+.nx-sub, .nx-p, .nx-empty { color: rgba(20, 19, 58, .72) }
+.ny-copy .ny-lead { color: #2e2b7b }
+.nx-eyebrow { color: #1c1a52; border-color: rgba(28, 26, 82, .28); background: #fff }
+.nx-link, .nx-more { color: #c4507a } .nx-link:hover, .nx-more:hover { color: #1c1a52 }
+.nx-ghost { color: #1c1a52; border-color: rgba(28, 26, 82, .32); background: #fff }
+.nx-ghost:hover { background: #f4f3fb; border-color: #1c1a52; color: #1c1a52 }
+.nx-circle { color: #1c1a52; border-color: rgba(28, 26, 82, .3); background: #fff }
+.nx-nav > span { color: rgba(20, 19, 58, .55) } .nx-nav > span b { color: #c4507a }
+.ne-facts strong { color: #c4507a } .ne-facts span { color: #1c1a52 } .ne-facts li + li { border-left-color: rgba(20, 19, 58, .2) }
+.nk-sort select { color: #1c1a52; border-color: rgba(28, 26, 82, .28); background-color: #fff }
+.nr-score { background: #fff; border-color: rgba(28, 26, 82, .14); box-shadow: 0 12px 30px rgba(28, 26, 82, .08) }
+.nr-score small { color: rgba(20, 19, 58, .6) } .nr-score .stars { color: #c4507a }
+.ni-handle { color: #1c1a52 }
+.ni-bh h3 { color: #1c1a52 } .ni-count { color: #c4507a; border-color: rgba(28, 26, 82, .15) }
+
+/* dark panels keep their light text */
+.nm-card .nx-h, .nq-card .nx-h { color: var(--n-pink) } .nm-card .nx-h em { color: var(--n-blush) }
+.nm-card .nx-p { color: var(--n-text) }
+.nm-card .nx-eyebrow { color: #f8d9e4; border-color: rgba(248, 217, 228, .45); background: rgba(255, 255, 255, .03) }
+.nm-card .nx-ghost, .ni-fail .nx-ghost { color: #f8d9e4; border-color: rgba(243, 191, 209, .45); background: rgba(255, 255, 255, .03) }
+.nm-card .nx-ghost:hover { background: rgba(243, 191, 209, .12); color: #fff }
+.nq-card .nx-link { color: var(--n-pink) } .nq-card .nx-link:hover { color: #fff }
+
+/* ornaments tuned for white */
+.fx-silk { color: rgba(232, 138, 171, .42) } .fx-silk.flip { color: rgba(125, 116, 216, .32) }
+.fx-ring { color: rgba(46, 43, 123, .2) }

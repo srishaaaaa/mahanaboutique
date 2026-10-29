@@ -642,3 +642,10 @@ html.lenis, html.lenis body { height: auto }
 @media (max-width: 767px) { .wordmark .wm-a { font-size: 30px } .wordmark .wm-b { font-size: 7px; letter-spacing: .32em } }
 .foot-mark span { font-family: var(--script); font-weight: 400; letter-spacing: 0; text-transform: none; color: #e88aab }
 .story3-logo b { font-family: var(--script); font-weight: 400; text-transform: none; letter-spacing: 0 }
+
+/* uploaded logo: round badge with the script "Mahana" wordmark beside it */
+.wordmark.has-logo { gap: 12px }
+.wordmark.has-logo .wm-text { display: grid; gap: 2px }
+.wordmark.has-logo .wm-a { font-size: 32px }
+.wordmark.has-logo .wm-b { font-size: 7.5px; white-space: nowrap }
+.mm-top .wordmark.has-logo .wm-a { color: #fff }

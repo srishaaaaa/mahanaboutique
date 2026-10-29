@@ -27,7 +27,7 @@ export default function Wordmark({ to = '/', className = '', onClick }) {
   if (logo) return (
     <Link to={to} onClick={onClick} className={`wordmark has-logo ${className}`} aria-label="Home" data-cursor="HOME">
       <img className="wm-logo" src={logo} fetchpriority="high" decoding="async" alt={site.branding?.logoAlt || site.store?.name || 'MAHANA BOUTIQUE & TAILORS'} />
-      <span className="wm-text" aria-hidden="true"><b>{(site.store?.name || 'Mahana Boutique & Tailors').split(' ')[0]}</b><i>{(site.store?.name || 'Mahana Boutique & Tailors').split(' ').slice(1).join(' ') || 'BOUTIQUE'}</i></span>
+      <span className="wm-text" aria-hidden="true"><span className="wm-a">Mahana</span><span className="wm-b">BOUTIQUE &amp; TAILORS</span></span>
     </Link>
   );
   return (
