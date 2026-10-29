@@ -26,7 +26,6 @@ function Story() {
   const b = site.branding || {};
   return (
     <section className="nx nx-story" id="story" aria-labelledby="story-h">
-      <span className="nx-backdrop" aria-hidden="true" style={{ backgroundImage: `url("${b.storyImage || media.storyImage}")` }} />
       <div className="nx-in ny-in">
         <Reveal className="ny-photo">
           <img className="ny-img" style={b.storyPos ? { objectPosition: b.storyPos } : undefined} src={b.storyImage || media.storyImage} alt={b.storyAlt || media.storyAlt} loading="lazy" width="736" height="920" />

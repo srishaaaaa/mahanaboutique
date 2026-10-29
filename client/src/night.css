@@ -509,34 +509,85 @@
 .fx-ring { color: rgba(46, 43, 123, .2) }
 
 /* =====================================================================
-   Editorial + Shop story: the section's own photo, enlarged, blurred and
-   tinted indigo with a pink glow, fills the background; light text on top.
+   Editorial + Shop story: white page with quiet detail (soft corner glows and
+   a faint zari diamond pattern at the edges); the photo and words sit together
+   in a framed box with a double pink border and small diamond corners.
    ===================================================================== */
-.nx-backdrop { position: absolute; inset: -60px; z-index: -2; pointer-events: none; background: #1c1a52 center / cover no-repeat; filter: blur(38px) saturate(1.25); transform: scale(1.08) }
-.nx:has(> .nx-backdrop)::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: radial-gradient(45% 60% at 30% 50%, rgba(232, 138, 171, .22), transparent 70%), radial-gradient(50% 60% at 85% 20%, rgba(125, 116, 216, .25), transparent 70%),
-    linear-gradient(90deg, rgba(20, 18, 61, .58), rgba(20, 18, 61, .76) 55%, rgba(20, 18, 61, .84)) }
-.nx-story:has(> .nx-backdrop)::after { background: radial-gradient(45% 60% at 72% 50%, rgba(232, 138, 171, .22), transparent 70%), radial-gradient(50% 60% at 10% 20%, rgba(125, 116, 216, .25), transparent 70%),
-    linear-gradient(270deg, rgba(20, 18, 61, .58), rgba(20, 18, 61, .76) 55%, rgba(20, 18, 61, .84)) }
-.home > :is(.nx-ed, .nx-story) { background: #1c1a52 }
-.home > :is(.nx-ed, .nx-story)::before { display: none }
+.home > :is(.nx-ed, .nx-story) { background: #fff }
+.home > :is(.nx-ed, .nx-story)::before { opacity: 1;
+  background:
+    radial-gradient(34% 44% at 0% 0%, rgba(232, 138, 171, .14), transparent 70%),
+    radial-gradient(34% 44% at 100% 100%, rgba(125, 116, 216, .14), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 3 53 28 28 53 3 28Z' fill='none' stroke='%23c4507a' stroke-opacity='.1'/%3E%3Cpath d='M28 23 33 28 28 33 23 28Z' fill='%23c4507a' fill-opacity='.08'/%3E%3C/svg%3E");
+  -webkit-mask-image: radial-gradient(75% 70% at 50% 50%, transparent 45%, #000 100%); mask-image: radial-gradient(75% 70% at 50% 50%, transparent 45%, #000 100%) }
 
-/* light text on the tinted photo (as in the hero) */
-:is(.nx-ed, .nx-story) .nx-h { color: var(--n-pink); text-shadow: 0 0 46px rgba(243, 191, 209, .26), 0 4px 18px rgba(0, 0, 0, .3) }
-:is(.nx-ed, .nx-story) .nx-h em { color: var(--n-blush) }
-:is(.nx-ed, .nx-story) .nx-p { color: var(--n-text) }
-.nx-story .ny-copy .ny-lead { color: var(--n-blush) }
-:is(.nx-ed, .nx-story) .nx-eyebrow { color: #f8d9e4; border-color: rgba(248, 217, 228, .45); background: rgba(255, 255, 255, .04) }
-:is(.nx-ed, .nx-story) .nx-link { color: var(--n-pink) } :is(.nx-ed, .nx-story) .nx-link:hover { color: #fff }
-.nx-ed .ne-facts strong { color: var(--n-pink) } .nx-ed .ne-facts span { color: var(--n-blush) } .nx-ed .ne-facts li + li { border-left-color: rgba(248, 217, 228, .3) }
-:is(.nx-ed, .nx-story) :is(.ny-photo, .ne-arch) { box-shadow: 0 0 0 1px rgba(243, 191, 209, .45), 0 40px 90px rgba(4, 3, 24, .55) }
-.nx-ed .ne-ring { border-color: rgba(243, 191, 209, .7) }
+/* the framed box */
+.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in) { position: relative; isolation: isolate; max-width: 1280px; width: calc(100% - 2 * var(--n-pad)); margin: 0 auto;
+  padding: clamp(28px, 4.5vw, 72px); border-radius: 40px; border: 1px solid rgba(232, 138, 171, .4);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23e88aab'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23e88aab'/%3E%3C/svg%3E") no-repeat 22px 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23e88aab'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23e88aab'/%3E%3C/svg%3E") no-repeat right 22px top 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23e88aab'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23e88aab'/%3E%3C/svg%3E") no-repeat left 22px bottom 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23e88aab'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23e88aab'/%3E%3C/svg%3E") no-repeat right 22px bottom 22px,
+    radial-gradient(60% 70% at 15% 30%, rgba(232, 138, 171, .1), transparent 70%),
+    linear-gradient(155deg, #ffffff 0%, #fdf6f9 55%, #f7f5fd 100%);
+  box-shadow: 0 34px 80px rgba(28, 26, 82, .1), 0 2px 0 rgba(255, 255, 255, .9) inset }
+/* inner hairline: a second border just inside the first */
+.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in)::after { content: ''; position: absolute; inset: 12px; z-index: -1; border-radius: 30px; border: 1px solid rgba(232, 138, 171, .28); pointer-events: none }
 
-/* story: photo on the right, mirroring the editorial band; a faint script behind the words */
+/* story: photo on the right (mirrors the editorial box) and a faint script behind the words */
 @media (min-width: 901px) {
-  .nx-story .ny-in { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) }
-  .nx-story .ny-photo { order: 2 }
+  .home > .nx-story .ny-in { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) }
+  .home > .nx-story .ny-photo { order: 2 }
 }
-.nx-story .ny-in::before { content: 'Mahana'; position: absolute; z-index: -1; left: 2%; top: 50%; translate: 0 -50%; pointer-events: none; white-space: nowrap;
-  font: 400 clamp(160px, 22vw, 340px)/1 'Great Vibes', cursive; color: rgba(243, 191, 209, .06) }
-@media (max-width: 900px) { .nx-story .ny-in::before { top: 72%; font-size: 42vw } }
+.home > .nx-story .ny-in::before { content: 'Mahana'; position: absolute; z-index: -1; left: 4%; top: 50%; translate: 0 -50%; pointer-events: none; white-space: nowrap;
+  font: 400 clamp(150px, 20vw, 300px)/1 'Great Vibes', cursive; color: rgba(196, 80, 122, .06) }
+
+@media (max-width: 600px) {
+  .home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in) { padding: 46px 18px 54px; border-radius: 28px }
+  .home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in)::after { inset: 8px; border-radius: 22px }
+  .home > .nx-story .ny-in::before { top: 74%; font-size: 40vw }
+}
+
+/* ---- outer white: clearer diamond lattice + rangoli line motifs in the corners ---- */
+.home > :is(.nx-ed, .nx-story)::before { -webkit-mask-image: none; mask-image: none;
+  background:
+    radial-gradient(34% 44% at 0% 0%, rgba(232, 138, 171, .16), transparent 70%),
+    radial-gradient(34% 44% at 100% 100%, rgba(125, 116, 216, .16), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 3 53 28 28 53 3 28Z' fill='none' stroke='%23c4507a' stroke-opacity='.13'/%3E%3Cpath d='M28 23 33 28 28 33 23 28Z' fill='%23c4507a' fill-opacity='.12'/%3E%3C/svg%3E") }
+.home > :is(.nx-ed, .nx-story)::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  --rangoli: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23e88aab' stroke-width='.8'%3E%3Ccircle cx='100' cy='100' r='97' stroke-opacity='.55'/%3E%3Ccircle cx='100' cy='100' r='86' stroke-dasharray='1.5 5' stroke-opacity='.8'/%3E%3Crect x='45' y='45' width='110' height='110' stroke-opacity='.5'/%3E%3Crect x='45' y='45' width='110' height='110' transform='rotate(45 100 100)' stroke-opacity='.5'/%3E%3Ccircle cx='100' cy='100' r='44' stroke-opacity='.6'/%3E%3Cpath d='M100 58Q122 100 100 142Q78 100 100 58ZM58 100Q100 78 142 100Q100 122 58 100Z' stroke-opacity='.7'/%3E%3Cpath d='M70 70Q100 92 130 130Q92 100 70 70ZM130 70Q108 100 70 130Q100 108 130 70Z' stroke-opacity='.45'/%3E%3Ccircle cx='100' cy='100' r='6' fill='%23e88aab' fill-opacity='.35'/%3E%3C/g%3E%3C/svg%3E");
+  background: var(--rangoli) no-repeat left -150px top -150px / 460px, var(--rangoli) no-repeat right -170px bottom -170px / 520px }
+.home > .nx-story::after { background: var(--rangoli) no-repeat right -150px top -150px / 460px, var(--rangoli) no-repeat left -170px bottom -170px / 520px }
+
+/* ---- inside the box: deep indigo (hero colours) with a glow, sparkles and a fine pink lattice ---- */
+.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in) { border-color: rgba(232, 138, 171, .55);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat 22px 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 22px top 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat left 22px bottom 22px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 22px bottom 22px,
+    radial-gradient(2px 2px at 12% 18%, #fbe3ec, transparent), radial-gradient(1.5px 1.5px at 46% 9%, #fbe3ec, transparent), radial-gradient(2px 2px at 88% 30%, #fbe3ec, transparent),
+    radial-gradient(1.5px 1.5px at 62% 88%, #fbe3ec, transparent), radial-gradient(2px 2px at 30% 76%, #fbe3ec, transparent), radial-gradient(1.5px 1.5px at 94% 72%, #fbe3ec, transparent),
+    radial-gradient(45% 60% at 28% 45%, rgba(154, 150, 226, .3), transparent 70%),
+    radial-gradient(40% 55% at 85% 80%, rgba(232, 138, 171, .18), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M22 2 42 22 22 42 2 22Z' fill='none' stroke='%23f3bfd1' stroke-opacity='.07'/%3E%3C/svg%3E"),
+    radial-gradient(120% 95% at 80% 42%, #2e2a7e 0%, #2e2b7b 40%, #1c1a52 74%, #110f38 100%);
+  box-shadow: 0 40px 90px rgba(28, 26, 82, .3) }
+.home > .nx-story .ny-in { background-position: 22px 22px, right 22px top 22px, left 22px bottom 22px, right 22px bottom 22px, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0 }
+.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in)::after { border-color: rgba(243, 191, 209, .3) }
+
+/* light text inside the indigo box */
+.home > :is(.nx-ed, .nx-story) .nx-h { color: var(--n-pink); text-shadow: 0 0 46px rgba(243, 191, 209, .26), 0 4px 18px rgba(0, 0, 0, .3) }
+.home > :is(.nx-ed, .nx-story) .nx-h em { color: var(--n-blush) }
+.home > :is(.nx-ed, .nx-story) .nx-p { color: var(--n-text) }
+.home > .nx-story .ny-copy .ny-lead { color: var(--n-blush) }
+.home > :is(.nx-ed, .nx-story) .nx-eyebrow { color: #f8d9e4; border-color: rgba(248, 217, 228, .45); background: rgba(255, 255, 255, .04) }
+.home > :is(.nx-ed, .nx-story) .nx-link { color: var(--n-pink) } .home > :is(.nx-ed, .nx-story) .nx-link:hover { color: #fff }
+.home > .nx-ed .ne-facts strong { color: var(--n-pink) } .home > .nx-ed .ne-facts span { color: var(--n-blush) } .home > .nx-ed .ne-facts li + li { border-left-color: rgba(248, 217, 228, .3) }
+.home > .nx-ed .ne-ring { border-color: rgba(243, 191, 209, .7) }
+.home > :is(.nx-ed, .nx-story) :is(.ny-photo, .ne-arch) { box-shadow: 0 0 0 1px rgba(243, 191, 209, .45), 0 34px 70px rgba(4, 3, 24, .5) }
+.home > .nx-story .ny-in::before { color: rgba(243, 191, 209, .07) }
+@media (max-width: 600px) {
+  .home > .nx-ed::after, .home > .nx-story::after { background-size: 300px, 320px }
+}
