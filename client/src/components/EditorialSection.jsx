@@ -10,6 +10,7 @@ export default function EditorialSection() {
   const b = site.branding || {};
   return (
     <section className="nx nx-ed" aria-labelledby="ed-h">
+      <span className="nx-backdrop" aria-hidden="true" style={b.editorialImage ? { backgroundImage: `url("${b.editorialImage}")` } : undefined} />
       <div className="nx-in ne-in">
         <Reveal className="ne-photo">
           <span className="ne-halo" aria-hidden="true" />

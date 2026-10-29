@@ -507,3 +507,36 @@
 /* ornaments tuned for white */
 .fx-silk { color: rgba(232, 138, 171, .42) } .fx-silk.flip { color: rgba(125, 116, 216, .32) }
 .fx-ring { color: rgba(46, 43, 123, .2) }
+
+/* =====================================================================
+   Editorial + Shop story: the section's own photo, enlarged, blurred and
+   tinted indigo with a pink glow, fills the background; light text on top.
+   ===================================================================== */
+.nx-backdrop { position: absolute; inset: -60px; z-index: -2; pointer-events: none; background: #1c1a52 center / cover no-repeat; filter: blur(38px) saturate(1.25); transform: scale(1.08) }
+.nx:has(> .nx-backdrop)::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(45% 60% at 30% 50%, rgba(232, 138, 171, .22), transparent 70%), radial-gradient(50% 60% at 85% 20%, rgba(125, 116, 216, .25), transparent 70%),
+    linear-gradient(90deg, rgba(20, 18, 61, .58), rgba(20, 18, 61, .76) 55%, rgba(20, 18, 61, .84)) }
+.nx-story:has(> .nx-backdrop)::after { background: radial-gradient(45% 60% at 72% 50%, rgba(232, 138, 171, .22), transparent 70%), radial-gradient(50% 60% at 10% 20%, rgba(125, 116, 216, .25), transparent 70%),
+    linear-gradient(270deg, rgba(20, 18, 61, .58), rgba(20, 18, 61, .76) 55%, rgba(20, 18, 61, .84)) }
+.home > :is(.nx-ed, .nx-story) { background: #1c1a52 }
+.home > :is(.nx-ed, .nx-story)::before { display: none }
+
+/* light text on the tinted photo (as in the hero) */
+:is(.nx-ed, .nx-story) .nx-h { color: var(--n-pink); text-shadow: 0 0 46px rgba(243, 191, 209, .26), 0 4px 18px rgba(0, 0, 0, .3) }
+:is(.nx-ed, .nx-story) .nx-h em { color: var(--n-blush) }
+:is(.nx-ed, .nx-story) .nx-p { color: var(--n-text) }
+.nx-story .ny-copy .ny-lead { color: var(--n-blush) }
+:is(.nx-ed, .nx-story) .nx-eyebrow { color: #f8d9e4; border-color: rgba(248, 217, 228, .45); background: rgba(255, 255, 255, .04) }
+:is(.nx-ed, .nx-story) .nx-link { color: var(--n-pink) } :is(.nx-ed, .nx-story) .nx-link:hover { color: #fff }
+.nx-ed .ne-facts strong { color: var(--n-pink) } .nx-ed .ne-facts span { color: var(--n-blush) } .nx-ed .ne-facts li + li { border-left-color: rgba(248, 217, 228, .3) }
+:is(.nx-ed, .nx-story) :is(.ny-photo, .ne-arch) { box-shadow: 0 0 0 1px rgba(243, 191, 209, .45), 0 40px 90px rgba(4, 3, 24, .55) }
+.nx-ed .ne-ring { border-color: rgba(243, 191, 209, .7) }
+
+/* story: photo on the right, mirroring the editorial band; a faint script behind the words */
+@media (min-width: 901px) {
+  .nx-story .ny-in { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) }
+  .nx-story .ny-photo { order: 2 }
+}
+.nx-story .ny-in::before { content: 'Mahana'; position: absolute; z-index: -1; left: 2%; top: 50%; translate: 0 -50%; pointer-events: none; white-space: nowrap;
+  font: 400 clamp(160px, 22vw, 340px)/1 'Great Vibes', cursive; color: rgba(243, 191, 209, .06) }
+@media (max-width: 900px) { .nx-story .ny-in::before { top: 72%; font-size: 42vw } }
