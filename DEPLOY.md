@@ -19,6 +19,7 @@ project: the client is built to static files and the API runs as one serverless 
 | `JWT_SECRET` | 32+ random characters. |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe keys (test keys first). Webhook URL: `https://<your-domain>/api/payments/webhook` with events `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`. Turn on PayNow, cards, GrabPay and wallets in Stripe → Settings → Payment methods. |
 | `SITE_URL` | Public site address, e.g. `https://mahana.sg`, where Stripe returns customers after paying. |
+| `GOOGLE_CLIENT_ID` | Turns on "Continue with Google" on the sign-in and register pages. Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web application). Add `https://<your-domain>` and `http://localhost:5173` under **Authorised JavaScript origins**. No client secret is needed. |
 | `GOOGLE_MAPS_API_KEY` | Optional Maps Embed key (restrict it by HTTP referrer). |
 | `PG_POOL_MAX` | `3` is plenty per serverless instance. |
 | `RESERVATION_MINUTES` | Optional, default 30. |
