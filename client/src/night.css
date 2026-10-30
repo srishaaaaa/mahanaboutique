@@ -1383,3 +1383,12 @@
 .ni-embed { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; border-radius: inherit }
 .mv-stage iframe { width: 100%; height: 100%; border: 0; background: #000 }
 .dpos-reels.six .media iframe { width: 100%; height: 100%; min-height: 300px; border: 0 }
+
+/* pasted Instagram reels: crop Instagram's player to just the video (no header, likes or comments) and fill the 9:16 frame.
+   Instagram lays the embed out as: header 15% of its width, a 4:5 video, then the footer. */
+.ni-reel .ni-tile, .mv-stage.is-reel { container-type: inline-size }
+.ni-embed, .mv-stage.is-reel iframe { position: absolute; left: 0; top: 0; width: 100cqw; height: 215cqw; max-width: none; border: 0; background: #000; border-radius: 0;
+  transform-origin: 0 0; transform: translate(-21.1cqw, -21.3cqw) scale(1.422) }
+.mv-stage.is-reel { position: relative }
+.ni-full { position: absolute; z-index: 3; right: 54px; top: 12px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .9); color: #14133a; font-size: 16px; line-height: 1; border: 0; cursor: pointer; transition: background .3s, color .3s }
+.ni-full:hover { background: #bf1722; color: #fff }

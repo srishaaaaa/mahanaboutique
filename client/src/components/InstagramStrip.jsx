@@ -101,6 +101,7 @@ export default function InstagramStrip() {
                   <div className={`ni-tile ${r ? '' : 'is-empty'}`} onClick={r ? e => { if (!e.target.closest('a,button')) setView({ list: videos, index: i }) } : undefined} style={r ? { cursor: 'pointer' } : undefined}>
                     {r ? (r.embed ? <iframe className="ni-embed" src={r.embed} title={r.alt || 'Instagram reel'} loading="lazy" scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen /> : <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} />) : <BlankFrame label={`Reel ${i + 1}`} kind="video" to="/admin/reels" where="Reels & Gallery" />}
                     <span className="ni-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                    {r?.embed && <button className="ni-full" onClick={() => setView({ list: videos, index: i })} aria-label="Watch full screen">⤢</button>}
                     {r?.href && <a className="ni-open" href={r.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
                   </div>
                 </Reveal>
