@@ -19,6 +19,8 @@ const OWN_SCROLL = '[role="dialog"], .overlay-root, .mega, .search, .mobile-menu
 
 export default function SmoothScroll() {
   useEffect(() => {
+    return; // native scrolling: Lenis ran scrolling on the main thread, which stuttered whenever videos or embeds were playing
+    // eslint-disable-next-line no-unreachable
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return; // touch screens: native scrolling
     lenis = new Lenis({ duration: 1.05, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true, prevent: node => !!node.closest?.(OWN_SCROLL) });

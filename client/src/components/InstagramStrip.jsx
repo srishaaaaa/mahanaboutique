@@ -34,6 +34,13 @@ function Reel({ post, label, fallbackUrl }) {
   );
 }
 
+// A pasted Instagram reel is a whole embedded Instagram page, so it only loads when tapped (several at once made the page lag).
+function EmbedReel({ post, label }) {
+  const [on, setOn] = useState(false);
+  if (on) return <iframe className="ni-embed" src={post.embed} title={label} scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen />;
+  return <button className="ni-facade" onClick={() => setOn(true)} aria-label={`Play ${label}`}><span className="ni-facade-play" aria-hidden="true"><Play /></span><b>Tap to play</b><small>Instagram reel</small></button>;
+}
+
 // Full-screen viewer for a reel or photo: Back arrow, close, previous / next, Esc and arrow keys.
 function MediaViewer({ items, index, setIndex, onClose }) {
   const ref = useRef(); useModal(true, onClose, ref);
@@ -99,7 +106,7 @@ export default function InstagramStrip() {
               return (
                 <Reveal as="li" key={(r?.video || r?.embed || 'empty') + i} delay={(i % 6) * 0.06} className="ni-reel">
                   <div className={`ni-tile ${r ? '' : 'is-empty'}`} onClick={r ? e => { if (!e.target.closest('a,button')) setView({ list: videos, index: i }) } : undefined} style={r ? { cursor: 'pointer' } : undefined}>
-                    {r ? (r.embed ? <iframe className="ni-embed" src={r.embed} title={r.alt || 'Instagram reel'} loading="lazy" scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen /> : <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} />) : <BlankFrame label={`Reel ${i + 1}`} kind="video" to="/admin/reels" where="Reels & Gallery" />}
+                    {r ? (r.embed ? <EmbedReel post={r} label={r.alt || 'Instagram reel'} /> : <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} />) : <BlankFrame label={`Reel ${i + 1}`} kind="video" to="/admin/reels" where="Reels & Gallery" />}
                     <span className="ni-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                     {r?.embed && <button className="ni-full" onClick={() => setView({ list: videos, index: i })} aria-label="Watch full screen">⤢</button>}
                     {r?.href && <a className="ni-open" href={r.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}

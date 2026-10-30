@@ -38,9 +38,9 @@ export function mediaPublic({ db }) {
     const id = z.coerce.number().int().positive().parse(req.params.id);
     const etag = `"m${id}"`;
     if (req.get('if-none-match') === etag) return res.status(304).end();
-    const f = await one(db, 'SELECT data, mime FROM media_files WHERE id = $1', [id]);
+    const f = await one(db, 'SELECT mime, octet_length(data) AS total FROM media_files WHERE id = $1', [id]); // metadata only; the bytes are read below, and only the part that was asked for
     if (!f) throw new HttpError(404, 'Image not found');
-    const total = f.data.length;
+    const total = Number(f.total);
     const base = { 'Content-Type': f.mime, 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=31536000, immutable', ETag: etag, 'X-Content-Type-Options': 'nosniff', 'Cross-Origin-Resource-Policy': 'cross-origin' };
     const rg = /^bytes=(\d*)-(\d*)$/.exec(req.get('range') || '');
     if (rg && (rg[1] || rg[2])) {
@@ -48,10 +48,11 @@ export function mediaPublic({ db }) {
       s = Math.max(0, s);
       if (s > e || s >= total) { res.statusCode = 416; res.setHeader('Content-Range', `bytes */${total}`); return res.end() }
       res.statusCode = 206; for (const [k, v] of Object.entries({ ...base, 'Content-Range': `bytes ${s}-${e}/${total}`, 'Content-Length': e - s + 1 })) res.setHeader(k, v);
-      return res.end(f.data.subarray(s, e + 1));
+      const part = await one(db, 'SELECT substring(data from $2::int for $3::int) AS part FROM media_files WHERE id = $1', [id, s + 1, e - s + 1]);
+      return res.end(part.part);
     }
     res.statusCode = 200; for (const [k, v] of Object.entries({ ...base, 'Content-Length': total })) res.setHeader(k, v);
-    res.end(f.data);
+    res.end((await one(db, 'SELECT data FROM media_files WHERE id = $1', [id])).data);
   }));
   return r;
 }
