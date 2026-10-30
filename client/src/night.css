@@ -1285,3 +1285,7 @@
 .home .nx-eyebrow i, .catalog .cat-hero .eyebrow::before { background: radial-gradient(circle at 35% 30%, #e33944, #8f0f1a); box-shadow: 0 0 12px rgba(191, 23, 34, .4) }
 .home .nt-heart.on, .catalog .pcard-wish.on { background: #bf1722; color: #fff; border-color: #bf1722 }
 .home .nm-card .nx-eyebrow i { background: var(--n-grad) }
+
+/* the sticky filter bar sticks below the floating header, not under it */
+.catalog .toolbar { top: 112px }
+@media (max-width: 900px) { .catalog .toolbar { top: 84px } }
