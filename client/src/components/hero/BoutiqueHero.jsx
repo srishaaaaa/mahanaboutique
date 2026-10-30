@@ -65,15 +65,16 @@ export default function BoutiqueHero() {
         </aside>
 
         <div className="bh-panel">
+          <div className="bh-frame">
           <motion.p className="bh-pill" {...anim(0.1)}><i aria-hidden="true" />{campaign.label}</motion.p>
           <div className="bh-headline">
-            <EditorialTypography lines={['Tradition,', 'redefined.']} show={show} className="bh-h" label="Tradition, redefined." />
+            <EditorialTypography lines={['Elegance,', 'woven for you.']} show={show} className="bh-h" label="Elegance, woven for you." />
             <i className="bh-spark s1" aria-hidden="true" /><i className="bh-spark s2" aria-hidden="true" />
           </div>
           <div className="bh-orn" aria-hidden="true"><Motif /></div>
           <div className="bh-row">
           <div className="bh-col">
-          <motion.p className="bh-desc" {...anim(0.7)}>Traditional Indian wear, accessories, custom design and tailoring. Where fashion finds you.</motion.p>
+          <motion.p className="bh-desc" {...anim(0.7)}>Sarees, lehengas and custom tailoring, crafted for every celebration of your life.</motion.p>
           <motion.ul className="bh-facts" {...anim(0.8)}><li>ALL KINDS OF SAREES</li><li>FOR EVERY OCCASION</li></motion.ul>
           <motion.div className="bh-cta" {...anim(0.9)}>
             <Magnetic strength={0.2}><Link className="bh-btn" to="/shop?category=sarees" data-cursor="EXPLORE"><span>EXPLORE COLLECTION</span><b aria-hidden="true"><i>→</i></b></Link></Magnetic>
@@ -91,6 +92,7 @@ export default function BoutiqueHero() {
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true"><path d="M2.5 6.5h11v9h-11zM13.5 9.5h4.2l3 3.2v2.8h-7.2" /><circle cx="7" cy="17" r="1.8" /><circle cx="17" cy="17" r="1.8" /></svg>Trusted Worldwide</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.4 3.1 8 7.5 9.5 4.4-1.5 7.5-5.1 7.5-9.5V6z" /><path d="m9 12 2.2 2.2L15.5 10" /></svg>Timeless Designs</li>
           </ul>
+          </div>
           <div className="bh-tint" aria-hidden="true" />
         </div>
 

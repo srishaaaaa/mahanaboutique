@@ -847,3 +847,285 @@
 .home .nm-card .nx-eyebrow { color: #f8d9e4; border-color: rgba(248, 217, 228, .45); background: rgba(255, 255, 255, .04) }
 .home .nm-card .nx-ghost { color: #f8d9e4; border-color: rgba(243, 191, 209, .45); background: rgba(255, 255, 255, .03) }
 .home .nm-card .nx-ghost:hover { background: rgba(243, 191, 209, .12); color: #fff }
+
+/* =====================================================================
+   Shop, collection, search and collections pages: the homepage look.
+   White page with vines, sparkles and soft glows; a beige framed title box;
+   beige product cards with black text; pink-gradient buttons.
+   ===================================================================== */
+.catalog { --k: #1f1512; --k2: rgba(31, 21, 18, .72); --b-line: rgba(176, 130, 95, .38); --b-card: linear-gradient(160deg, #f7efe5 0%, #efe3d4 55%, #e7d6c2 100%);
+  position: relative; isolation: isolate; background: #fff; color: var(--k) }
+.catalog::before { content: ''; position: absolute; inset: 0 0 auto; height: 900px; z-index: -1; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20320%20320'%3E%20%3Cdefs%3E%3CradialGradient%20id%3D'p'%20cx%3D'50%25'%20cy%3D'80%25'%20r%3D'80%25'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%23fbe3ec'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%23eb92b0'%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%20%3Cg%20fill%3D'none'%20stroke%3D'%23e88aab'%20stroke-width%3D'1.4'%20stroke-linecap%3D'round'%20stroke-opacity%3D'.7'%3E%20%3Cpath%20d%3D'M4%20316%20C%2040%20250%2070%20220%20110%20196%20S%20190%20150%20214%2096%20S%20262%2026%20316%206'%2F%3E%20%3Cpath%20d%3D'M110%20196%20C%20130%20176%20150%20172%20176%20178'%20%2F%3E%3Cpath%20d%3D'M214%2096%20C%20236%2092%20254%2098%20268%20112'%2F%3E%3Cpath%20d%3D'M60%20248%20C%2050%20226%2052%20206%2064%20190'%2F%3E%3Cpath%20d%3D'M168%20140%20C%20160%20120%20162%20100%20176%2086'%2F%3E%20%3C%2Fg%3E%20%3Cpath%20d%3D'M0%200%20C%208%20-10%2022%20-10%2030%200%20C%2022%2010%208%2010%200%200Z'%20transform%3D'translate(40%20266)%20rotate(-70)'%20fill%3D'%23f3bfd1'%20fill-opacity%3D'.75'%2F%3E%3Cpath%20d%3D'M0%200%20L%2026%200'%20transform%3D'translate(40%20266)%20rotate(-70)'%20stroke%3D'%23e88aab'%20stroke-width%3D'.7'%20stroke-opacity%3D'.6'%2F%3E%3Cpath%20d%3D'M0%200%20C%207.2%20-9%2019.8%20-9%2027%200%20C%2019.8%209%207.2%209%200%200Z'%20transform%3D'translate(86%20214)%20rotate(-40)'%20fill%3D'%23f3bfd1'%20fill-opacity%3D'.75'%2F%3E%3Cpath%20d%3D'M0%200%20L%2023.400000000000002%200'%20transform%3D'translate(86%20214)%20rotate(-40)'%20stroke%3D'%23e88aab'%20stroke-width%3D'.7'%20stroke-opacity%3D'.6'%2F%3E%3Cpath%20d%3D'M0%200%20C%206.4%20-8%2017.6%20-8%2024%200%20C%2017.6%208%206.4%208%200%200Z'%20transform%3D'translate(140%20178)%20rotate(-10)'%20fill%3D'%23f3bfd1'%20fill-opacity%3D'.75'%2F%3E%3Cpath%20d%3D'M0%200%20L%2020.8%200'%20transform%3D'translate(140%20178)%20rotate(-10)'%20stroke%3D'%23e88aab'%20stroke-width%3D'.7'%20stroke-opacity%3D'.6'%2F%3E%3Cpath%20d%3D'M0%200%20C%207.2%20-9%2019.8%20-9%2027%200%20C%2019.8%209%207.2%209%200%200Z'%20transform%3D'translate(190%20132)%20rotate(-60)'%20fill%3D'%23f3bfd1'%20fill-opacity%3D'.75'%2F%3E%3Cpath%20d%3D'M0%200%20L%2023.400000000000002%200'%20transform%3D'translate(190%20132)%20rotate(-60)'%20stroke%3D'%23e88aab'%20stroke-width%3D'.7'%20stroke-opacity%3D'.6'%2F%3E%3Cpath%20d%3D'M0%200%20C%206.4%20-8%2017.6%20-8%2024%200%20C%2017.6%208%206.4%208%200%200Z'%20transform%3D'translate(236%2070)%20rotate(-30)'%20fill%3D'%23f3bfd1'%20fill-opacity%3D'.75'%2F%3E%3Cpath%20d%3D'M0%200%20L%2020.8%200'%20transform%3D'translate(236%2070)%20rotate(-30)'%20stroke%3D'%23e88aab'%20stroke-width%3D'.7'%20stroke-opacity%3D'.6'%2F%3E%3Cpath%20d%3D'M0%200%20C%205.6%20-7%2015.399999999999999%20-7%2021%200%20C%2015.399999999999999%207%205.6%207%200%200Z'%20transform%3D'translate(120%20190)%20rotate(160)'%20fill%3D'%23f3bfd1'%20fill-opacity%3D'.75'%2F%3E%3Cpath%20d%3D'M0%200%20L%2018.2%200'%20transform%3D'translate(120%20190)%20rotate(160)'%20stroke%3D'%23e88aab'%20stroke-width%3D'.7'%20stroke-opacity%3D'.6'%2F%3E%3Cpath%20d%3D'M0%200%20C%205.6%20-7%2015.399999999999999%20-7%2021%200%20C%2015.399999999999999%207%205.6%207%200%200Z'%20transform%3D'translate(270%2036)%20rotate(-10)'%20fill%3D'%23f3bfd1'%20fill-opacity%3D'.75'%2F%3E%3Cpath%20d%3D'M0%200%20L%2018.2%200'%20transform%3D'translate(270%2036)%20rotate(-10)'%20stroke%3D'%23e88aab'%20stroke-width%3D'.7'%20stroke-opacity%3D'.6'%2F%3E%20%3Cg%20transform%3D'translate(176%20178)%20rotate(10)'%3E%3Cellipse%20cx%3D'0'%20cy%3D'-12'%20rx%3D'7.4399999999999995'%20ry%3D'12'%20transform%3D'rotate(0)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-12'%20rx%3D'7.4399999999999995'%20ry%3D'12'%20transform%3D'rotate(72)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-12'%20rx%3D'7.4399999999999995'%20ry%3D'12'%20transform%3D'rotate(144)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-12'%20rx%3D'7.4399999999999995'%20ry%3D'12'%20transform%3D'rotate(216)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-12'%20rx%3D'7.4399999999999995'%20ry%3D'12'%20transform%3D'rotate(288)'%20fill%3D'url(%23p)'%2F%3E%3Ccircle%20r%3D'4.5600000000000005'%20fill%3D'%23f8e6bf'%2F%3E%3Ccircle%20r%3D'2.16'%20fill%3D'%23d7688d'%2F%3E%3C%2Fg%3E%3Cg%20transform%3D'translate(268%20112)%20rotate(-20)'%3E%3Cellipse%20cx%3D'0'%20cy%3D'-10'%20rx%3D'6.2'%20ry%3D'10'%20transform%3D'rotate(0)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-10'%20rx%3D'6.2'%20ry%3D'10'%20transform%3D'rotate(72)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-10'%20rx%3D'6.2'%20ry%3D'10'%20transform%3D'rotate(144)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-10'%20rx%3D'6.2'%20ry%3D'10'%20transform%3D'rotate(216)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-10'%20rx%3D'6.2'%20ry%3D'10'%20transform%3D'rotate(288)'%20fill%3D'url(%23p)'%2F%3E%3Ccircle%20r%3D'3.8'%20fill%3D'%23f8e6bf'%2F%3E%3Ccircle%20r%3D'1.7999999999999998'%20fill%3D'%23d7688d'%2F%3E%3C%2Fg%3E%3Cg%20transform%3D'translate(64%20190)%20rotate(30)'%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(0)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(72)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(144)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(216)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(288)'%20fill%3D'url(%23p)'%2F%3E%3Ccircle%20r%3D'3.42'%20fill%3D'%23f8e6bf'%2F%3E%3Ccircle%20r%3D'1.6199999999999999'%20fill%3D'%23d7688d'%2F%3E%3C%2Fg%3E%3Cg%20transform%3D'translate(176%2086)%20rotate(0)'%3E%3Cellipse%20cx%3D'0'%20cy%3D'-11'%20rx%3D'6.82'%20ry%3D'11'%20transform%3D'rotate(0)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-11'%20rx%3D'6.82'%20ry%3D'11'%20transform%3D'rotate(72)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-11'%20rx%3D'6.82'%20ry%3D'11'%20transform%3D'rotate(144)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-11'%20rx%3D'6.82'%20ry%3D'11'%20transform%3D'rotate(216)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-11'%20rx%3D'6.82'%20ry%3D'11'%20transform%3D'rotate(288)'%20fill%3D'url(%23p)'%2F%3E%3Ccircle%20r%3D'4.18'%20fill%3D'%23f8e6bf'%2F%3E%3Ccircle%20r%3D'1.98'%20fill%3D'%23d7688d'%2F%3E%3C%2Fg%3E%3Cg%20transform%3D'translate(316%206)%20rotate(0)'%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(0)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(72)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(144)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(216)'%20fill%3D'url(%23p)'%2F%3E%3Cellipse%20cx%3D'0'%20cy%3D'-9'%20rx%3D'5.58'%20ry%3D'9'%20transform%3D'rotate(288)'%20fill%3D'url(%23p)'%2F%3E%3Ccircle%20r%3D'3.42'%20fill%3D'%23f8e6bf'%2F%3E%3Ccircle%20r%3D'1.6199999999999999'%20fill%3D'%23d7688d'%2F%3E%3C%2Fg%3E%20%3Cellipse%20cx%3D'150'%20cy%3D'160'%20rx%3D'4'%20ry%3D'7'%20transform%3D'rotate(30%20150%20160)'%20fill%3D'%23eb92b0'%20fill-opacity%3D'.8'%2F%3E%3Cellipse%20cx%3D'250'%20cy%3D'84'%20rx%3D'4'%20ry%3D'7'%20transform%3D'rotate(-40%20250%2084)'%20fill%3D'%23eb92b0'%20fill-opacity%3D'.8'%2F%3E%3Cellipse%20cx%3D'98'%20cy%3D'206'%20rx%3D'4'%20ry%3D'7'%20transform%3D'rotate(60%2098%20206)'%20fill%3D'%23eb92b0'%20fill-opacity%3D'.8'%2F%3E%3Cellipse%20cx%3D'296'%20cy%3D'24'%20rx%3D'4'%20ry%3D'7'%20transform%3D'rotate(20%20296%2024)'%20fill%3D'%23eb92b0'%20fill-opacity%3D'.8'%2F%3E%20%3C%2Fsvg%3E") no-repeat right -40px top 60px / 300px, url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2020%2020'%3E%3Cpath%20d%3D'M10%200%2012%208%2020%2010%2012%2012%2010%2020%208%2012%200%2010%208%208Z'%20fill%3D'%23eb92b0'%2F%3E%3C%2Fsvg%3E") no-repeat 6% 30% / 16px, url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2020%2020'%3E%3Cpath%20d%3D'M10%200%2012%208%2020%2010%2012%2012%2010%2020%208%2012%200%2010%208%208Z'%20fill%3D'%23b9b3ee'%2F%3E%3C%2Fsvg%3E") no-repeat 50% 12% / 12px, url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2020%2020'%3E%3Cpath%20d%3D'M10%200%2012%208%2020%2010%2012%2012%2010%2020%208%2012%200%2010%208%208Z'%20fill%3D'%23eb92b0'%2F%3E%3C%2Fsvg%3E") no-repeat 94% 62% / 12px, url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2020%2020'%3E%3Cpath%20d%3D'M10%200%2012%208%2020%2010%2012%2012%2010%2020%208%2012%200%2010%208%208Z'%20fill%3D'%23b9b3ee'%2F%3E%3C%2Fsvg%3E") no-repeat 3% 70% / 10px,
+    radial-gradient(30% 40% at 4% 10%, rgba(243, 191, 209, .45), transparent 70%), radial-gradient(26% 34% at 96% 30%, rgba(248, 230, 191, .5), transparent 70%), radial-gradient(30% 40% at 60% 70%, rgba(185, 179, 238, .18), transparent 70%) }
+
+/* title: a beige framed box (the purple banner is gone) */
+.catalog .cat-hero, .catalog .cat-hero.with-banner { min-height: 0; display: block; padding: 132px var(--n-pad) 26px; color: var(--k); --ink: var(--k); border-radius: 0; background: none; overflow: visible }
+.catalog .cat-banner { display: none }
+.catalog .cat-hero-in { position: relative; isolation: isolate; max-width: 1400px; margin: 0 auto; gap: 12px; justify-items: start; overflow: hidden;
+  padding: clamp(34px, 4.5vw, 64px) clamp(28px, 5vw, 76px); border-radius: 36px; border: 1px solid var(--b-line);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat 20px 20px, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat right 20px top 20px, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat left 20px bottom 20px, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23c4507a'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat right 20px bottom 20px,
+    radial-gradient(2px 2px at 70% 22%, #c9a36b, transparent), radial-gradient(1.5px 1.5px at 84% 70%, #c9a36b, transparent), radial-gradient(2px 2px at 58% 82%, #c9a36b, transparent),
+    radial-gradient(40% 70% at 80% 50%, rgba(255, 250, 242, .75), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M22 2 42 22 22 42 2 22Z' fill='none' stroke='%23b07a5a' stroke-opacity='.12'/%3E%3C/svg%3E"),
+    linear-gradient(150deg, #f6eee4 0%, #f0e5d8 50%, #e8d8c6 100%);
+  box-shadow: 0 30px 70px rgba(120, 80, 50, .14) }
+.catalog .cat-hero-in::after { content: ''; position: absolute; inset: 12px; z-index: -1; border-radius: 26px; border: 1px solid rgba(196, 140, 110, .32); pointer-events: none }
+.catalog .cat-hero-in::before { content: 'Mahana'; position: absolute; z-index: -1; right: 4%; top: 50%; translate: 0 -50%; pointer-events: none; white-space: nowrap;
+  font: 400 clamp(110px, 15vw, 230px)/1 'Great Vibes', cursive; color: rgba(196, 80, 122, .09) }
+.catalog .cat-hero .eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 6px 18px 6px 6px; border: 1px solid rgba(31, 21, 18, .25); border-radius: 999px; background: rgba(255, 255, 255, .6);
+  font: 700 11px/1 var(--n-sans); letter-spacing: .2em; color: var(--k) }
+.catalog .cat-hero .eyebrow::before { content: ''; width: 20px; height: 20px; border-radius: 50%; background: var(--n-grad); box-shadow: 0 0 12px rgba(232, 138, 171, .5) }
+.catalog .cat-hero h1 { margin: 6px 0 0; font-family: var(--n-serif); font-weight: 400; font-size: clamp(40px, 6vw, 92px); line-height: 1.02; letter-spacing: -.01em; text-transform: none; color: var(--k) }
+.catalog .cat-hero h1::after { content: ''; display: block; width: min(240px, 60%); height: 22px; margin-top: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 22'%3E%3Cpath d='M0 11h100M140 11h100' stroke='%23c4507a' stroke-opacity='.5'/%3E%3Cpath d='M120 2 129 11 120 20 111 11Z' fill='%23c4507a' fill-opacity='.18' stroke='%23c4507a'/%3E%3Cpath d='M120 7 124 11 120 15 116 11Z' fill='%23c4507a'/%3E%3C/svg%3E") no-repeat left center / contain }
+.catalog .cat-intro { max-width: 46ch; opacity: 1; font-size: clamp(15px, 1.15vw, 18px); line-height: 1.7; color: var(--k2) }
+
+/* toolbar */
+.catalog .toolbar { background: rgba(255, 255, 255, .9); border-bottom: 1px solid var(--b-line); border-top: 1px solid var(--b-line); margin-top: 18px }
+.catalog .toolbar .btn { border-radius: 999px; border-color: var(--k); color: var(--k); font-weight: 700; letter-spacing: .2em }
+.catalog .toolbar .btn:hover { background: var(--n-grad); border-color: transparent; color: var(--k) }
+.catalog .toolbar .muted { color: var(--k2) }
+.catalog .toolbar select { border-radius: 999px; border: 1px solid var(--b-line); background-color: #f7efe5; color: var(--k); padding: 10px 18px }
+.catalog .views i { background: var(--k) }
+.catalog .chip.on { background: var(--k); color: #fff; border-color: var(--k) }
+
+/* product cards: beige card around the photo, black words */
+.catalog .pcard:not(.skeleton) { padding: 10px 10px 16px; border-radius: 28px; background: var(--b-card); border: 1px solid var(--b-line); box-shadow: 0 22px 50px rgba(120, 80, 50, .12); transition: box-shadow .5s, border-color .5s }
+.catalog .pcard:not(.skeleton):hover { border-color: rgba(196, 80, 122, .45); box-shadow: 0 26px 60px rgba(120, 80, 50, .18), 0 0 40px rgba(232, 138, 171, .16) }
+.catalog .pcard-frame { border-radius: 20px; background: #e9dccb }
+.catalog .pcard-meta { padding: 14px 6px 0 }
+.catalog .pcard-meta h3 { font-family: var(--n-serif); font-weight: 500; color: var(--k) }
+.catalog .pcard-meta .muted, .catalog .pcard-sizes { color: var(--k2); opacity: 1 }
+.catalog .pcard-price { color: var(--k); font-weight: 700 }
+.catalog .pcard-wish { background: rgba(255, 255, 255, .85); color: var(--k); border: 1px solid var(--b-line) }
+.catalog .pcard-wish.on { background: var(--n-grad); color: var(--k) }
+.catalog .pcard-add { background: var(--n-grad); color: var(--k); border: 0; border-radius: 999px }
+.catalog .pcard-add:hover:not(:disabled) { background: var(--k); color: #fff }
+.catalog .pcard-actions .pcard-quick { border-radius: 999px; background: rgba(255, 255, 255, .92); color: var(--k) }
+.catalog .pcard-badge { border-radius: 999px; background: var(--k); color: #fff }
+
+/* collections page cards: beige fade with black words */
+.catalog .col-card { border: 1px solid var(--b-line); box-shadow: 0 22px 50px rgba(120, 80, 50, .14); color: var(--k) }
+.catalog .col-card::after { background: linear-gradient(0deg, #f3e8db 4%, rgba(243, 232, 219, .9) 26%, transparent 55%) }
+.catalog .col-txt .serif { font-weight: 400; color: var(--k) } .catalog .col-txt .eyebrow { color: var(--k2); font-weight: 700 }
+
+/* load more, empty states */
+.catalog .center .btn.dark, .catalog .empty .btn { border: 0; border-radius: 999px; background: var(--n-grad); color: var(--k); font-weight: 700; padding: 15px 30px; box-shadow: 0 12px 30px rgba(236, 154, 182, .35) }
+.catalog .empty .serif.big { color: var(--k); font-weight: 400 }
+
+@media (max-width: 600px) {
+  .catalog .cat-hero, .catalog .cat-hero.with-banner { padding: 104px 14px 18px }
+  .catalog .cat-hero-in { border-radius: 26px; padding: 40px 24px 44px }
+  .catalog .cat-hero-in::after { inset: 8px; border-radius: 20px }
+  .catalog .pcard:not(.skeleton) { padding: 6px 6px 12px; border-radius: 20px }
+  .catalog .pcard-frame { border-radius: 15px }
+  .catalog::before { background-size: 190px, 14px, 10px, 10px, 8px, auto, auto, auto; background-position: right -30px top 50px, 6% 30%, 50% 12%, 94% 62%, 3% 70%, 0 0, 0 0, 0 0 }
+}
+
+/* =====================================================================
+   Reload splash: script "Mahana" writes itself in, the tagline follows,
+   then the panel lifts away with a curved edge (ReloadSplash.jsx).
+   ===================================================================== */
+.rs { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; overflow: hidden; color: #e88aab;
+  background: radial-gradient(60% 50% at 50% 42%, #2e2b7b 0, #1c1a52 70%, #110f38 100%);
+  clip-path: ellipse(150% 150% at 50% 0%); transition: clip-path .9s cubic-bezier(.76, 0, .24, 1) }
+.rs.is-out { clip-path: ellipse(150% 0% at 50% 0%) }
+.rs-sky { position: absolute; inset: 0; pointer-events: none }
+.rs-sky i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fbe3ec; box-shadow: 0 0 10px 3px rgba(232, 138, 171, .55); animation: fx-twinkle 3.2s ease-in-out infinite }
+.rs-in { position: relative; display: grid; justify-items: center; gap: 14px; transition: transform .9s cubic-bezier(.76, 0, .24, 1), opacity .6s ease }
+.rs.is-out .rs-in { transform: translateY(-60px); opacity: 0 }
+.rs-emblem { width: 46px; height: 46px; color: #f3bfd1; opacity: 0; animation: rs-pop .7s .1s cubic-bezier(.22, 1, .36, 1) forwards, fx-spin 14s linear infinite }
+.rs-name { position: relative; display: block; padding: 0 .12em; line-height: 1 }
+.rs-name b { display: block; font: 400 clamp(84px, 14vw, 170px)/1.1 'Great Vibes', cursive; color: #f3bfd1; text-shadow: 0 0 40px rgba(232, 138, 171, .45);
+  clip-path: inset(0 100% 0 0); animation: rs-write 1.15s .25s cubic-bezier(.65, 0, .35, 1) forwards }
+/* a glowing pen tip runs along with the writing */
+.rs-pen { position: absolute; top: 50%; left: 0; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 18px 6px rgba(243, 191, 209, .9), 0 0 40px 12px rgba(232, 138, 171, .5);
+  opacity: 0; animation: rs-pen 1.15s .25s cubic-bezier(.65, 0, .35, 1) forwards }
+.rs-line { display: flex; align-items: center; gap: 12px; width: min(280px, 70vw); color: #e88aab; opacity: 0; animation: rs-pop .6s .95s ease forwards }
+.rs-line i { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(232, 138, 171, .8)) } .rs-line i:last-child { background: linear-gradient(90deg, rgba(232, 138, 171, .8), transparent) }
+.rs-line svg { width: 34px; height: 20px }
+.rs-tag { display: flex; font: 700 clamp(10px, 1.1vw, 13px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .5em; padding-left: .5em; color: #f8d9e4 }
+.rs-tag em { font-style: normal; opacity: 0; transform: translateY(8px); animation: rs-letter .5s ease forwards }
+@keyframes rs-write { to { clip-path: inset(0 0 0 0) } }
+@keyframes rs-pen { 0% { left: 2%; opacity: 0 } 10% { opacity: 1 } 88% { opacity: 1 } 100% { left: 98%; opacity: 0 } }
+@keyframes rs-pop { from { opacity: 0; transform: scale(.85) } to { opacity: 1; transform: none } }
+@keyframes rs-letter { to { opacity: 1; transform: none } }
+@media (prefers-reduced-motion: reduce) {
+  .rs { transition: none } .rs.is-out { clip-path: none }
+  .rs-name b { clip-path: none; animation: none } .rs-pen { display: none }
+  .rs-emblem, .rs-line, .rs-tag em, .rs-sky i { animation: none; opacity: 1; transform: none }
+}
+
+/* collections page: plain title on the white (no box) */
+.catalog .cat-hero.plain .cat-hero-in { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible }
+.catalog .cat-hero.plain .cat-hero-in::before, .catalog .cat-hero.plain .cat-hero-in::after { content: none }
+
+/* collections page cards: photo on top with no fade, name and piece count on a plain beige strip below */
+.catalog .col-card { aspect-ratio: auto; display: flex; flex-direction: column; padding: 10px; background: linear-gradient(160deg, #f7efe5 0%, #efe3d4 55%, #e7d6c2 100%) }
+.catalog .col-card::after { content: none }
+.catalog .col-img { position: relative; inset: auto; aspect-ratio: 4 / 4.6; border-radius: 20px; overflow: hidden }
+.catalog .col-card:hover .col-img { transform: none } .catalog .col-img > * { transition: transform 1.2s var(--n-ease) } .catalog .col-card:hover .col-img > * { transform: scale(1.05) }
+.catalog .col-txt { position: static; padding: 16px 10px 8px }
+
+/* =====================================================================
+   No fades over photos anywhere: photos are shown clean, and the words
+   that sat on a fade move to a plain beige strip below the photo.
+   ===================================================================== */
+.home .nt-photo::after, .home .ni-tile::after, .home .ny-photo::after, .home .nk-arch::after { content: none }
+.home .nt-no { text-shadow: 0 1px 10px rgba(0, 0, 0, .55) }
+
+/* featured categories: name under the arch */
+.home .nk-card { background: linear-gradient(160deg, #f7efe5 0%, #efe3d4 55%, #e7d6c2 100%) }
+.home .nk-txt { position: static; padding: 14px 8px 30px }
+
+/* choose your world: photo on top, words on a beige strip */
+.home .cf3-card { display: flex; flex-direction: column; background: linear-gradient(160deg, #f7efe5 0%, #efe3d4 55%, #e7d6c2 100%) }
+.home .cf3-shade { display: none }
+.home .cf3-img { position: relative; inset: auto; z-index: 0; flex: 1; min-height: 0; margin: 10px 10px 0; border-radius: 22px; overflow: hidden }
+.home .cf3-txt { position: static; padding: 16px 22px 20px }
+.home .cf3-card::after { z-index: 2 }
+
+/* reviews: photo on top, the quote on a beige panel below */
+.home .nr-card.has-photo { padding: 0; justify-content: flex-start; background: linear-gradient(160deg, #f7efe5 0%, #efe3d4 55%, #e7d6c2 100%) }
+.home .nr-card.has-photo::after { content: none }
+.home .nr-card.has-photo .nr-bg { position: relative; inset: auto; z-index: 0; flex: none; height: 52%; margin: 10px 10px 0; border-radius: 20px; overflow: hidden }
+.home .nr-card.has-photo .nr-top { position: absolute; z-index: 1; top: 22px; left: 22px; right: 22px }
+.home .nr-card.has-photo .nr-body { flex: 1; align-content: start; gap: 10px; padding: 14px 20px 18px }
+.home .nr-card.has-photo .nr-mark { height: 26px; margin-bottom: -14px; font-size: 56px }
+.home .nr-card.has-photo .nr-quote { font-size: 16.5px; -webkit-line-clamp: 3 }
+.home .nr-card.has-photo .nr-by { padding-top: 10px }
+@media (max-width: 600px) { .home .nr-card.has-photo { height: 470px } }
+
+/* map in its normal colours (no night filter or tint); the card stays as it is */
+.nm-map iframe { filter: none }
+.nm-map::after, .nm-shade { display: none }
+.nm-card { background: rgba(24, 21, 70, .94) }
+
+/* =====================================================================
+   Hero words in a slim frosted-glass card that hugs the text: fine double
+   border, diamond corners, centred beside the photo and inside the screen.
+   ===================================================================== */
+.bh .bh-frame { display: flex; flex-direction: column }
+@media (min-width: 1101px) {
+  .bh .bh-panel::before, .bh .bh-panel::after { content: none !important }
+  .bh .bh-panel { padding: 128px 24px 56px clamp(40px, 5.2vw, 104px) !important; justify-content: center; align-items: flex-start }
+  .bh .bh-frame { position: relative; isolation: isolate; width: fit-content; max-width: 100%; padding: clamp(30px, 2.6vw, 44px) clamp(32px, 3vw, 54px) clamp(26px, 2.2vw, 36px);
+    border-radius: 32px; border: 1px solid rgba(243, 191, 209, .34);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat 16px 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 16px top 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat left 16px bottom 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 16px bottom 16px,
+      radial-gradient(70% 60% at 20% 0%, rgba(232, 138, 171, .14), transparent 70%),
+      linear-gradient(160deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .02) 60%, rgba(255, 255, 255, .04));
+    backdrop-filter: blur(8px) saturate(1.15); -webkit-backdrop-filter: blur(8px) saturate(1.15);
+    box-shadow: 0 40px 90px rgba(5, 4, 26, .38), inset 0 1px 0 rgba(255, 255, 255, .14) }
+  .bh .bh-frame::after { content: ''; position: absolute; inset: 9px; z-index: -1; border-radius: 24px; border: 1px solid rgba(243, 191, 209, .14); pointer-events: none }
+  .bh .bh-frame .bh-headline { margin-top: 20px }
+  .bh .bh-frame .bh-headline .et { font-size: clamp(46px, 4.6vw, 84px) }
+  .bh .bh-frame .bh-orn { margin: 18px 0 2px }
+  .bh .bh-frame .bh-row { margin-top: 10px }
+  .bh .bh-frame .bh-desc { margin-top: 14px; max-width: 36ch }
+  .bh .bh-frame .bh-facts { margin: 18px 0 22px }
+  .bh .bh-frame .bh-feats { margin-top: 26px; padding-top: 20px }
+}
+@media (min-width: 1101px) and (max-width: 1599px) { .bh .bh-panel { padding-right: 48px !important } .bh .bh-frame .bh-headline .et { font-size: clamp(44px, 4.2vw, 66px) } .bh .bh-frame .bh-feats { gap: 12px 18px } }
+
+/* =====================================================================
+   Hero (wide screens): the photo fills the whole screen; it is drawn a little
+   wider than the screen and anchored left, so the model sits on the right and
+   the text card has the curtain side to itself.
+   ===================================================================== */
+@media (min-width: 1101px) {
+  .bh .bh-wrap { grid-template-columns: 1fr !important }
+  .bh .bh-model { position: absolute !important; inset: 0 !important; grid-column: 1 / -1; width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; z-index: 1 }
+  .bh .bh-model::before, .bh .bh-model::after { content: none !important }
+  .bh .bh-model .bh-arch { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; aspect-ratio: auto; border-radius: 0 !important; box-shadow: none !important;
+    -webkit-mask-image: none !important; mask-image: none !important; background: #1c1a52 !important }
+  .bh .bh-model .bh-arch .hs img { left: 0; right: auto; width: 118%; max-width: none }
+  .bh .bh-panel { grid-column: 1; grid-row: 1; z-index: 3; min-height: inherit }
+  .bh .hs-dots { left: auto; right: 40px; translate: none }
+  /* the card: a little more solid so the words stay crisp over the photo */
+  .bh .bh-frame { background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat 16px 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 16px top 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat left 16px bottom 16px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 22 22'%3E%3Cpath d='M11 1 21 11 11 21 1 11Z' fill='none' stroke='%23f3bfd1'/%3E%3Cpath d='M11 7 15 11 11 15 7 11Z' fill='%23f3bfd1'/%3E%3C/svg%3E") no-repeat right 16px bottom 16px,
+      radial-gradient(70% 60% at 20% 0%, rgba(232, 138, 171, .16), transparent 70%),
+      rgba(18, 16, 58, .58);
+    backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2) }
+}
+@media (min-width: 1101px) and (max-width: 1599px) { .bh .bh-model .bh-arch .hs img { width: 128% } }
+@media (min-width: 1101px) and (max-width: 1299px) { .bh .bh-model .bh-arch .hs img { width: 140% } }
+@media (min-width: 1101px) { .bh .bh-frame { max-width: min(620px, 40vw) } .bh .bh-frame .bh-headline .et { font-size: clamp(42px, 3.6vw, 66px) !important } .bh .bh-frame .et-mask:nth-child(2) { padding-left: .6em } .bh .bh-frame .bh-feats { gap: 12px 20px } }
+@media (min-width: 1300px) and (max-width: 1599px) { .bh .bh-model .bh-arch .hs img { width: 134% } }
+
+/* =====================================================================
+   Hero: no box — the words sit straight on the photo, over the curtain side,
+   with a soft shadow for legibility. Same layout from landscape tablets up.
+   ===================================================================== */
+@media (min-width: 900px) {
+  .bh .bh-wrap { grid-template-columns: 1fr !important }
+  .bh .bh-model { position: absolute !important; inset: 0 !important; grid-column: 1 / -1; width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; z-index: 1 }
+  .bh .bh-model::before, .bh .bh-model::after { content: none !important }
+  .bh .bh-model .bh-arch { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; border-radius: 0 !important; box-shadow: none !important;
+    -webkit-mask-image: none !important; mask-image: none !important; background: #1c1a52 !important }
+  .bh .bh-model .bh-arch .hs img { left: 0; right: auto; max-width: none }
+  .bh .bh-panel::before, .bh .bh-panel::after { content: none !important }
+  .bh .bh-panel { grid-column: 1; grid-row: 1; z-index: 3; padding: 120px 24px 64px clamp(40px, 6vw, 120px) !important; justify-content: center; align-items: flex-start; background: transparent !important }
+  .bh .hs-dots { left: auto; right: 40px; translate: none }
+  /* soft indigo vignette: the photo melts into the page at the corners and edges */
+  .bh .bh-wrap::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: radial-gradient(130% 120% at 62% 42%, transparent 52%, rgba(20, 18, 64, .55) 80%, rgba(14, 12, 46, .92) 100%), linear-gradient(to top, rgba(28, 26, 82, .8), transparent 90px) }
+
+  .bh .bh-frame, .bh .bh-frame::after { background: none !important; border: 0 !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important }
+  .bh .bh-frame::after { content: none !important }
+  .bh .bh-frame { padding: 0 !important; width: auto; max-width: min(600px, 40vw) !important; border-radius: 0 }
+  .bh .bh-frame .bh-headline .et { font-size: clamp(42px, 4vw, 76px) !important; text-shadow: 0 0 40px rgba(243, 191, 209, .25), 0 4px 24px rgba(5, 4, 26, .7) }
+  .bh .bh-frame :is(.bh-desc, .bh-facts li, .bh-feats li, .bh-link) { text-shadow: 0 2px 14px rgba(5, 4, 26, .85), 0 0 2px rgba(5, 4, 26, .6) }
+  .bh .bh-frame .bh-pill { background: rgba(15, 13, 51, .35); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px) }
+  .bh .bh-frame .bh-feats { border-top-color: rgba(248, 217, 228, .28) }
+}
+@media (min-width: 1600px) { .bh .bh-model .bh-arch .hs img { width: 118% } }
+@media (min-width: 1300px) and (max-width: 1599px) { .bh .bh-model .bh-arch .hs img { width: 134% } }
+@media (min-width: 900px) and (max-width: 1299px) { .bh .bh-model .bh-arch .hs img { width: 145% } }
+@media (min-width: 900px) and (max-width: 1100px) {
+  .bh .bh-side-l, .bh .bh-side-r { display: none }
+  .bh .bh-frame { max-width: 44vw !important } .bh .bh-frame .bh-headline .et { font-size: clamp(38px, 4.6vw, 52px) !important }
+  .bh .bh-frame .bh-feats { gap: 10px 16px } .bh .bh-frame .bh-feats li { font-size: 10px }
+}
+
+/* hero: a soft, edgeless shade behind the words so bright lamps never cut through the text */
+@media (min-width: 900px) {
+  .bh .bh-frame { position: relative; isolation: isolate }
+  .bh .bh-frame::before { content: ''; position: absolute; inset: -90px -110px -80px -140px; z-index: -1; pointer-events: none; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(14, 12, 46, .78), rgba(14, 12, 46, .5) 55%, transparent 100%);
+    backdrop-filter: blur(10px) brightness(.75); -webkit-backdrop-filter: blur(10px) brightness(.75);
+    -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); mask-image: radial-gradient(closest-side, #000 55%, transparent 100%) }
+}
+
+/* phones: the photo on top (her face clear), fading softly into indigo, the words below it */
+@media (max-width: 699px) {
+  .bh .bh-model { bottom: auto !important; height: 60svh !important; min-height: 420px }
+  .bh .bh-model .bh-arch .hs img { object-position: 56% 12% !important }
+  .bh .bh-model::after { background: linear-gradient(to top, #1c1a52 0%, rgba(28, 26, 82, .75) 20%, rgba(28, 26, 82, 0) 48%), linear-gradient(to bottom, rgba(14, 12, 46, .45), transparent 22%), radial-gradient(120% 90% at 50% 40%, transparent 60%, rgba(14, 12, 46, .6) 100%) !important }
+  .bh .bh-panel { justify-content: flex-end; padding: max(46svh, 340px) 20px 70px !important }
+  .bh .bh-headline .et { font-size: 12.4vw !important }
+  .bh .bh-side-r { display: none !important }
+}
+@media (max-width: 699px) {
+  .bh .bh-model::after { background: linear-gradient(to bottom, rgba(14, 12, 46, .45), transparent 22%), radial-gradient(120% 90% at 50% 40%, transparent 60%, rgba(14, 12, 46, .55) 100%) !important;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); mask-image: linear-gradient(to bottom, #000 55%, transparent 100%) }
+  .bh .bh-model .bh-arch { -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, rgba(0, 0, 0, .55) 74%, transparent 100%) !important; mask-image: linear-gradient(to bottom, #000 0%, #000 52%, rgba(0, 0, 0, .55) 74%, transparent 100%) !important }
+  .bh .bh-headline .et { font-size: 11.2vw !important } .bh .et-mask:nth-child(2) { padding-left: .5em !important }
+}
+
+/* desktop hero: a stronger, larger edgeless shade so the lamps never compete with the words */
+@media (min-width: 900px) {
+  .bh .bh-frame::before { inset: -150px -170px -130px -260px !important;
+    background: radial-gradient(closest-side, rgba(12, 10, 40, .86), rgba(12, 10, 40, .72) 45%, rgba(12, 10, 40, .38) 75%, transparent 100%) !important;
+    backdrop-filter: blur(16px) brightness(.55) saturate(.8) !important; -webkit-backdrop-filter: blur(16px) brightness(.55) saturate(.8) !important;
+    -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%) !important; mask-image: radial-gradient(closest-side, #000 62%, transparent 100%) !important }
+}
+@media (min-width: 1600px) { .bh .bh-frame::before { inset: -220px -300px -200px -300px !important } }

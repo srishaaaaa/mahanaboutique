@@ -16,7 +16,7 @@ export function Collections() {
   const { collections, status } = catalog;
   return (
     <div className="catalog">
-      <header className="cat-hero"><div className="cat-hero-in"><p className="eyebrow">COLLECTIONS</p><h1 className="serif">Choose your world.</h1></div></header>
+      <header className="cat-hero plain"><div className="cat-hero-in"><p className="eyebrow">COLLECTIONS</p><h1 className="serif">Choose your world.</h1></div></header>
       <div className="col-grid">
         {status === 'loading' && <p className="muted">Loading collections…</p>}
         {collections.map((c, i) => (

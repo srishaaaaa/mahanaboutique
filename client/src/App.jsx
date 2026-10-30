@@ -1,10 +1,11 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useApp } from './context/App';
 import FloatingNavbar from './components/FloatingNavbar';
 import LuxuryFooter from './components/LuxuryFooter';
 import Intro from './components/Intro';
+import ReloadSplash from './components/ReloadSplash';
 import Toasts from './components/Toasts';
 import CartDrawer from './components/CartDrawer';
 import SearchOverlay from './components/SearchOverlay';
@@ -37,6 +38,8 @@ export default function App() {
 
   const admin = location.pathname === '/admin' || location.pathname.startsWith('/admin/'); // the admin panel has its own sidebar: no website menu, footer or intro
   const site = !bare && !admin;
+  // returning visitors see the name splash on each open/reload of the website (first-timers get the intro instead)
+  const [splash] = useState(() => entered && site); // never for a reload inside the admin panel
 
   // Overlays never outlive a navigation.
   useEffect(() => { setBagOpen(false); setSearchOpen(false); setMenuOpen(false); setQuick(null) }, [location.pathname]); // eslint-disable-line
@@ -45,6 +48,7 @@ export default function App() {
     <>
       <a className="skip-link" href="#main">Skip to content</a>
       <AnimatePresence>{!entered && site && <Intro key="intro" onDone={enter} />}</AnimatePresence>
+      {splash && site && <ReloadSplash />}
       {site && <FloatingNavbar />}
       {site && <SmoothScroll />}
       <PageTransition>
