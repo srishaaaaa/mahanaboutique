@@ -25,7 +25,7 @@ export default function Print() {
   if (!o || !shop || !meta) return <div className="page-pad"><Empty>Loading…</Empty></div>;
   const job = copy === 'job';
   return (
-    <div style={{ background: '#f3f1ec', minHeight: '100vh', '--d-ink': '#121214', '--d-acc': '#1c1a52', '--d-line': '#dfdfec', '--d-mut': '#6f6b66' }}>
+    <div style={{ background: '#f3f1ec', minHeight: '100vh', '--d-ink': '#121214', '--d-acc': '#1c284f', '--d-line': '#dfdfec', '--d-mut': '#6f6b66' }}>
       <div className="stc-bar-tools"><button className="dpos-btn" onClick={() => window.print()}>Print</button><Link className="dpos-btn ghost" to={`/admin/stitching/orders/${o.id}`}>← Back to order</Link>
         <Link className="dpos-btn ghost" to={`/admin/stitching/print/${o.id}?copy=${job ? 'customer' : 'job'}`}>Switch to {job ? 'customer receipt' : 'job card'}</Link></div>
       <article className="stc-sheet">

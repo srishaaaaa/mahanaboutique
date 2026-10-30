@@ -24,7 +24,7 @@ export default function ProductArt({ seed, view = 0, className = '' }) {
       </defs>
       <g transform={`translate(${tx} ${ty}) scale(${zoom})`}>
         <rect x="-60" y="-60" width="420" height="520" fill={`url(#g${id})`} />
-        {folds.map((f, i) => <path key={i} d={f.d} fill="none" stroke={f.light ? '#f5f5fa' : '#09090D'} strokeOpacity={f.o} strokeWidth={f.w} />)}
+        {folds.map((f, i) => <path key={i} d={f.d} fill="none" stroke={f.light ? '#f5f5fa' : '#090a0c'} strokeOpacity={f.o} strokeWidth={f.w} />)}
         <rect x="-60" y="-60" width="420" height="520" fill={`url(#h${id})`} />
       </g>
       <rect width="300" height="400" fill={`url(#w${id})`} />

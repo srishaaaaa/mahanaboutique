@@ -1,10 +1,10 @@
 // Deterministic generative art used while a product has no photography.
 export const PALETTES = [ // Mahana indigo + pink
-  ['#1c1a52', '#e85266', '#f8b5be'],
-  ['#14123d', '#7d74d8', '#f07f8e'],
-  ['#2e2b7b', '#d94357', '#f395a1'],
-  ['#1a1846', '#5c58b8', '#e85266'],
-  ['#26236a', '#e85266', '#fbe4e1'],
+  ['#1c284f', '#e33944', '#f8ecd5'],
+  ['#131c3b', '#7d74d8', '#edc677'],
+  ['#2d3e76', '#bf1722', '#edc677'],
+  ['#192343', '#596eb1', '#e33944'],
+  ['#253466', '#e33944', '#fbe4e1'],
 ];
 
 export function hash(str) {

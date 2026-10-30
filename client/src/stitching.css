@@ -20,7 +20,7 @@
 .stc-warn { background: #e5e4f1; color: #6f4a00; padding: 10px 14px; border-radius: 12px; font-size: 13px }
 .stc-ok { background: #e6f4ec; color: var(--d-ok); padding: 10px 14px; border-radius: 12px; font-size: 13px }
 .stc-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; background: #eee; color: #555; white-space: nowrap }
-.stc-pill.s-received { background: #eef0f6; color: #3b4a7a } .stc-pill.s-work { background: #f3ecf6; color: #2d2a63 } .stc-pill.s-trial { background: #e8f2f8; color: #1f5d82 }
+.stc-pill.s-received { background: #eef0f6; color: #3b4a7a } .stc-pill.s-work { background: #f3ecf6; color: #2b375f } .stc-pill.s-trial { background: #e8f2f8; color: #1f5d82 }
 .stc-pill.s-alter { background: #e5e4f1; color: #8a5a00 } .stc-pill.s-ready { background: #e6f4ec; color: var(--d-ok) } .stc-pill.s-done { background: #dff0e6; color: #14603b }
 .stc-pill.s-cancelled, .stc-pill.late { background: #fdecea; color: var(--d-bad) } .stc-pill.pay-partial { background: #e5e4f1; color: #8a5a00 } .stc-pill.pay-paid { background: #e6f4ec; color: var(--d-ok) } .stc-pill.pay-unpaid { background: #fdecea; color: var(--d-bad) }
 .stc-pill.pr-urgent { background: #e5e4f1; color: #8a5a00 } .stc-pill.pr-express { background: #fdecea; color: var(--d-bad) }
@@ -50,7 +50,7 @@
 .stc-line li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; position: relative; padding-bottom: 14px; font-size: 14px }
 .stc-line li::before { content: ''; position: absolute; left: 10px; top: 20px; bottom: 0; width: 2px; background: var(--d-line) } .stc-line li:last-child::before { display: none }
 .stc-line .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--d-line); background: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 800; z-index: 1 }
-.stc-line li.done .dot { background: var(--d-acc); border-color: var(--d-acc); color: #fff } .stc-line li.now .dot { border-color: var(--d-acc); box-shadow: 0 0 0 4px rgba(28, 26, 82, .12) }
+.stc-line li.done .dot { background: var(--d-acc); border-color: var(--d-acc); color: #fff } .stc-line li.now .dot { border-color: var(--d-acc); box-shadow: 0 0 0 4px rgba(28, 40, 79, .12) }
 .stc-line li.skip { opacity: .45 } .stc-line li.done::before { background: var(--d-acc) } .stc-line small { color: var(--d-mut); display: block; font-size: 12px }
 .stc-bars { display: grid; gap: 8px } .stc-bar { display: grid; grid-template-columns: 170px 1fr 34px; gap: 10px; align-items: center; font-size: 13px }
 .stc-bar i { display: block; height: 10px; border-radius: 6px; background: var(--d-acc); min-width: 3px } .stc-bar .t { background: #e1e0ef; border-radius: 6px }
@@ -60,7 +60,7 @@
 .stc-cal .hd { padding: 8px; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--d-mut); background: #f6f4f0; text-align: center }
 .stc-cal .day { min-height: 98px; padding: 6px; border-top: 1px solid var(--d-line); border-left: 1px solid var(--d-line); display: grid; gap: 3px; align-content: start; font-size: 11px }
 .stc-cal .day:nth-child(7n + 8) { border-left: 0 } .stc-cal .day.off { background: #faf8f4; color: #b0aaa0 } .stc-cal .day.today b { background: var(--d-acc); color: #fff; border-radius: 999px; padding: 1px 7px }
-.stc-cal .day button.ev { text-align: left; padding: 3px 6px; border-radius: 8px; background: #f3ecf6; color: #262455; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .stc-cal .day button.ev.late { background: #fdecea; color: var(--d-bad) } .stc-cal .day button.ev.x { background: #eee; color: #888; text-decoration: line-through }
+.stc-cal .day button.ev { text-align: left; padding: 3px 6px; border-radius: 8px; background: #f3ecf6; color: #252f52; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .stc-cal .day button.ev.late { background: #fdecea; color: var(--d-bad) } .stc-cal .day button.ev.x { background: #eee; color: #888; text-decoration: line-through }
 .dpos-sheet:has(> .stc-xl) { width: min(980px, 100%) }
 /* print page */
 .stc-sheet { max-width: 800px; margin: 0 auto; background: #fff; color: #111; padding: 28px 32px; font-family: var(--sans); font-size: 12.5px; line-height: 1.45 }

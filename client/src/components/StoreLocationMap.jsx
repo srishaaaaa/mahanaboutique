@@ -45,7 +45,7 @@ export default function StoreLocationMap() {
             {configured && (
               <span className="nm-pin" aria-hidden="true">
                 <span className="nm-pulse" /><span className="nm-pulse b" />
-                <svg width="38" height="50" viewBox="0 0 40 54"><defs><linearGradient id="nm-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f8e6bf" /><stop offset=".55" stopColor="#eb5b6f" /><stop offset="1" stopColor="#d72c42" /></linearGradient></defs><path d="M20 0C9 0 0 8.7 0 19.5 0 33 20 54 20 54s20-21 20-34.5C40 8.7 31 0 20 0Z" fill="url(#nm-g)" /><circle cx="20" cy="19.5" r="7" fill="#1c1a52" /></svg>
+                <svg width="38" height="50" viewBox="0 0 40 54"><defs><linearGradient id="nm-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f8e6bf" /><stop offset=".55" stopColor="#e33944" /><stop offset="1" stopColor="#bf1722" /></linearGradient></defs><path d="M20 0C9 0 0 8.7 0 19.5 0 33 20 54 20 54s20-21 20-34.5C40 8.7 31 0 20 0Z" fill="url(#nm-g)" /><circle cx="20" cy="19.5" r="7" fill="#1c284f" /></svg>
                 <b>SHOP IS HERE</b>
               </span>
             )}
