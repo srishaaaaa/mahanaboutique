@@ -938,7 +938,7 @@
 .rs-emblem { width: 46px; height: 46px; color: #edc677; opacity: 0; animation: rs-pop .7s .1s cubic-bezier(.22, 1, .36, 1) forwards, fx-spin 14s linear infinite }
 .rs-name { position: relative; display: block; padding: 0 .12em; line-height: 1 }
 .rs-name b { display: block; font: 400 clamp(84px, 14vw, 170px)/1.1 'Great Vibes', cursive; color: #edc677; text-shadow: 0 0 40px rgba(227, 57, 68, .45);
-  clip-path: inset(0 100% 0 0); animation: rs-write 1.15s .25s cubic-bezier(.65, 0, .35, 1) forwards }
+  clip-path: inset(-40% 100% -40% -12%); padding: .12em .14em .1em; animation: rs-write 1.15s .25s cubic-bezier(.65, 0, .35, 1) forwards }
 /* a glowing pen tip runs along with the writing */
 .rs-pen { position: absolute; top: 50%; left: 0; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 18px 6px rgba(237, 198, 119, .9), 0 0 40px 12px rgba(227, 57, 68, .5);
   opacity: 0; animation: rs-pen 1.15s .25s cubic-bezier(.65, 0, .35, 1) forwards }
@@ -947,7 +947,7 @@
 .rs-line svg { width: 34px; height: 20px }
 .rs-tag { display: flex; font: 700 clamp(10px, 1.1vw, 13px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .5em; padding-left: .5em; color: #f8ecd5 }
 .rs-tag em { font-style: normal; opacity: 0; transform: translateY(8px); animation: rs-letter .5s ease forwards }
-@keyframes rs-write { to { clip-path: inset(0 0 0 0) } }
+@keyframes rs-write { to { clip-path: inset(-40% -14% -40% -12%) } }
 @keyframes rs-pen { 0% { left: 2%; opacity: 0 } 10% { opacity: 1 } 88% { opacity: 1 } 100% { left: 98%; opacity: 0 } }
 @keyframes rs-pop { from { opacity: 0; transform: scale(.85) } to { opacity: 1; transform: none } }
 @keyframes rs-letter { to { opacity: 1; transform: none } }
@@ -1238,3 +1238,36 @@
   inset: -60px 0; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 28%, #000 72%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 28%, #000 72%, transparent 100%) }
 .home > .nx-eq, .home > .nx-map, .home > .nx-rev { background: transparent }
 @media (max-width: 600px) { .home > .nx { padding: 30px 0 } }
+
+/* gold buttons glow gold (not pink-red) so the colours agree */
+.home .nt-pill, .catalog .pcard-add { box-shadow: 0 8px 20px rgba(212, 162, 79, .35) }
+.catalog .pcard-add { box-shadow: 0 8px 20px rgba(191, 23, 34, .28) }
+.home .nx-btn, .home > :is(.nx-ed, .nx-story) .nx-btn { box-shadow: 0 12px 30px rgba(212, 162, 79, .38), inset 0 1px 0 rgba(255, 255, 255, .55) }
+
+/* =====================================================================
+   Sized like Dhanya: bigger photos, bigger headings, clearer secondary text,
+   cards that fill the width, and a gentle rise-in as they scroll into view.
+   ===================================================================== */
+.home .nx-h { font-size: clamp(36px, 5vw, 76px); line-height: 1; letter-spacing: -.015em; text-wrap: balance }
+.home .nx-p { font-size: clamp(15px, 1.25vw, 18px); line-height: 1.65 }
+.home .nx-head { margin-bottom: clamp(26px, 3vw, 44px) }
+.home .nx-eyebrow { font-size: 12px; letter-spacing: .26em }
+.nt-grid { gap: clamp(14px, 1.8vw, 26px) }
+.nt-item { padding: 6px 6px 18px; border-radius: 26px }
+.nt-photo { aspect-ratio: 3 / 4; border-radius: 20px }
+.nt-meta { padding: 18px 12px 0; gap: 8px }
+.nt-name { font-size: clamp(18px, 1.55vw, 23px) }
+.nt-mat { font-size: 11.5px }
+.nt-pill { padding: 11px 20px; font-size: 14px }
+.nt-enq { font-size: 11.5px }
+.catalog .pcard-frame { aspect-ratio: 3 / 4.2 }
+.catalog .pcard-meta h3 { font-size: clamp(17px, 1.5vw, 22px) }
+.catalog .pcard-meta .muted, .catalog .pcard-sizes { font-size: 12px; letter-spacing: .14em }
+.catalog .pgrid { padding: 0 clamp(18px, 4vw, 58px); gap: clamp(16px, 2vw, 28px) }
+.catalog .cat-hero h1 { font-size: clamp(44px, 7vw, 108px) }
+.catalog .cat-intro { font-size: clamp(16px, 1.3vw, 19px) }
+@supports (animation-timeline: view()) {
+  @keyframes rise-in { from { opacity: 0; translate: 0 36px } to { opacity: 1; translate: 0 0 } }
+  .nt-item, .catalog .pcard:not(.skeleton), .catalog .col-card { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 38% }
+}
+@media (prefers-reduced-motion: reduce) { .nt-item, .catalog .pcard, .catalog .col-card { animation: none } }
