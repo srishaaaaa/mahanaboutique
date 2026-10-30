@@ -134,7 +134,7 @@ const REEL_MAX = 6, PHOTO_MAX = 6;
 // Reels & Photo Gallery: up to 6 videos (shown first on the home page) and up to 6 photos (shown after them), each in its own slots.
 export function AdminReels() {
   const gate = useGate(); const { toast, loadSite } = useApp();
-  const [s, setS] = useState(null); const [busy, setBusy] = useState(null); const [err, setErr] = useState(); const input = useRef(); const target = useRef({ kind: 'video', i: 0 });
+  const [s, setS] = useState(null); const [busy, setBusy] = useState(null); const [err, setErr] = useState(); const input = useRef(); const target = useRef({ kind: 'video', i: 0 }); const [link, setLink] = useState('');
   useEffect(() => { if (!gate) api('/store').then(setS).catch(e => setErr(e.message)) }, [gate]);
   if (gate) return gate;
   const posts = s?.social?.instagram?.posts || [];
@@ -157,7 +157,6 @@ export function AdminReels() {
     } catch (e) { setErr(e.message) } finally { setBusy(null) }
   };
   const remove = async (kind, i) => { if (!confirm('Remove this from the home page?')) return; setBusy(kind + i); setErr(); try { await save({ ...lists, [kind]: lists[kind].filter((_, n) => n !== i) }); toast('Removed.') } catch (e) { setErr(e.message) } finally { setBusy(null) } };
-  const [link, setLink] = useState('');
   const addLink = async () => {
     const m = link.trim().match(/instagram\.com\/(?:reels?|p|tv)\/([A-Za-z0-9_-]+)/i);
     if (!m) return setErr('That does not look like an Instagram reel link. Copy it from Instagram: Share → Copy link.');
