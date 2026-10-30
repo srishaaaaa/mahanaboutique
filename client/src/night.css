@@ -1129,3 +1129,60 @@
     -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%) !important; mask-image: radial-gradient(closest-side, #000 62%, transparent 100%) !important }
 }
 @media (min-width: 1600px) { .bh .bh-frame::before { inset: -220px -300px -200px -300px !important } }
+
+/* =====================================================================
+   One navy, taken from the hero photo's curtains, for every blue part:
+   hero ground and edge fade, ticker, header bag button, map card, footer, splash.
+   ===================================================================== */
+:root { --nv0: #0a0f2c; --nv1: #111940; --nv2: #1a245c; --nv3: #26347e }
+
+/* hero ground + the fade at its corners and bottom */
+.bh { background: radial-gradient(120% 95% at 80% 42%, var(--nv2) 0%, var(--nv1) 55%, var(--nv0) 100%) !important }
+.bh::after { background: linear-gradient(to top, var(--nv1) 0%, rgba(17, 25, 64, .5) 40%, transparent 100%) !important }
+.bh .bh-model .bh-arch { background: var(--nv1) !important }
+@media (min-width: 900px) {
+  .bh .bh-wrap::before { background: radial-gradient(130% 120% at 62% 42%, transparent 52%, rgba(17, 25, 64, .55) 80%, rgba(10, 15, 44, .92) 100%), linear-gradient(to top, var(--nv1), rgba(17, 25, 64, 0) 90px) !important }
+  .bh .bh-frame::before { background: radial-gradient(closest-side, rgba(10, 15, 44, .86), rgba(10, 15, 44, .72) 45%, rgba(10, 15, 44, .38) 75%, transparent 100%) !important }
+  .bh .bh-frame .bh-pill { background: rgba(10, 15, 44, .4) }
+}
+@media (max-width: 699px) {
+  .bh { background: var(--nv1) !important }
+  .bh .bh-model::after { background: linear-gradient(to bottom, rgba(10, 15, 44, .45), transparent 22%), radial-gradient(120% 90% at 50% 40%, transparent 60%, rgba(10, 15, 44, .55) 100%) !important }
+}
+.hs-dots { background: rgba(10, 15, 44, .4) }
+
+/* ticker: the same navy as the bottom of the hero, so the two run together */
+.home > .tk { background: linear-gradient(90deg, var(--nv1), var(--nv2) 50%, var(--nv1)) !important; border-block: 1px solid rgba(243, 191, 209, .2) !important; box-shadow: 0 14px 34px rgba(10, 15, 44, .25) !important }
+
+/* header bag button */
+.site-header .cart-pill { background: linear-gradient(135deg, var(--nv3) 0%, var(--nv1) 100%) !important; box-shadow: 0 8px 18px -6px rgba(17, 25, 64, .6) !important }
+.site-header .cart-pill:hover { background: linear-gradient(135deg, #30409a 0%, var(--nv0) 100%) !important }
+
+/* map card */
+.nm-card { background: rgba(17, 25, 64, .94) !important }
+.nm-frame { background: var(--nv1) }
+.nm-open { background: rgba(10, 15, 44, .75) }
+
+/* footer */
+.nf { background: radial-gradient(70% 60% at 85% 0%, rgba(232, 138, 171, .12), transparent 60%), radial-gradient(60% 70% at 0% 100%, rgba(38, 52, 126, .35), transparent 60%), linear-gradient(180deg, var(--nv1) 0%, var(--nv0) 100%) !important }
+
+/* reload splash */
+.rs { background: radial-gradient(60% 50% at 50% 42%, var(--nv2) 0, var(--nv1) 70%, var(--nv0) 100%) }
+
+/* galleries: three reels in a row and three photos in a row (two rows each), even and aligned */
+.home .ni-reels { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: clamp(12px, 2vw, 28px) !important; overflow: visible !important; margin: 0 !important; padding: 0 0 10px !important; max-width: 1080px; margin-inline: auto !important }
+.home .ni-reel { translate: none !important; flex: none !important }
+.home .ni-arrows { display: none !important }
+.home .ni-mosaic { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; grid-template-areas: none !important; grid-auto-rows: auto !important; gap: clamp(12px, 2vw, 28px) !important; max-width: 1080px; margin-inline: auto !important }
+.home .ni-m { grid-area: auto !important }
+.home .ni-m .ni-tile { aspect-ratio: 4 / 5; height: auto }
+.home .ni-bh { max-width: 1080px; margin-inline: auto }
+@media (max-width: 600px) { .home .ni-reels, .home .ni-mosaic { gap: 8px !important } .home .ni-tile { border-radius: 16px } .home .ni-no { font-size: 15px; left: 9px; top: 8px } .home .ni-tile .blank-note { display: none } .home .ni-tile .blank svg { width: 34px; height: 34px } }
+
+/* map: starts beside the card (not under it), so Google's place box, the pin and the map all show in full */
+@media (min-width: 801px) {
+  .nm-map { left: calc(min(470px, 44%) + clamp(22px, 3vw, 44px) + 12px); border-radius: 0 36px 36px 0 }
+  .nm-map iframe { width: 100%; left: 0 }
+  .nm-pin { left: 50% }
+  .nm-frame { background: radial-gradient(60% 80% at 0% 50%, rgba(38, 52, 126, .45), transparent 70%), var(--nv1) }
+}
