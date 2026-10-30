@@ -1289,3 +1289,14 @@
 /* the sticky filter bar sticks below the floating header, not under it */
 .catalog .toolbar { top: 112px }
 @media (max-width: 900px) { .catalog .toolbar { top: 84px } }
+
+/* tighter horizontal spacing: smaller side margins and gaps between cards */
+.catalog { --n-pad: clamp(14px, 2.4vw, 34px) }
+.catalog .pgrid { padding: 0 clamp(14px, 2.4vw, 34px); gap: clamp(14px, 1.5vw, 20px) }
+.catalog .toolbar { padding-inline: clamp(14px, 2.4vw, 34px) }
+.catalog .col-grid { padding-inline: clamp(14px, 2.4vw, 34px); gap: clamp(14px, 1.5vw, 20px) }
+.catalog .cat-hero, .catalog .cat-hero.with-banner { padding-inline: clamp(14px, 2.4vw, 34px) }
+.catalog .cat-hero-in { max-width: none }
+.catalog .pcard:not(.skeleton) { padding: 6px 6px 14px }
+.home .nt-grid { gap: clamp(12px, 1.3vw, 18px) }
+.home .nx > :is(.nx-in, .wrap, .container), .home { --n-pad: clamp(16px, 3vw, 44px) }
