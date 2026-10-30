@@ -1322,3 +1322,13 @@
 .nm-frame { min-height: clamp(440px, 36vw, 520px) }
 .nm-card { margin: clamp(16px, 2vw, 28px); padding: clamp(22px, 2.4vw, 34px) }
 .nm-card .nx-h { margin-bottom: 10px }
+
+/* one side gap for the whole site, same as Dhanya: 20px on phones, 40px on tablets,
+   56px on laptops and up, with content capped at 1560px and centred */
+:root, .home, .catalog, .home .nx > :is(.nx-in, .wrap, .container) { --n-pad: 20px; --pad: 20px; --gut: max(var(--n-pad), calc((100% - 1560px) / 2 + var(--n-pad))) }
+@media (min-width: 640px) { :root, .home, .catalog, .home .nx > :is(.nx-in, .wrap, .container) { --n-pad: 40px; --pad: 40px } }
+@media (min-width: 1024px) { :root, .home, .catalog, .home .nx > :is(.nx-in, .wrap, .container) { --n-pad: 56px; --pad: 56px } }
+.nx-in, .nf-in, .catalog .cat-hero-in { max-width: 1560px }
+.nr-track { padding-inline: max(var(--n-pad), calc((100vw - 1560px) / 2 + var(--n-pad))); scroll-padding-inline: max(var(--n-pad), calc((100vw - 1560px) / 2 + var(--n-pad))) }
+.catalog :is(.pgrid, .toolbar, .col-grid), .catalog .cat-hero, .catalog .cat-hero.with-banner { padding-inline: var(--gut) }
+.ab-hero, .ab-stats, .sec-head, .ab-cats, .ab-steps-grid, .ab-traits ul { max-width: 1560px }
