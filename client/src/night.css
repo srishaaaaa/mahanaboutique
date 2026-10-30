@@ -1338,3 +1338,12 @@
 .home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in) { max-width: 2400px; width: calc(100% - 2 * clamp(14px, 2.4vw, 34px)) }
 .home .ni-reels, .home .ni-mosaic, .home .ni-bh { max-width: 1500px }
 .about2 .ab-hero, .ab-stats, .sec-head, .ab-cats, .ab-steps-grid, .ab-traits ul { max-width: 1760px }
+
+/* section spacing: about what Dhanya uses (roughly 70-110px above and below each section) */
+.home > .nx { padding: clamp(64px, 7.5vw, 110px) 0 }
+@media (max-width: 600px) { .home > .nx { padding: 64px 0 } }
+
+/* photo gallery: every photo shows as a portrait (3:4), cropped to fill */
+.home .ni-mosaic { grid-auto-rows: auto !important }
+.home .ni-m .ni-tile { aspect-ratio: 3 / 4 !important; height: auto }
+.home .ni-m .ni-tile > img { width: 100%; height: 100%; object-fit: cover }
