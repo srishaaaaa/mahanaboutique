@@ -56,8 +56,8 @@ export function PortalCanvas({ entering, quality, reduced }) {
       <PortalRig entering={entering} mix={mix} reduced={reduced} />
       <Atmosphere sparkles={quality.sparkles} lightMix={mix} />
       <Arches count={quality.low ? 5 : 7} gap={1.5} still={reduced} />
-      <Silk segments={quality.seg} size={[26, 16]} position={[0, 0, -12]} rotation={[0, 0, 0.08]} amp={1.5} mixRef={mix} colors={['#171630', '#e88aab']} scroll={false} />
-      <Silk segments={quality.seg} size={[12, 5]} position={[-2, -2.4, -2]} rotation={[-0.9, 0.3, 0.3]} amp={0.8} mixRef={mix} colors={['#3a2230', '#d97a9c']} opacity={0.6} scroll={false} />
+      <Silk segments={quality.seg} size={[26, 16]} position={[0, 0, -12]} rotation={[0, 0, 0.08]} amp={1.5} mixRef={mix} colors={['#171630', '#e85266']} scroll={false} />
+      <Silk segments={quality.seg} size={[12, 5]} position={[-2, -2.4, -2]} rotation={[-0.9, 0.3, 0.3]} amp={0.8} mixRef={mix} colors={['#3a2230', '#d94357']} opacity={0.6} scroll={false} />
     </Stage>
   );
 }
@@ -135,7 +135,7 @@ function HeroScene({ quality, reduced, cutout, depth }) {
   return (
     <>
       <HeroRig reduced={reduced} />
-      <Sparkles count={quality.low ? 24 : 60} scale={[viewport.width, viewport.height, 3]} size={3.2} speed={0.14} color="#e88aab" opacity={0.7} />
+      <Sparkles count={quality.low ? 24 : 60} scale={[viewport.width, viewport.height, 3]} size={3.2} speed={0.14} color="#e85266" opacity={0.7} />
       <Model3D key={cutout} cutout={cutout} depth={depth} reduced={reduced} />
     </>
   );

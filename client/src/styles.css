@@ -1,7 +1,7 @@
 /* ============ DHANYA design system ============ */
 :root {
-  --ob: #09090D; --plum: #151426; --gold: #e88aab; --ivory: #f5f5fa; --rose: #d97a9c;
-  --line: rgba(232, 138, 171, .28);
+  --ob: #09090D; --plum: #151426; --gold: #e85266; --ivory: #f5f5fa; --rose: #d94357;
+  --line: rgba(232, 82, 102, .28);
   --ease: cubic-bezier(.22, 1, .36, 1);
   --ink: #f5f5fa; --paper: #09090D;
   --serif: 'Cormorant Garamond', 'Times New Roman', serif;
@@ -29,7 +29,7 @@ ul { list-style: none; margin: 0; padding: 0 }
 .small { font-size: 13px }
 .center { text-align: center; display: block; margin-inline: auto }
 .big { font-size: clamp(26px, 3vw, 40px) }
-.err { color: #d0627a }
+.err { color: #d0273d }
 .row { display: flex; align-items: center; gap: 12px }
 .between { justify-content: space-between }
 .hide-touch { }
@@ -58,7 +58,7 @@ ul { list-style: none; margin: 0; padding: 0 }
 .link-u, .link-btn { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; cursor: pointer; opacity: .85 }
 .link-u:hover, .link-btn:hover { opacity: 1 }
 .icon-btn { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; transition: background .3s, color .3s }
-.icon-btn:hover { background: rgba(232, 138, 171, .16) }
+.icon-btn:hover { background: rgba(232, 82, 102, .16) }
 .icon-btn.on { color: var(--rose) }
 .icon-btn.lg { width: 56px; height: 56px; border: 1px solid currentColor }
 .count { position: absolute; top: 4px; right: 2px; min-width: 17px; height: 17px; border-radius: 9px; background: var(--gold); color: var(--ob); font-size: 10px; font-weight: 600; display: grid; place-items: center; padding: 0 4px }
@@ -67,7 +67,7 @@ ul { list-style: none; margin: 0; padding: 0 }
 .chip:hover:not(:disabled) { border-color: var(--ink) }
 .chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink) }
 .chip:disabled, .chip.out { opacity: .35; text-decoration: line-through; cursor: not-allowed }
-.glass { background: rgba(16, 15, 28, .78); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); border: 1px solid rgba(232, 138, 171, .18); color: var(--ivory); --ink: #f5f5fa; --paper: #09090D }
+.glass { background: rgba(16, 15, 28, .78); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); border: 1px solid rgba(232, 82, 102, .18); color: var(--ivory); --ink: #f5f5fa; --paper: #09090D }
 @supports not (backdrop-filter: blur(1px)) { .glass { background: rgba(14, 10, 18, .97) } }
 input, select, textarea { font: inherit; color: inherit }
 .field { display: grid; gap: 6px; margin: 14px 0 }
@@ -119,7 +119,7 @@ input, select, textarea { font: inherit; color: inherit }
 .search-body section { margin-bottom: 14px }
 .s-item { display: grid; grid-template-columns: 54px 1fr auto; gap: 14px; align-items: center; padding: 8px 10px; text-align: left; transition: background .25s }
 .s-item.cat { grid-template-columns: 1fr auto }
-.s-item:hover, .s-item.on { background: rgba(232, 138, 171, .14) }
+.s-item:hover, .s-item.on { background: rgba(232, 82, 102, .14) }
 .s-thumb { width: 54px; aspect-ratio: 3/4; overflow: hidden; background: var(--plum) }
 .s-text { display: grid }
 .s-text .serif { font-size: 20px }
@@ -135,7 +135,7 @@ input, select, textarea { font: inherit; color: inherit }
 
 /* ============ cursor + transitions ============ */
 .cursor { position: fixed; left: 0; top: 0; z-index: 400; pointer-events: none; transition: opacity .3s }
-.cursor-ring { display: grid; place-items: center; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%; border: 1px solid rgba(232, 138, 171, .75); box-shadow: 0 0 22px rgba(232, 138, 171, .35); transition: width .45s var(--ease), height .45s var(--ease), margin .45s var(--ease), background .3s }
+.cursor-ring { display: grid; place-items: center; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%; border: 1px solid rgba(232, 82, 102, .75); box-shadow: 0 0 22px rgba(232, 82, 102, .35); transition: width .45s var(--ease), height .45s var(--ease), margin .45s var(--ease), background .3s }
 .has-label .cursor-ring { width: 84px; height: 84px; margin: -42px 0 0 -42px; background: rgba(9, 9, 13, .35); backdrop-filter: blur(5px) }
 .cursor-label { font-size: 9px; letter-spacing: .28em; color: var(--ivory); font-weight: 600 }
 .curtain { position: fixed; inset: 0; z-index: 95; pointer-events: none; background: radial-gradient(120% 90% at 50% 100%, #232147 0%, var(--plum) 45%, var(--ob) 100%) }
@@ -148,7 +148,7 @@ input, select, textarea { font: inherit; color: inherit }
 .hdr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 10px var(--pad) }
 .wordmark { display: inline-flex; align-items: center; gap: 12px; font-family: var(--serif); letter-spacing: .42em; font-size: 22px; color: var(--gold); font-weight: 500 }
 .emblem { color: var(--gold) }
-.emblem.glow { filter: drop-shadow(0 0 16px rgba(232, 138, 171, .55)) }
+.emblem.glow { filter: drop-shadow(0 0 16px rgba(232, 82, 102, .55)) }
 .hdr-logo { justify-self: start }
 .has-mega { display: flex; align-items: center }
 .primary { align-items: center; display: flex; gap: clamp(20px, 3vw, 46px) }
@@ -179,7 +179,7 @@ input, select, textarea { font: inherit; color: inherit }
 .intro-bg, .hero-scene { position: absolute; inset: 0; isolation: isolate }
 .scene, .scene > div, .scene canvas { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; display: block }
 .scene canvas { touch-action: pan-y }
-.intro-fallback, .hero-fallback { position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 50% at 70% 40%, rgba(232, 138, 171, .22), transparent 70%), radial-gradient(70% 60% at 20% 80%, rgba(217, 122, 156, .18), transparent 70%), linear-gradient(160deg, var(--plum), var(--ob) 65%) }
+.intro-fallback, .hero-fallback { position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 50% at 70% 40%, rgba(232, 82, 102, .22), transparent 70%), radial-gradient(70% 60% at 20% 80%, rgba(217, 67, 87, .18), transparent 70%), linear-gradient(160deg, var(--plum), var(--ob) 65%) }
 .intro-vignette, .hero-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 35%, rgba(9, 9, 13, .78) 100%) }
 .intro-skip { position: absolute; top: 20px; right: var(--pad); z-index: 5; letter-spacing: .3em; font-size: 11px; padding: 12px 14px; opacity: .75 }
 .intro-skip:hover { opacity: 1 }
@@ -187,14 +187,14 @@ input, select, textarea { font: inherit; color: inherit }
 .intro-emblem { color: var(--gold) }
 .intro-k { color: var(--gold); font-size: clamp(11px, 1.4vw, 14px); font-weight: 500 }
 .intro-h { font-size: clamp(36px, 7vw, 100px); line-height: .98; font-weight: 800; letter-spacing: .02em }
-.enter-btn { position: relative; margin-top: 10px; padding: 20px 64px; border-radius: 999px; overflow: hidden; letter-spacing: .5em; font-size: 12px; font-weight: 500; color: var(--ivory); border: 1px solid rgba(245, 245, 250, .35); background: linear-gradient(115deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .03) 38%, rgba(232, 138, 171, .3) 62%, rgba(255, 255, 255, .1)); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 8px 40px rgba(232, 138, 171, .22); transition: transform .5s var(--ease), box-shadow .5s }
+.enter-btn { position: relative; margin-top: 10px; padding: 20px 64px; border-radius: 999px; overflow: hidden; letter-spacing: .5em; font-size: 12px; font-weight: 500; color: var(--ivory); border: 1px solid rgba(245, 245, 250, .35); background: linear-gradient(115deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .03) 38%, rgba(232, 82, 102, .3) 62%, rgba(255, 255, 255, .1)); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 8px 40px rgba(232, 82, 102, .22); transition: transform .5s var(--ease), box-shadow .5s }
 .enter-btn::before { content: ''; position: absolute; inset: 0; background: radial-gradient(150px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .6), transparent 60%); opacity: 0; transition: opacity .35s }
 .enter-btn:hover::before, .enter-btn:focus-visible::before { opacity: .75 }
-.enter-btn:hover { transform: scale(1.04); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 10px 60px rgba(232, 138, 171, .4) }
+.enter-btn:hover { transform: scale(1.04); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 10px 60px rgba(232, 82, 102, .4) }
 .enter-btn span { position: relative }
 .sweeps { position: absolute; inset: 0; z-index: 6; overflow: hidden; pointer-events: none }
-.sweep { position: absolute; left: 0; width: 100%; height: 38%; background: linear-gradient(100deg, transparent 0%, rgba(42, 40, 90, .9) 30%, rgba(240, 174, 196, .95) 62%, transparent 100%) }
-.flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #f7d4e0, rgba(247, 212, 224, 0) 70%) }
+.sweep { position: absolute; left: 0; width: 100%; height: 38%; background: linear-gradient(100deg, transparent 0%, rgba(42, 40, 90, .9) 30%, rgba(240, 127, 142, .95) 62%, transparent 100%) }
+.flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #f7afb9, rgba(247, 175, 185, 0) 70%) }
 
 /* ============ home ============ */
 .hero { position: relative; height: 100svh; min-height: 620px; overflow: hidden; background: var(--ob) }
@@ -368,7 +368,7 @@ input, select, textarea { font: inherit; color: inherit }
 /* ============ home: reviews / instagram / studio ============ */
 code { font-family: ui-monospace, monospace; font-size: .9em; background: rgba(9, 9, 13, .08); padding: 1px 5px }
 .dev-note { margin-top: 10px }
-.stars { display: inline-flex; gap: 2px; color: #e3608c }
+.stars { display: inline-flex; gap: 2px; color: #e31b36 }
 .reviews { padding-bottom: clamp(60px, 8vw, 120px) }
 .rev-head, .insta-head { display: grid; justify-items: center; gap: 14px; text-align: center; padding: 0 var(--pad); margin-bottom: clamp(30px, 4vw, 60px) }
 .rev-head h2, .insta-head h2, .studio-info h2 { font-size: clamp(38px, 6vw, 92px); line-height: 1; font-weight: 800 }
@@ -389,7 +389,7 @@ code { font-family: ui-monospace, monospace; font-size: .9em; background: rgba(9
 .review-modal h2 { font-size: 40px } .review-modal .close { position: absolute; top: 10px; right: 10px }
 .review-modal select, .review-modal textarea { width: 100%; padding: 12px; background: transparent; border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); font: inherit; color: inherit }
 .review-modal select option { color: #09090D }
-.rate { border: 0; padding: 0; margin: 8px 0 } .rate button { font-size: 30px; opacity: .35; padding: 2px 4px } .rate button.on { opacity: 1; color: #e3608c }
+.rate { border: 0; padding: 0; margin: 8px 0 } .rate button { font-size: 30px; opacity: .35; padding: 2px 4px } .rate button.on { opacity: 1; color: #e31b36 }
 .insta-handle { display: inline-flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .3em; font-weight: 500 }
 .insta-head h2 em { font-style: italic }
 .btn.pill { border-radius: 999px; padding: 17px 34px }
@@ -427,7 +427,7 @@ a.insta-tile:hover { transform: translateY(-6px) } .insta-tile img { width: 100%
 .cart-n { min-width: 20px; height: 20px; border-radius: 10px; background: var(--gold); color: var(--ob); display: grid; place-items: center; font-size: 10px; padding: 0 5px }
 .site-header .burger { color: var(--ob) }
 .site-header .mega { left: var(--pad); right: var(--pad); top: calc(100% + 8px); max-width: 1280px; margin: 0 auto; border-radius: 28px; --ink: #09090D; --paper: #f5f5fa; background: rgba(237, 236, 245, .98); color: var(--ob); border: 1px solid rgba(9, 9, 13, .06); box-shadow: 0 24px 60px rgba(9, 9, 13, .16) }
-.site-header .mega-cats a:hover { color: #a63f66 }
+.site-header .mega-cats a:hover { color: #a60a1f }
 .toolbar { top: 84px }
 @media (max-width: 959px) {
   .hdr { padding: 6px 8px 6px 8px; grid-template-columns: auto 1fr auto } .hdr .burger { color: var(--ob) } .hdr-logo { justify-self: center }

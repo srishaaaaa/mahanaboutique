@@ -22,10 +22,10 @@
 html,body{margin:0;background:#1c1a52}
 .boot{position:fixed;inset:0;display:grid;place-content:center;justify-items:center;gap:18px;background:radial-gradient(60% 50% at 50% 42%,#1a245c 0,#111940 100%);color:#f5f5fa;font-family:'Playfair Display',Georgia,serif}
 .boot svg{width:84px;height:84px;animation:boot-spin 6s linear infinite}
-.boot b{font:400 52px/1 'Great Vibes',cursive;color:#e88aab}
-.boot small{font:500 10px/1 Archivo,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:#e88aab}
-.boot i{display:block;width:150px;height:2px;border-radius:2px;background:rgba(232, 138, 171,.22);overflow:hidden;position:relative}
-.boot i::after{content:'';position:absolute;inset:0;width:40%;background:#e88aab;border-radius:2px;animation:boot-bar 1.3s ease-in-out infinite}
+.boot b{font:400 52px/1 'Great Vibes',cursive;color:#e85266}
+.boot small{font:500 10px/1 Archivo,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:#e85266}
+.boot i{display:block;width:150px;height:2px;border-radius:2px;background:rgba(232, 82, 102,.22);overflow:hidden;position:relative}
+.boot i::after{content:'';position:absolute;inset:0;width:40%;background:#e85266;border-radius:2px;animation:boot-bar 1.3s ease-in-out infinite}
 @keyframes boot-spin{to{transform:rotate(360deg)}}
 @keyframes boot-bar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
 @media (prefers-reduced-motion:reduce){.boot svg,.boot i::after{animation:none}}
@@ -33,7 +33,7 @@ html,body{margin:0;background:#1c1a52}
 </head>
 <body>
 <div id="root"><div class="boot" role="status" aria-label="Loading Mahana Boutique &amp; Tailors">
-<svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#e88aab" stroke-width="1.5"><path d="M32 4 60 32 32 60 4 32Z"/><path d="M32 15 49 32 32 49 15 32Z" opacity=".7"/><path d="M32 25 39 32 32 39 25 32Z" fill="#e88aab" fill-opacity=".35"/></g></svg>
+<svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#e85266" stroke-width="1.5"><path d="M32 4 60 32 32 60 4 32Z"/><path d="M32 15 49 32 32 49 15 32Z" opacity=".7"/><path d="M32 25 39 32 32 39 25 32Z" fill="#e85266" fill-opacity=".35"/></g></svg>
 <b>Mahana</b><small>BOUTIQUE &amp; TAILORS</small><i></i></div></div>
 <noscript>Mahana Boutique &amp; Tailors needs JavaScript to run.</noscript>
 <script type="module" src="/src/main.jsx"></script>

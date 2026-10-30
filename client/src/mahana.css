@@ -1,11 +1,11 @@
 /* ============ Mahana homepage: the indigo hero (sections below it: night.css) ============ */
 :root {
   --m-ink: #0f0d33; --m-deep: #14123d; --m-indigo: #1c1a52; --m-royal: #2e2b7b;
-  --m-pink: #e88aab; --m-pink-l: #f3bfd1; --m-blush: #fbe3ec; --m-rose: #c4507a;
+  --m-pink: #e85266; --m-pink-l: #f395a1; --m-blush: #fbe4e1; --m-rose: #c4142b;
   --m-text: #14133a; --m-muted: rgba(20, 19, 58, .66); --m-line: rgba(28, 26, 82, .1);
   --m-shadow: 0 24px 60px rgba(28, 26, 82, .14);
-  --m-ring: 0 0 0 1px rgba(232, 138, 171, .32);
-  --m-pink-grad: linear-gradient(100deg, #f8d3c6 0%, #f3bfd1 38%, #e88aab 100%);
+  --m-ring: 0 0 0 1px rgba(232, 82, 102, .32);
+  --m-pink-grad: linear-gradient(100deg, #f8d3c6 0%, #f395a1 38%, #e85266 100%);
 }
 
 /* The sections below the hero (night indigo) live in night.css. */
@@ -13,7 +13,7 @@
 /* ---- hero: the photos from Admin → Storefront images fill the right half, fading into the indigo on the left and
    bottom (the original layout's mask), one after another (HeroSlides). ---- */
 .bh-addphoto { position: absolute; z-index: 6; left: 50%; bottom: 12%; translate: -50% 0; white-space: nowrap; padding: 11px 20px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .18em;
-  background: var(--m-pink-grad); color: var(--m-indigo); box-shadow: 0 12px 30px rgba(232, 138, 171, .35) }
+  background: var(--m-pink-grad); color: var(--m-indigo); box-shadow: 0 12px 30px rgba(232, 82, 102, .35) }
 .bh-addphoto:hover { filter: brightness(1.06) }
 @media (min-width: 700px) {
   .bh .bh-model .bh-arch { border-radius: 0 !important; box-shadow: none !important; background: transparent !important }
@@ -26,13 +26,13 @@
 .bh .bh-model .bh-arch .hs img.on { z-index: 1; opacity: 1; scale: 1.02; translate: 0 0 }
 .hs-dots { position: absolute; z-index: 3; left: 50%; bottom: 26px; translate: -50% 0; display: flex; gap: 8px; padding: 7px 10px; border-radius: 999px; background: rgba(15, 13, 51, .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px) }
 .hs-dots button { width: 8px; height: 8px; padding: 0; border-radius: 999px; background: rgba(251, 227, 236, .5); transition: width .4s ease, background .4s ease }
-.hs-dots button.on { width: 22px; background: #fbe3ec }
+.hs-dots button.on { width: 22px; background: #fbe4e1 }
 @media (max-width: 699px) { .hs-dots { bottom: auto; top: 96px; left: auto; right: 16px; translate: none } }
 @media (prefers-reduced-motion: reduce) { .bh .bh-model .bh-arch .hs img { transition: opacity .6s ease; scale: 1; translate: 0 0 } }
 
 /* hero: sparkles instead of falling petals; no flower ornaments */
 .bh .bh-lotus { display: none !important }
-.bh .bh-petals i { width: 5px !important; height: 5px !important; border-radius: 50% !important; background: #fbe3ec !important; box-shadow: 0 0 10px 3px rgba(232, 138, 171, .55) }
+.bh .bh-petals i { width: 5px !important; height: 5px !important; border-radius: 50% !important; background: #fbe4e1 !important; box-shadow: 0 0 10px 3px rgba(232, 82, 102, .55) }
 
 @media (prefers-reduced-motion: reduce) {
   .fx-silk, .fx-ring svg, .fx-spark, .home .blank .emblem { animation: none }
@@ -41,5 +41,5 @@
 /* phones keep the full set of hero sparkles, a touch larger and brighter for small screens */
 @media (max-width: 699px) {
   .bh .bh-petals { z-index: 4 }
-  .bh .bh-petals i:nth-child(n) { display: block; width: 6px !important; height: 6px !important; box-shadow: 0 0 12px 4px rgba(232, 138, 171, .7) }
+  .bh .bh-petals i:nth-child(n) { display: block; width: 6px !important; height: 6px !important; box-shadow: 0 0 12px 4px rgba(232, 82, 102, .7) }
 }

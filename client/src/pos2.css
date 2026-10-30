@@ -30,7 +30,7 @@
 .dpos-card2 .v { font-size: 30px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; overflow-wrap: anywhere } .dpos-card2 .v.txt { font-size: 20px }
 .dpos-card2 .s { font-size: 12px; color: var(--d-mut) }
 .dpos-card2.net { background: linear-gradient(135deg, #0a9a68, #0d1f1a); color: #fff; border: 0 } .dpos-card2.net .ic { background: rgba(255, 255, 255, .18) } .dpos-card2.net .s { color: rgba(255, 255, 255, .85) }
-.dpos-card2.gstc { border-color: #d9d4e8 } .dpos-card2.nong { border-color: #bfe8d8 } .dpos-card2.nong .v { color: #0a8a5c } .dpos-card2.exp { border-color: #f1c9c9 } .dpos-card2.exp .v { color: #b3261e }
+.dpos-card2.gstc { border-color: #d9d4e8 } .dpos-card2.nong { border-color: #bfe8d8 } .dpos-card2.nong .v { color: #0a8a5c } .dpos-card2.exp { border-color: #f1a3ad } .dpos-card2.exp .v { color: #b3261e }
 .dpos-formula { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--d-line); border-radius: 16px; padding: 12px 16px; font-size: 14px }
 .dpos-formula b.tag { background: #e8e6fb; color: #3a2fc0; border-radius: 8px; padding: 4px 10px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase }
 .dpos-formula .np { color: #0a8a5c; font-weight: 800; font-family: ui-monospace, monospace }
