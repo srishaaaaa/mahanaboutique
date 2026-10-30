@@ -1347,3 +1347,34 @@
 .home .ni-mosaic { grid-auto-rows: auto !important }
 .home .ni-m .ni-tile { aspect-ratio: 3 / 4 !important; height: auto }
 .home .ni-m .ni-tile > img { width: 100%; height: 100%; object-fit: cover }
+
+/* image viewer: centred image, clear Back arrow and Close */
+.lightbox { display: grid; place-items: center; justify-content: center; z-index: 500 }
+.lightbox .lb-img { margin: 0 auto; justify-self: center; background: transparent }
+.lightbox .lb-img img, .lightbox .lb-img picture { width: 100%; height: 100%; object-fit: contain }
+.lb-back { position: absolute; top: 18px; left: 18px; z-index: 5; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 999px; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .45); color: #fff; font: 700 12px/1 var(--n-sans, 'Archivo', sans-serif); letter-spacing: .18em; text-transform: uppercase; backdrop-filter: blur(8px); transition: background .3s, transform .3s }
+.lb-back span { font-size: 18px; line-height: 1; transition: transform .3s }
+.lb-back:hover { background: #bf1722; border-color: #bf1722 } .lb-back:hover span { transform: translateX(-4px) }
+.lightbox .close { z-index: 5; width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .45); color: #fff }
+.lightbox .nav { z-index: 5; width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .45); color: #fff }
+.lightbox .close:hover, .lightbox .nav:hover { background: #bf1722; border-color: #bf1722 }
+
+/* reels keep the Instagram reel shape (9:16); the row is narrower so they don't get huge */
+.home .ni-reel .ni-tile { aspect-ratio: 9 / 16 !important; height: auto }
+.home .ni-reel .ni-tile > video, .home .ni-reel .ni-tile > img { width: 100%; height: 100%; object-fit: cover }
+.home .ni-reels { max-width: 1100px }
+
+/* reel / photo viewer */
+.mv { position: fixed; inset: 0; z-index: 600; display: grid; place-items: center; background: rgba(6, 9, 24, .96); color: #fff }
+.mv-stage { display: grid; place-items: center; max-width: 92vw; max-height: 88vh }
+.mv-stage.is-reel { height: min(88vh, 900px); aspect-ratio: 9 / 16; border-radius: 22px; overflow: hidden; background: #000 }
+.mv-stage.is-reel video { width: 100%; height: 100%; object-fit: contain }
+.mv-stage.is-photo img { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 14px }
+.mv-back, .mv-x, .mv-nav { position: absolute; z-index: 2; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .45); color: #fff; backdrop-filter: blur(8px); transition: background .3s, transform .3s }
+.mv-back { top: 18px; left: 18px; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 999px; font: 700 12px/1 'Archivo', system-ui, sans-serif; letter-spacing: .18em; text-transform: uppercase }
+.mv-back span { font-size: 18px; line-height: 1; transition: transform .3s } .mv-back:hover span { transform: translateX(-4px) }
+.mv-x { top: 18px; right: 18px; width: 44px; height: 44px; border-radius: 50% }
+.mv-nav { top: 50%; width: 48px; height: 48px; border-radius: 50%; font-size: 30px; line-height: 1; translate: 0 -50% } .mv-prev { left: 18px } .mv-next { right: 18px }
+.mv-back:hover, .mv-x:hover, .mv-nav:hover { background: #bf1722; border-color: #bf1722 }
+.mv-count { position: absolute; bottom: 16px; letter-spacing: .3em; font-size: 12px }
+@media (max-width: 600px) { .mv-nav { width: 40px; height: 40px } .mv-prev { left: 8px } .mv-next { right: 8px } }

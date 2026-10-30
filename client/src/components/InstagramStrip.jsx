@@ -1,6 +1,7 @@
+import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/App';
-import { useReduced } from '../lib/hooks';
+import { useModal, useReduced } from '../lib/hooks';
 import { Reveal } from './Motion';
 import { useSiteText } from '../lib/siteText';
 import BlankFrame from './BlankFrame';
@@ -33,6 +34,28 @@ function Reel({ post, label, fallbackUrl }) {
   );
 }
 
+// Full-screen viewer for a reel or photo: Back arrow, close, previous / next, Esc and arrow keys.
+function MediaViewer({ items, index, setIndex, onClose }) {
+  const ref = useRef(); useModal(true, onClose, ref);
+  const N = items.length, cur = items[index];
+  useEffect(() => {
+    const k = e => { if (e.key === 'ArrowRight') setIndex(i => (i + 1) % N); if (e.key === 'ArrowLeft') setIndex(i => (i + N - 1) % N) };
+    addEventListener('keydown', k); return () => removeEventListener('keydown', k);
+  }, [N, setIndex]);
+  return (
+    <div ref={ref} className="mv" role="dialog" aria-modal="true" aria-label={cur.video ? 'Reel viewer' : 'Photo viewer'} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <button className="mv-back" onClick={onClose} aria-label="Back to the gallery"><span aria-hidden="true">←</span> Back</button>
+      <button className="mv-x" onClick={onClose} aria-label="Close viewer">✕</button>
+      {N > 1 && <button className="mv-nav mv-prev" onClick={() => setIndex(i => (i + N - 1) % N)} aria-label="Previous">‹</button>}
+      <div className={`mv-stage ${cur.video ? 'is-reel' : 'is-photo'}`} key={index}>
+        {cur.video ? <video src={cur.video} poster={cur.image || undefined} controls autoPlay loop playsInline aria-label={cur.alt || 'Boutique video'} /> : <img src={cur.image} alt={cur.alt || 'Boutique photo'} />}
+      </div>
+      {N > 1 && <button className="mv-nav mv-next" onClick={() => setIndex(i => (i + 1) % N)} aria-label="Next">›</button>}
+      <p className="mv-count" aria-live="polite">{index + 1} / {N}</p>
+    </div>
+  );
+}
+
 const count = (n, one, many) => (n ? `${n} ${n === 1 ? one : many}` : 'COMING SOON');
 
 // "Inside MAHANA BOUTIQUE & TAILORS": a filmstrip of reels (up to 6) and a mosaic photo gallery (up to 6).
@@ -45,6 +68,7 @@ export default function InstagramStrip() {
   const videos = all.filter(p => p.video).slice(0, 6);
   const photos = all.filter(p => !p.video).slice(0, 6);
   const strip = useRef();
+  const [view, setView] = useState(null); // { list, index }
   const slide = d => strip.current?.scrollBy({ left: d * strip.current.clientWidth * 0.6, behavior: 'smooth' });
   return (
     <section className="nx nx-ig" id="reels" aria-labelledby="ig-h">
@@ -74,7 +98,7 @@ export default function InstagramStrip() {
               const r = videos[i];
               return (
                 <Reveal as="li" key={(r?.video || 'empty') + i} delay={(i % 6) * 0.06} className="ni-reel">
-                  <div className={`ni-tile ${r ? '' : 'is-empty'}`}>
+                  <div className={`ni-tile ${r ? '' : 'is-empty'}`} onClick={r ? e => { if (!e.target.closest('a,button')) setView({ list: videos, index: i }) } : undefined} style={r ? { cursor: 'pointer' } : undefined}>
                     {r ? <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} /> : <BlankFrame label={`Reel ${i + 1}`} kind="video" to="/admin/reels" where="Reels & Gallery" />}
                     <span className="ni-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                     {r?.href && <a className="ni-open" href={r.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
@@ -97,7 +121,7 @@ export default function InstagramStrip() {
               const p = photos[i];
               return (
                 <Reveal as="li" key={(p?.image || 'empty') + i} delay={(i % 3) * 0.08} className={`ni-m m${i + 1}`}>
-                  <div className={`ni-tile ${p ? '' : 'is-empty'}`}>
+                  <div className={`ni-tile ${p ? '' : 'is-empty'}`} onClick={p ? e => { if (!e.target.closest('a,button')) setView({ list: photos, index: i }) } : undefined} style={p ? { cursor: 'zoom-in' } : undefined}>
                     {p ? <img src={p.image} alt={p.alt || 'Boutique photo'} loading="lazy" /> : <BlankFrame label={`Photo ${i + 1}`} to="/admin/reels" where="Reels & Gallery" />}
                     {p?.href && <a className="ni-open" href={p.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
                   </div>
@@ -108,6 +132,7 @@ export default function InstagramStrip() {
         </div>
         <Divider className="wide" />
       </div>
+      {view && createPortal(<MediaViewer items={view.list} index={view.index} setIndex={f => setView(v => ({ ...v, index: typeof f === 'function' ? f(v.index) : f }))} onClose={() => setView(null)} />, document.body)}
     </section>
   );
 }

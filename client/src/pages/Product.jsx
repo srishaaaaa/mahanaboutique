@@ -27,7 +27,8 @@ function Lightbox({ p, color, index, setIndex, onClose }) {
     addEventListener('keydown', k); return () => removeEventListener('keydown', k);
   }, [setIndex]);
   return (
-    <motion.div ref={ref} className="lightbox" role="dialog" aria-modal="true" aria-label={`${p.name} images`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <motion.div ref={ref} className="lightbox" role="dialog" aria-modal="true" aria-label={`${p.name} images`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <button className="lb-back" onClick={onClose} aria-label="Back to product"><span aria-hidden="true">←</span> Back</button>
       <button className="icon-btn close" onClick={onClose} aria-label="Close image viewer">✕</button>
       <button className="icon-btn nav prev" onClick={() => setIndex(i => (i + N - 1) % N)} aria-label="Previous image">‹</button>
       <AnimatePresence mode="wait"><motion.div key={index} className="lb-img" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}><ProductMedia p={slides[index].p} view={slides[index].view} /></motion.div></AnimatePresence>
