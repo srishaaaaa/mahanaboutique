@@ -43,12 +43,12 @@ function MediaViewer({ items, index, setIndex, onClose }) {
     addEventListener('keydown', k); return () => removeEventListener('keydown', k);
   }, [N, setIndex]);
   return (
-    <div ref={ref} className="mv" role="dialog" aria-modal="true" aria-label={cur.video ? 'Reel viewer' : 'Photo viewer'} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+    <div ref={ref} className="mv" role="dialog" aria-modal="true" aria-label={cur.video || cur.embed ? 'Reel viewer' : 'Photo viewer'} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <button className="mv-back" onClick={onClose} aria-label="Back to the gallery"><span aria-hidden="true">←</span> Back</button>
       <button className="mv-x" onClick={onClose} aria-label="Close viewer">✕</button>
       {N > 1 && <button className="mv-nav mv-prev" onClick={() => setIndex(i => (i + N - 1) % N)} aria-label="Previous">‹</button>}
-      <div className={`mv-stage ${cur.video ? 'is-reel' : 'is-photo'}`} key={index}>
-        {cur.video ? <video src={cur.video} poster={cur.image || undefined} controls autoPlay loop playsInline aria-label={cur.alt || 'Boutique video'} /> : <img src={cur.image} alt={cur.alt || 'Boutique photo'} />}
+      <div className={`mv-stage ${cur.video || cur.embed ? 'is-reel' : 'is-photo'}`} key={index}>
+        {cur.embed ? <iframe src={cur.embed} title={cur.alt || 'Instagram reel'} scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen /> : cur.video ? <video src={cur.video} poster={cur.image || undefined} controls autoPlay loop playsInline aria-label={cur.alt || 'Boutique video'} /> : <img src={cur.image} alt={cur.alt || 'Boutique photo'} />}
       </div>
       {N > 1 && <button className="mv-nav mv-next" onClick={() => setIndex(i => (i + 1) % N)} aria-label="Next">›</button>}
       <p className="mv-count" aria-live="polite">{index + 1} / {N}</p>
@@ -64,9 +64,9 @@ export default function InstagramStrip() {
   const { site } = useApp();
   const t = useSiteText();
   const ig = site.social?.instagram;
-  const all = (ig?.posts || []).filter(p => p.video || p.image);
-  const videos = all.filter(p => p.video).slice(0, 6);
-  const photos = all.filter(p => !p.video).slice(0, 6);
+  const all = (ig?.posts || []).filter(p => p.video || p.embed || p.image);
+  const videos = all.filter(p => p.video || p.embed).slice(0, 6);
+  const photos = all.filter(p => !p.video && !p.embed).slice(0, 6);
   const strip = useRef();
   const [view, setView] = useState(null); // { list, index }
   const slide = d => strip.current?.scrollBy({ left: d * strip.current.clientWidth * 0.6, behavior: 'smooth' });
@@ -97,9 +97,9 @@ export default function InstagramStrip() {
             {Array.from({ length: 6 }, (_, i) => {
               const r = videos[i];
               return (
-                <Reveal as="li" key={(r?.video || 'empty') + i} delay={(i % 6) * 0.06} className="ni-reel">
+                <Reveal as="li" key={(r?.video || r?.embed || 'empty') + i} delay={(i % 6) * 0.06} className="ni-reel">
                   <div className={`ni-tile ${r ? '' : 'is-empty'}`} onClick={r ? e => { if (!e.target.closest('a,button')) setView({ list: videos, index: i }) } : undefined} style={r ? { cursor: 'pointer' } : undefined}>
-                    {r ? <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} /> : <BlankFrame label={`Reel ${i + 1}`} kind="video" to="/admin/reels" where="Reels & Gallery" />}
+                    {r ? (r.embed ? <iframe className="ni-embed" src={r.embed} title={r.alt || 'Instagram reel'} loading="lazy" scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen /> : <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} />) : <BlankFrame label={`Reel ${i + 1}`} kind="video" to="/admin/reels" where="Reels & Gallery" />}
                     <span className="ni-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                     {r?.href && <a className="ni-open" href={r.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
                   </div>

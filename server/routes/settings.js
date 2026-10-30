@@ -24,7 +24,7 @@ export const storeSchema = z.object({
 export const socialSchema = z.object({
   instagram: z.object({
     handle: nullableText(60), url: z.string().trim().url().nullable().default(null),
-    posts: z.array(z.object({ image: text(300).optional(), video: text(500).optional(), href: z.string().url().optional(), alt: text(160).default('') }).refine(p => p.image || p.video, 'Add an image or a video')).max(12).refine(l => l.filter(p => p.video).length <= 6 && l.filter(p => !p.video).length <= 6, 'Up to 6 photos and 6 videos').default([]),
+    posts: z.array(z.object({ image: text(300).optional(), video: text(500).optional(), href: z.string().url().optional(), embed: z.string().url().regex(/^https:\/\/www\.instagram\.com\/(reel|p|tv)\/[A-Za-z0-9_-]+\/embed\/?$/, 'Paste an Instagram reel link').optional(), alt: text(160).default('') }).refine(p => p.image || p.video || p.embed, 'Add an image, a video or an Instagram reel link')).max(12).refine(l => l.filter(p => p.video || p.embed).length <= 6 && l.filter(p => !p.video && !p.embed).length <= 6, 'Up to 6 photos and 6 videos').default([]),
   }).default({}),
   links: z.array(z.object({ label: text(40).min(1), url: z.string().url() })).max(6).default([]),
 });

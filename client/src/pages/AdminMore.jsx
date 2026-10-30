@@ -138,7 +138,7 @@ export function AdminReels() {
   useEffect(() => { if (!gate) api('/store').then(setS).catch(e => setErr(e.message)) }, [gate]);
   if (gate) return gate;
   const posts = s?.social?.instagram?.posts || [];
-  const lists = { video: posts.filter(p => p.video), photo: posts.filter(p => !p.video && p.image) };
+  const lists = { video: posts.filter(p => p.video || p.embed), photo: posts.filter(p => !p.video && !p.embed && p.image) };
   const save = async next => {
     const ig = s.social.instagram;
     const out = await api('/admin/settings/social', { method: 'PUT', body: { ...s.social, instagram: { ...ig, posts: [...next.video, ...next.photo] } } });
@@ -157,6 +157,17 @@ export function AdminReels() {
     } catch (e) { setErr(e.message) } finally { setBusy(null) }
   };
   const remove = async (kind, i) => { if (!confirm('Remove this from the home page?')) return; setBusy(kind + i); setErr(); try { await save({ ...lists, [kind]: lists[kind].filter((_, n) => n !== i) }); toast('Removed.') } catch (e) { setErr(e.message) } finally { setBusy(null) } };
+  const [link, setLink] = useState('');
+  const addLink = async () => {
+    const m = link.trim().match(/instagram\.com\/(?:reels?|p|tv)\/([A-Za-z0-9_-]+)/i);
+    if (!m) return setErr('That does not look like an Instagram reel link. Copy it from Instagram: Share → Copy link.');
+    if (lists.video.length >= REEL_MAX) return setErr('You already have 6 reels. Remove one first.');
+    setBusy('link'); setErr();
+    try {
+      const item = { embed: `https://www.instagram.com/reel/${m[1]}/embed`, href: `https://www.instagram.com/reel/${m[1]}/`, alt: 'Instagram reel' };
+      await save({ ...lists, video: [...lists.video, item] }); setLink(''); toast('Reel added. It plays on the home page.');
+    } catch (e) { setErr(e.message) } finally { setBusy(null) }
+  };
   const pick = (kind, i) => { target.current = { kind, i }; input.current.accept = kind === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp'; input.current.click() };
   const grid = (kind, max, noun) => {
     const cur = lists[kind];
@@ -167,10 +178,10 @@ export function AdminReels() {
           return (
             <section className="dpos-reel" key={key}>
               <header><span>{noun.toUpperCase()} {i + 1}</span>{live && <span className="dpos-live">LIVE</span>}</header>
-              <div className="media">{!s ? 'Loading…' : p?.video ? <video src={p.video} muted loop playsInline controls preload="metadata" /> : p?.image ? <img src={p.image} alt={p.alt || `${noun} ${i + 1}`} /> : <span>{canAdd ? `Empty — add a ${noun.toLowerCase()}` : `Fill ${noun.toLowerCase()} ${cur.length + 1} first`}</span>}</div>
+              <div className="media">{!s ? 'Loading…' : p?.embed ? <iframe src={p.embed} title={p.alt || `Reel ${i + 1}`} loading="lazy" scrolling="no" allowFullScreen /> : p?.video ? <video src={p.video} muted loop playsInline controls preload="metadata" /> : p?.image ? <img src={p.image} alt={p.alt || `${noun} ${i + 1}`} /> : <span>{canAdd ? `Empty — add a ${noun.toLowerCase()}` : `Fill ${noun.toLowerCase()} ${cur.length + 1} first`}</span>}</div>
               <footer>
                 <button className="dpos-btn ghost sm" disabled={busy !== null || !canAdd || !s} onClick={() => pick(kind, i)}>{busy === key ? 'Uploading…' : live ? '↻ Replace' : '+ Upload'}</button>
-                {live && <a className="dpos-btn ghost sm" href={p.video || p.image} target="_blank" rel="noopener noreferrer" aria-label="Preview"><Icon n="eye" size={14} /></a>}
+                {live && <a className="dpos-btn ghost sm" href={p.href || p.video || p.image} target="_blank" rel="noopener noreferrer" aria-label="Preview"><Icon n="eye" size={14} /></a>}
                 {live && <button className="dpos-trash" aria-label={`Remove ${noun.toLowerCase()}`} disabled={busy !== null} onClick={() => remove(kind, i)}><Icon n="trash" size={18} /></button>}
               </footer>
             </section>);
@@ -183,6 +194,10 @@ export function AdminReels() {
       <Err>{err}</Err>
       <input ref={input} type="file" hidden onChange={e => { const f = e.target.files[0]; e.target.value = ''; if (f) upload(target.current.kind, target.current.i, f) }} />
       <h2 className="serif adm-h2">Reels <span className="muted small">({lists.video.length} of {REEL_MAX} · MP4 or WebM, max 4 MB each; compress to 720p first)</span></h2>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '0 0 14px' }}>
+        <input value={link} onChange={e => setLink(e.target.value)} onKeyDown={e => e.key === 'Enter' && addLink()} placeholder="Paste an Instagram reel link, e.g. https://www.instagram.com/reel/…" aria-label="Instagram reel link" style={{ flex: '1 1 320px', padding: '11px 14px', borderRadius: 10, border: '1px solid rgba(0,0,0,.2)' }} />
+        <button className="dpos-btn" disabled={busy !== null || !link.trim() || !s} onClick={addLink}>{busy === 'link' ? 'Adding…' : '+ Add reel link'}</button>
+      </div>
       {grid('video', REEL_MAX, 'Reel')}
       <h2 className="serif adm-h2" style={{ marginTop: 28 }}>Photo gallery <span className="muted small">({lists.photo.length} of {PHOTO_MAX} · JPEG, PNG or WebP)</span></h2>
       {grid('photo', PHOTO_MAX, 'Photo')}
