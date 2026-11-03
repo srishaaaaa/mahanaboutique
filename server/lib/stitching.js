@@ -289,8 +289,13 @@ export async function createOrder(db, user, d) {
       await moved(t, o.id, user, null, 'received', 'Order created');
       await note(t, o.id, user, 'created', { total: tot.total, garments: items.length });
       if (d.advance?.amount > 0) {
-        await t.query(`INSERT INTO stitch_payments (order_id, kind, amount, mode, ref, idempotency_key, received_by) VALUES ($1,'advance',$2,$3,$4,$5,$6)`, [o.id, d.advance.amount, d.advance.mode, d.advance.ref ?? null, `${d.idempotencyKey}:advance`, user.id]);
-        await note(t, o.id, user, 'payment', { kind: 'advance', amount: d.advance.amount, mode: d.advance.mode });
+        // A split advance is one ledger row per payment method; the amounts must add up to the advance.
+        const parts = d.advance.split ? Object.entries(d.advance.split).filter(([, n]) => n > 0) : [[d.advance.mode, d.advance.amount]];
+        if (parts.reduce((s, [, n]) => s + n, 0) !== d.advance.amount) throw new HttpError(400, 'The split amounts must add up to the advance', 'bad_split');
+        for (const [m, n] of parts) {
+          await t.query(`INSERT INTO stitch_payments (order_id, kind, amount, mode, ref, idempotency_key, received_by) VALUES ($1,'advance',$2,$3,$4,$5,$6)`, [o.id, n, m, d.advance.ref ?? null, `${d.idempotencyKey}:advance:${m}`, user.id]);
+          await note(t, o.id, user, 'payment', { kind: 'advance', amount: n, mode: m });
+        }
       }
       await audit(t, user.id, 'stitch.order.create', 'stitch_order', no, { total: tot.total });
       return o.id;

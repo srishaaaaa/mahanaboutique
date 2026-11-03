@@ -33,7 +33,7 @@ const orderBody = z.object({
   orderDate: date.optional(), startDate: date.nullable().optional(), trialDate: date.nullable().optional(), deliveryDate: date,
   isGst: z.boolean().default(false), gstRate: z.number().int().min(0).max(28).default(5), discount: paise.default(0), urgentCharge: paise.default(0),
   notes: text(1000).default(''), items: z.array(itemBody).min(1).max(20),
-  advance: z.object({ amount: paise, mode, ref: text(80).optional() }).optional(),
+  advance: z.object({ amount: paise, mode, ref: text(80).optional(), split: z.object({ cash: paise.default(0), upi: paise.default(0), card: paise.default(0) }).optional() }).optional(),
 }).refine(b => b.customerId || b.customer, { message: 'Choose or add a customer', path: ['customerId'] });
 const orderPatch = z.object({
   priority: z.enum(['normal', 'urgent', 'express']).optional(), tailorId: id.nullable().optional(), startDate: date.nullable().optional(), trialDate: date.nullable().optional(), deliveryDate: date.optional(),

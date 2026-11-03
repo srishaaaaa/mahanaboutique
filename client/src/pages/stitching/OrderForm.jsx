@@ -26,7 +26,11 @@ export default function OrderForm() {
     return L;
   }, [items, f.urgent, meta]);
   const tot = bill(lines, { isGst: f.isGst, gstRate: Number(f.gstRate), discount: toPaise(f.discount) });
-  const advance = toPaise(f.advance), garments = items.reduce((s, i) => s + (Number(i.qty) || 1), 0);
+  const [split, setSplit] = useState({ cash: '', upi: '', card: '' }); const [splitOn, setSplitOn] = useState({ cash: true, upi: true, card: false });
+  const splitAmt = { cash: splitOn.cash ? toPaise(split.cash) : 0, upi: splitOn.upi ? toPaise(split.upi) : 0, card: splitOn.card ? toPaise(split.card) : 0 };
+  const pickedN = Object.values(splitOn).filter(Boolean).length;
+  const toggleSplit = m => { if (splitOn[m] && pickedN <= 2) return; if (splitOn[m]) setSplit(s => ({ ...s, [m]: '' })); setSplitOn(o => ({ ...o, [m]: !o[m] })) };
+  const advance = f.advMode === 'split' ? splitAmt.cash + splitAmt.upi + splitAmt.card : toPaise(f.advance), garments = items.reduce((s, i) => s + (Number(i.qty) || 1), 0);
 
   // The same date rules the server enforces, shown before the form is sent.
   const problems = [];
@@ -49,7 +53,9 @@ export default function OrderForm() {
     ...(customer?.id ? { customerId: customer.id } : { customer: { name: customer?.name ?? '', phone: customer?.phone ?? '' } }),
     priority: f.priority, tailorId: f.tailorId ? Number(f.tailorId) : null, orderDate: f.orderDate, startDate: f.startDate || null, trialDate: f.trialDate || null, deliveryDate: f.deliveryDate,
     isGst: f.isGst, gstRate: Number(f.gstRate), discount: toPaise(f.discount), urgentCharge: toPaise(f.urgent), notes: f.notes, items: items.map(itemPayload),
-    ...(advance > 0 ? { advance: { amount: advance, mode: f.advMode, ref: f.advRef || undefined } } : {}),
+    ...(advance > 0 ? { advance: f.advMode === 'split'
+      ? { amount: advance, mode: 'cash', split: splitAmt, ref: f.advRef || undefined }
+      : { amount: advance, mode: f.advMode, ref: f.advRef || undefined } } : {}),
   });
   const submit = async () => {
     setBusy(true); setErr();
@@ -67,7 +73,7 @@ export default function OrderForm() {
       {done.warnings.map(w => <p key={w} className="stc-warn">{w}</p>)}
       <div className="stc-row"><Link className="dpos-btn" to={`/admin/stitching/orders/${done.order.id}`}>Open the order</Link>
         <a className="dpos-btn outline" href={`/admin/stitching/print/${done.order.id}?copy=job`} target="_blank" rel="noopener noreferrer">Print job card</a>
-        <button className="dpos-btn ghost" onClick={() => { setDone(null); setItems([blankItem(meta)]); setCustomer(null); setF({ ...f, notes: '', advance: '', discount: '', urgent: '' }); keyRef.current = { hash: '', key: newKey() } }}>Create another</button></div>
+        <button className="dpos-btn ghost" onClick={() => { setDone(null); setItems([blankItem(meta)]); setCustomer(null); setF({ ...f, notes: '', advance: '', discount: '', urgent: '' }); setSplit({ cash: '', upi: '', card: '' }); keyRef.current = { hash: '', key: newKey() } }}>Create another</button></div>
     </section>);
 
   return (
@@ -106,10 +112,24 @@ export default function OrderForm() {
           <div className="stc-grid">
             <Field label="Urgent / express charge (S$)"><input type="number" min="0" inputMode="decimal" value={f.urgent} onChange={set('urgent')} /></Field>
             <Field label="Discount (S$)"><input type="number" min="0" inputMode="decimal" value={f.discount} onChange={set('discount')} /></Field>
-            <Field label="GST"><select value={f.isGst ? String(f.gstRate) : 'none'} onChange={e => e.target.value === 'none' ? setF({ ...f, isGst: false }) : setF({ ...f, isGst: true, gstRate: Number(e.target.value) })}><option value="none">No GST</option>{[9].map(r => <option key={r} value={r}>GST {r}%</option>)}</select></Field>
-            <Field label="Advance received (S$)"><input type="number" min="0" inputMode="decimal" value={f.advance} onChange={set('advance')} /></Field>
-            <Field label="Advance paid by"><select value={f.advMode} onChange={set('advMode')}><option value="cash">Cash</option><option value="upi">PayNow</option><option value="card">Card</option></select></Field>
-            <Field label="Payment reference"><input value={f.advRef} onChange={set('advRef')} placeholder="PayNow / card ref (optional)" /></Field>
+          </div>
+          <div className="dpos-two" role="radiogroup" aria-label="Invoice type" style={{ marginTop: 14 }}>
+            <button type="button" role="radio" aria-checked={!f.isGst} className={!f.isGst ? 'on' : ''} onClick={() => setF({ ...f, isGst: false })}>Non-GST bill</button>
+            <button type="button" role="radio" aria-checked={f.isGst} className={f.isGst ? 'on' : ''} onClick={() => setF({ ...f, isGst: true, gstRate: Number(f.gstRate) || 9 })}>GST invoice</button></div>
+          <p className="dpos-flabel">FINANCIAL OPTION</p>
+          <div className="dpos-pills" role="radiogroup" aria-label="Payment method">{[['cash', 'Cash'], ['upi', 'QR / GPay'], ['card', 'Card'], ['split', 'Split']].map(([v, l]) => <button type="button" key={v} role="radio" aria-checked={f.advMode === v} className={f.advMode === v ? 'on' : ''} onClick={() => setF({ ...f, advMode: v })}>{l}</button>)}</div>
+          <hr className="dpos-hr" />
+          <div className="dpos-grand"><span>GRAND TOTAL</span><b>{inr(tot.total)}</b></div>
+          <div className="dpos-paybox">
+            <p className="dpos-pl">{f.advMode === 'upi' ? 'GPAY' : f.advMode.toUpperCase()} PAYMENT</p>
+            {f.advMode !== 'split' && <label className="f">{f.advMode === 'cash' ? 'Amount Received (S$)' : 'Advance Received (S$)'}<input className="bigin" inputMode="decimal" value={f.advance} onChange={set('advance')} placeholder="0.00" /></label>}
+            {f.advMode === 'split' && <>
+              <p className="dpos-flabel" style={{ marginTop: 0 }}>SPLIT BETWEEN (PICK 2 OR 3)</p>
+              <div className="dpos-splitpick" role="group" aria-label="Split between">{['cash', 'upi', 'card'].map(m => <button key={m} type="button" aria-pressed={splitOn[m]} className={splitOn[m] ? 'on' : ''} onClick={() => toggleSplit(m)}>{splitOn[m] ? '✓ ' : ''}{m === 'upi' ? 'QR / GPAY' : m.toUpperCase()}</button>)}</div>
+              <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{{ cash: 'Cash', upi: 'PayNow', card: 'Card' }[m]} (S$)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => setSplit({ ...split, [m]: e.target.value })} placeholder="0.00" /></label>)}</div>
+              <div className="dpos-recv"><span>TOTAL RECEIVED</span><b className="ok">{inr(advance)}</b></div></>}
+            {f.advMode !== 'cash' && <label className="f" style={{ marginTop: 12 }}>{f.advMode === 'card' ? 'Slip / approval no.' : 'Transaction ID'} (optional)<input value={f.advRef} onChange={set('advRef')} maxLength={80} /></label>}
+            <p className="sub" style={{ marginTop: 8 }}>Balance after this payment: {inr(Math.max(tot.total - advance, 0))}</p>
           </div>
           <p className="muted small" style={{ marginBottom: 0 }}>Alteration charges are added later, if an alteration is needed. The server recalculates every amount when the order is saved.</p>
         </Step>

@@ -26,7 +26,7 @@
 .stc-pill.pr-urgent { background: #e5e4f1; color: #8a5a00 } .stc-pill.pr-express { background: #fdecea; color: var(--d-bad) }
 .stc-table { width: 100%; border-collapse: collapse; font-size: 14px }
 .stc-table th { text-align: left; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--d-mut); padding: 10px 8px; border-bottom: 1px solid var(--d-line); white-space: nowrap }
-.stc-table td { padding: 12px 8px; border-bottom: 1px solid #e5e4f0; vertical-align: top }
+.stc-table td { padding: 12px 8px; border-bottom: 1px solid #e5e4f0; vertical-align: top; white-space: nowrap }
 .stc-table tr.click { cursor: pointer } .stc-table tr.click:hover td { background: #faf8f4 }
 .stc-table .r { text-align: right } .stc-table .money { font-weight: 800; white-space: nowrap }
 .stc-mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; font-weight: 600 }
