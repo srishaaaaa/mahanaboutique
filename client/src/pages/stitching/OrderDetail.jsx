@@ -52,7 +52,7 @@ export default function OrderDetail() {
         {!closed && (
           <div className="stc-row">
             {next.map(s => <button key={s} className="dpos-btn sm" onClick={() => setM({ t: 'status', to: s })}>→ {statusName(meta, s)}</button>)}
-            {['trial_scheduled', 'trial_completed', 'finishing_qc', 'ready'].includes(o.status) && <button className="dpos-btn outline sm" onClick={() => setM({ t: 'alt' })}>+ Alteration needed</button>}
+            {['stitching', 'finishing_qc', 'ready'].includes(o.status) && <button className="dpos-btn outline sm" onClick={() => setM({ t: 'alt' })}>+ Alteration needed</button>}
             <button className="dpos-btn outline sm" onClick={() => setM({ t: 'sched' })}>Edit schedule / tailor</button>
             {manager && <button className="dpos-btn danger sm" onClick={() => setM({ t: 'status', to: 'cancelled' })}>Cancel order</button>}
           </div>)}
