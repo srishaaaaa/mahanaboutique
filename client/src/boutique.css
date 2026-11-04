@@ -1,7 +1,7 @@
 /* ============ DHANYA BOUTIQUE: beige x red identity, editorial serif, layered hero ============ */
 :root {
-  --beige: #f3f3f9; --ivory: #fbfbfe; --red: #2d3e76; --maroon: #1c284f; --terra: #bf1722; --ink-d: #141c38; --sand: #dfdeed; --antique: #e33944;
-  --ob: #141c38; --gold: #e33944; --goldtext: #bf1722; --plum: #1c284f;
+  --beige: #f3f3f9; --ivory: #fbfbfe; --red: #2d3e76; --maroon: #1c284f; --terra: #a65f4e; --ink-d: #141c38; --sand: #dfdeed; --antique: #c9897a;
+  --ob: #141c38; --gold: #c9897a; --goldtext: #a65f4e; --plum: #1c284f;
   --cream: #f3f3f9; --cream2: #e7e7f2;
   --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
 }
@@ -26,11 +26,11 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
 .hdr { background: rgba(251, 251, 254, .92); border: 1px solid var(--sand); box-shadow: 0 10px 34px rgba(28, 40, 79, .1) }
 @media (max-width: 767px) { .wm-a { font-size: 20px } .wm-b { font-size: 8px; letter-spacing: .5em } }
 .mobile-menu { background: radial-gradient(120% 80% at 50% 0%, #142047, var(--maroon)) }
-.mm-top .wm-a { color: #fff } .mm-top .wordmark { color: #fff } .mm-top .wm-b { color: #edc677 }
+.mm-top .wm-a { color: #fff } .mm-top .wordmark { color: #fff } .mm-top .wm-b { color: #efc3b3 }
 
 /* ---- hero ---- */
 .bh { --px: 0; --py: 0; padding: 104px var(--pad) 0; overflow: hidden; color: var(--ink-d); --ink: #141c38; --paper: #f3f3f9;
-  background: radial-gradient(60% 70% at 88% 12%, rgba(251, 251, 254, .7), transparent 70%), linear-gradient(135deg, #f7ebd4 0%, #edc677 55%, #edc677 100%) }
+  background: radial-gradient(60% 70% at 88% 12%, rgba(251, 251, 254, .7), transparent 70%), linear-gradient(135deg, #f7ebd4 0%, #efc3b3 55%, #efc3b3 100%) }
 .bh-wrap { position: relative; max-width: 1500px; margin: 0 auto; min-height: clamp(640px, calc(100svh - 150px), 800px) }
 .bh-panel { position: relative; z-index: 2; width: 66%; min-height: clamp(640px, calc(100svh - 150px), 800px); display: flex; flex-direction: column; background: var(--ivory); border-radius: 30px 30px 0 0; padding: clamp(26px, 3vw, 46px) clamp(26px, 3.6vw, 56px) clamp(34px, 4.6vw, 64px); box-shadow: 0 30px 70px rgba(28, 40, 79, .16) }
 .bh-pill { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; padding: 6px 18px 6px 7px; border: 1px solid var(--ink-d); border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .14em }
@@ -172,11 +172,11 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
 /* ---- enquiry + contact (deep maroon campaign band) ---- */
 .eq { background: var(--maroon); color: var(--ivory); padding: clamp(60px, 7vw, 110px) var(--pad); --ink: #fbfbfe; --paper: #1c284f }
 .eq-in { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 90px); align-items: start }
-.eq-label { color: #edc677 } .eq-info h2 { font-size: clamp(32px, 4.6vw, 72px); line-height: .98; letter-spacing: -.02em; color: #fff; margin: 6px 0 20px }
+.eq-label { color: #efc3b3 } .eq-info h2 { font-size: clamp(32px, 4.6vw, 72px); line-height: .98; letter-spacing: -.02em; color: #fff; margin: 6px 0 20px }
 .eq-p { max-width: 44ch; line-height: 1.75; opacity: .85; margin-bottom: 26px }
 .eq-links { display: grid; gap: 4px; max-width: 460px }
 .eq-links a { display: grid; grid-template-columns: 22px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-top: 1px solid rgba(251, 251, 254, .16); transition: padding .4s var(--ease), color .3s } .eq-links li:last-child a { border-bottom: 1px solid rgba(251, 251, 254, .16) }
-.eq-links a:hover { padding-left: 10px; color: #edc677 } .eq-links span { display: grid; font-size: 15px; line-height: 1.4; word-break: break-word } .eq-links b { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; opacity: .65; font-weight: 700 }
+.eq-links a:hover { padding-left: 10px; color: #efc3b3 } .eq-links span { display: grid; font-size: 15px; line-height: 1.4; word-break: break-word } .eq-links b { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; opacity: .65; font-weight: 700 }
 .eq-card { background: var(--ivory); color: var(--ink-d); border-radius: 30px; padding: clamp(22px, 3vw, 44px); --ink: #141c38; --paper: #fbfbfe; box-shadow: 0 30px 70px rgba(0, 0, 0, .25) }
 .eq-tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--beige); border-radius: 999px; margin-bottom: 22px } .eq-tabs button { padding: 10px 24px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .18em; color: rgba(20, 28, 56, .6); transition: background .3s, color .3s } .eq-tabs button.on { background: var(--red); color: #fff }
 .eq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px }
@@ -199,7 +199,7 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
 .story3 { background: var(--cream) } .story3-card { background: var(--maroon); box-shadow: 0 40px 90px rgba(28, 40, 79, .3) }
 .story3-panel { background: linear-gradient(90deg, rgba(28, 40, 79, 0) 0, rgba(28, 40, 79, .88) 22%, rgba(28, 40, 79, .97) 100%) }
 .story3-h { font-family: var(--serif); font-style: normal; font-weight: 600 }
-.story3-logo, .story3-link { color: #edc677; border-color: rgba(237, 198, 119, .55) } .story3-link:hover { background: #edc677; color: var(--maroon) }
+.story3-logo, .story3-link { color: #efc3b3; border-color: rgba(239, 195, 179, .55) } .story3-link:hover { background: #efc3b3; color: var(--maroon) }
 @media (max-width: 900px) { .story3-panel { background: var(--maroon) } }
 
 /* ---- footer (deep red) ---- */
@@ -207,7 +207,7 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
 .footer-fade { background: var(--cream) }
 .foot-mark { flex-direction: column; gap: 0; line-height: .9; color: rgba(251, 251, 254, .94) }
 .foot-mark span { font-family: var(--serif); font-weight: 800; font-size: clamp(54px, 11vw, 190px); letter-spacing: .04em }
-.foot-mark small { font-family: var(--sans); font-weight: 600; font-size: clamp(11px, 1.5vw, 22px); letter-spacing: .8em; color: #edc677; margin-top: .6em; padding-left: .8em }
+.foot-mark small { font-family: var(--sans); font-weight: 600; font-size: clamp(11px, 1.5vw, 22px); letter-spacing: .8em; color: #efc3b3; margin-top: .6em; padding-left: .8em }
 .news-row .btn:hover:not(:disabled) { background: var(--antique) }
 
 /* ---- other warm accents ---- */
@@ -282,15 +282,15 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
 @keyframes bh-breathe { from { opacity: .55 } to { opacity: .9 } }
 
 /* gold button (same pill shape and arrow as before) and gold link */
-.bh .bh-btn { background: linear-gradient(135deg, #f8e6bf 0%, #e33944 52%, #bf1722 100%); color: #1c284f; box-shadow: 0 12px 34px rgba(227, 57, 68, .38), inset 0 1px 0 rgba(255, 255, 255, .55) }
-.bh .bh-btn:hover { background: linear-gradient(135deg, #fff0cf 0%, #edc677 52%, #e33944 100%) }
+.bh .bh-btn { background: linear-gradient(135deg, #f8e6bf 0%, #c9897a 52%, #a65f4e 100%); color: #1c284f; box-shadow: 0 12px 34px rgba(201, 137, 122, .38), inset 0 1px 0 rgba(255, 255, 255, .55) }
+.bh .bh-btn:hover { background: linear-gradient(135deg, #fff0cf 0%, #efc3b3 52%, #c9897a 100%) }
 .bh .bh-btn b { background: rgba(28, 40, 79, .16) }
-.bh .bh-link { color: #edc677 }
+.bh .bh-link { color: #efc3b3 }
 .bh .bh-pill { border-color: rgba(248, 236, 213, .7); color: #f8ecd5 }
 .bh .bh-desc { color: rgba(248, 236, 213, .9) }
 .bh .bh-facts li { color: #f8ecd5 } .bh .bh-facts li + li { border-left-color: rgba(248, 236, 213, .32) }
-.bh .bh-feats { border-top-color: rgba(248, 236, 213, .2) } .bh .bh-feats li { color: #f8ecd5 } .bh .bh-feats svg { color: #edc677 }
-.bh .bh-headline .et { color: #edc677; text-shadow: 0 0 46px rgba(237, 198, 119, .28), 0 4px 18px rgba(0, 0, 0, .35) }
+.bh .bh-feats { border-top-color: rgba(248, 236, 213, .2) } .bh .bh-feats li { color: #f8ecd5 } .bh .bh-feats svg { color: #efc3b3 }
+.bh .bh-headline .et { color: #efc3b3; text-shadow: 0 0 46px rgba(239, 195, 179, .28), 0 4px 18px rgba(0, 0, 0, .35) }
 
 @media (min-width: 700px) {
   .bh .bh-wrap { grid-template-columns: 50% 50% }
@@ -301,24 +301,24 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
   .bh .bh-model .bh-arch.skel, .bh .bh-model .bh-arch .blank { background: rgba(255, 255, 255, .05); border: 0 }
   .bh .bh-headline .et { font-size: clamp(46px, 5.3vw, 96px); line-height: 1.04 }
   .bh .et-mask:nth-child(2) { padding-left: 1.2em }
-  .bh .bh-orn { display: flex; align-items: center; gap: 14px; width: min(300px, 90%); margin: 24px 0 4px; color: #e33944 }
-  .bh .bh-orn::before, .bh .bh-orn::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(227, 57, 68, .7)) } .bh .bh-orn::after { transform: scaleX(-1) }
+  .bh .bh-orn { display: flex; align-items: center; gap: 14px; width: min(300px, 90%); margin: 24px 0 4px; color: #c9897a }
+  .bh .bh-orn::before, .bh .bh-orn::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 137, 122, .7)) } .bh .bh-orn::after { transform: scaleX(-1) }
   .bh .bh-orn svg { width: 34px; height: 21px }
   .bh .bh-row { margin-top: 14px }
-  .bh .bh-lotus { display: block; position: absolute; z-index: 2; pointer-events: none; color: #e33944; animation: bh-breathe 5s ease-in-out infinite alternate; transform: translate3d(calc(var(--px) * -12px), calc(var(--py) * 8px), 0) }
+  .bh .bh-lotus { display: block; position: absolute; z-index: 2; pointer-events: none; color: #c9897a; animation: bh-breathe 5s ease-in-out infinite alternate; transform: translate3d(calc(var(--px) * -12px), calc(var(--py) * 8px), 0) }
   .bh .bh-lotus.l { left: -50px; bottom: -34px; width: 340px; color: #8795c0 }
   .bh .bh-lotus.r { right: -40px; bottom: -26px; width: 400px }
-  .bh .bh-side-l { display: block; position: absolute; z-index: 4; left: 26px; top: 50%; writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg); font-size: 10px; font-weight: 600; letter-spacing: .4em; color: rgba(237, 198, 119, .75); white-space: nowrap }
-  .bh .bh-side-r { display: block; position: absolute; z-index: 4; right: 26px; top: 150px; width: 96px; text-align: center; font-size: 10px; font-weight: 600; line-height: 1.9; letter-spacing: .3em; color: rgba(237, 198, 119, .82) }
-  .bh .bh-side-r .bh-mini { display: block; width: 26px; height: 16px; margin: 0 auto 10px; color: #edc677 }
+  .bh .bh-side-l { display: block; position: absolute; z-index: 4; left: 26px; top: 50%; writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg); font-size: 10px; font-weight: 600; letter-spacing: .4em; color: rgba(239, 195, 179, .75); white-space: nowrap }
+  .bh .bh-side-r { display: block; position: absolute; z-index: 4; right: 26px; top: 150px; width: 96px; text-align: center; font-size: 10px; font-weight: 600; line-height: 1.9; letter-spacing: .3em; color: rgba(239, 195, 179, .82) }
+  .bh .bh-side-r .bh-mini { display: block; width: 26px; height: 16px; margin: 0 auto 10px; color: #efc3b3 }
 }
 
 @media (max-width: 699px) {
   .bh { background: radial-gradient(120% 70% at 70% 28%, #2c3e79, #111a3b 55%, #070b19) }
-  .bh .bh-brand b { color: #edc677 } .bh .bh-brand i { color: #e33944 }
-  .bh .bh-panel { background: rgba(10, 16, 36, .55); color: #f8ecd5; box-shadow: inset 0 0 0 1px rgba(237, 198, 119, .35), 0 20px 50px rgba(0, 0, 0, .35) }
-  .bh .bh-model .bh-arch { box-shadow: 0 0 0 2px rgba(237, 198, 119, .85), 0 20px 50px rgba(0, 0, 0, .4) }
-  .bh .bh-spark { background: #edc677 }
+  .bh .bh-brand b { color: #efc3b3 } .bh .bh-brand i { color: #c9897a }
+  .bh .bh-panel { background: rgba(10, 16, 36, .55); color: #f8ecd5; box-shadow: inset 0 0 0 1px rgba(239, 195, 179, .35), 0 20px 50px rgba(0, 0, 0, .35) }
+  .bh .bh-model .bh-arch { box-shadow: 0 0 0 2px rgba(239, 195, 179, .85), 0 20px 50px rgba(0, 0, 0, .4) }
+  .bh .bh-spark { background: #efc3b3 }
 }
 @media (prefers-reduced-motion: reduce) { .bh-petals, .bh::before, .bh .bh-lotus, .bh .bh-model::before { animation: none } .bh-petals { display: none } }
 
@@ -342,7 +342,7 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
 
 /* phones: the lotus ornaments sit in the bottom corners too */
 @media (max-width: 699px) {
-  .bh .bh-lotus { display: block; position: absolute; z-index: 1; pointer-events: none; opacity: .75; color: #e33944; animation: bh-breathe 5s ease-in-out infinite alternate }
+  .bh .bh-lotus { display: block; position: absolute; z-index: 1; pointer-events: none; opacity: .75; color: #c9897a; animation: bh-breathe 5s ease-in-out infinite alternate }
   .bh .bh-lotus.l { left: -28px; bottom: -8px; width: 170px; color: #8795c0 }
   .bh .bh-lotus.r { right: -34px; bottom: -4px; width: 200px }
 }
@@ -362,8 +362,8 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
   .bh .bh-headline { margin-top: 20px }
   .bh .bh-headline .et { font-size: 13.4vw; line-height: 1.04 }
   .bh .et-mask:nth-child(2) { padding-left: 1em }
-  .bh .bh-orn { display: flex; align-items: center; gap: 12px; width: min(220px, 70%); margin: 16px 0 2px; color: #e33944 }
-  .bh .bh-orn::before, .bh .bh-orn::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(227, 57, 68, .7)) } .bh .bh-orn::after { transform: scaleX(-1) }
+  .bh .bh-orn { display: flex; align-items: center; gap: 12px; width: min(220px, 70%); margin: 16px 0 2px; color: #c9897a }
+  .bh .bh-orn::before, .bh .bh-orn::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 137, 122, .7)) } .bh .bh-orn::after { transform: scaleX(-1) }
   .bh .bh-orn svg { width: 30px; height: 18px }
   .bh .bh-row { display: block; margin-top: 12px }
   .bh .bh-desc { max-width: 25ch; font-size: 14px; line-height: 1.6 }
@@ -373,9 +373,9 @@ h1, h2, h3, .serif { font-family: var(--serif); font-weight: 700; letter-spacing
   .bh .bh-link { font-size: 10.5px; letter-spacing: .14em; padding: 8px 0 }
   .bh .bh-feats { display: flex; justify-content: flex-start; gap: 16px; margin: 26px 0 0; padding-top: 18px; border-top: 1px solid rgba(248, 236, 213, .2) }
   .bh .bh-feats li { flex: 0 1 auto; display: grid; justify-items: start; gap: 6px; text-align: left; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; line-height: 1.25; text-transform: uppercase; color: #f8ecd5 }
-  .bh .bh-feats svg { width: 22px; height: 22px; color: #edc677 }
+  .bh .bh-feats svg { width: 22px; height: 22px; color: #efc3b3 }
   .bh .bh-lotus.l { left: -34px; bottom: 6px; width: 170px } .bh .bh-lotus.r { right: -38px; bottom: 6px; width: 200px }
-  .bh .bh-side-r { display: block; position: absolute; z-index: 4; right: 14px; top: 104px; width: 78px; text-align: center; font-size: 8px; font-weight: 600; line-height: 1.9; letter-spacing: .26em; color: rgba(237, 198, 119, .85) } .bh .bh-side-r .bh-mini { display: block; width: 22px; height: 14px; margin: 0 auto 8px; color: #edc677 }
+  .bh .bh-side-r { display: block; position: absolute; z-index: 4; right: 14px; top: 104px; width: 78px; text-align: center; font-size: 8px; font-weight: 600; line-height: 1.9; letter-spacing: .26em; color: rgba(239, 195, 179, .85) } .bh .bh-side-r .bh-mini { display: block; width: 22px; height: 14px; margin: 0 auto 8px; color: #efc3b3 }
 }
 @media (max-width: 699px) {
   .bh .bh-headline .et { font-weight: 400; text-transform: none; letter-spacing: -.01em; font-size: 14.2vw }

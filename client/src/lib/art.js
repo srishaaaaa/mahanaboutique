@@ -1,10 +1,10 @@
 // Deterministic generative art used while a product has no photography.
 export const PALETTES = [ // fallback: Mahana navy + saree crimson + gold
-  ['#131c3b', '#2d3e76', '#edc677'],
-  ['#3d0c18', '#bf1722', '#f6d9a0'],
-  ['#1c284f', '#bf1722', '#f8ecd5'],
-  ['#0f1a45', '#3a4d8c', '#e8c27a'],
-  ['#5a0a14', '#a50f20', '#edc677'],
+  ['#131c3b', '#2d3e76', '#efc3b3'],
+  ['#3d0c18', '#a65f4e', '#f6d9a0'],
+  ['#1c284f', '#a65f4e', '#f8ecd5'],
+  ['#0f1a45', '#3a4d8c', '#e0a899'],
+  ['#5a0a14', '#a50f20', '#efc3b3'],
 ];
 
 // The colour named in the product (slug or name) decides the plate, so "Saffron" looks saffron and "Burgundy" looks burgundy.
@@ -13,7 +13,7 @@ const NAMED = [
   [/saffron|mustard|marigold|turmeric|yellow|orange|amber/, ['#8a3d0f', '#e08a1e', '#f6d38a']],
   [/burgundy|maroon|wine|oxblood|merlot|claret/, ['#3d0c18', '#7a1328', '#c0485a']],
   [/dusty-?rose|rose|blush|pink|peach|coral|salmon|mauve/, ['#6b2a3c', '#c4707f', '#f2c9c4']],
-  [/red|crimson|scarlet|vermilion|ruby/, ['#5a0a14', '#bf1722', '#e9806f']],
+  [/red|crimson|scarlet|vermilion|ruby/, ['#5a0a14', '#a65f4e', '#e9806f']],
   [/navy|midnight|indigo|royal|blue|sapphire/, ['#0f1a45', '#2d3e76', '#8da0d6']],
   [/emerald|green|teal|olive|sage|mint|bottle|turquoise|peacock/, ['#0f3b2e', '#1f7a58', '#a9d8b8']],
   [/purple|violet|lavender|plum|lilac|aubergine|magenta/, ['#2f1b4d', '#6b4aa3', '#c9b6e6']],
