@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/App';
 
-// No built-in logo image: the script "Mahana" wordmark is shown until a logo is uploaded (Admin → Settings → Logo).
-export const DEFAULT_LOGO = null;
+// The built-in rose-gold script logo (public/logo.png) is the logo everywhere.
+export const DEFAULT_LOGO = '/logo.png';
 
 // Emblem: nested zari-style diamonds, the Mahana ornament (used in empty frames, loaders and badges).
 export function Emblem({ size = 28, className = '', glow = false }) {
@@ -23,7 +23,7 @@ export function LogoTile({ size = 38 }) {
 // Script "Mahana" over a small, widely spaced BOUTIQUE & TAILORS, as on the business card.
 export default function Wordmark({ to = '/', className = '', onClick }) {
   const { site } = useApp();
-  const logo = site.branding?.logo || DEFAULT_LOGO;
+  const logo = DEFAULT_LOGO;
   if (logo) return (
     <Link to={to} onClick={onClick} className={`wordmark has-logo ${className}`} aria-label="Home" data-cursor="HOME">
       <img className="wm-logo" src={logo} fetchpriority="high" decoding="async" alt={site.branding?.logoAlt || site.store?.name || 'MAHANA BOUTIQUE & TAILORS'} />

@@ -1401,3 +1401,13 @@
 .ni-facade:hover .ni-facade-play { transform: scale(1.08) }
 .ni-facade b { font: 700 12px/1 var(--n-sans); letter-spacing: .22em; text-transform: uppercase }
 .ni-facade small { font: 500 11px/1 var(--n-sans); letter-spacing: .14em; opacity: .7 }
+
+/* ---- brand: the rose-gold script logo (public/logo.png) and the fonts that go with it ---- */
+:root { --script: 'Allura', 'Great Vibes', cursive; --serif: 'Cormorant Garamond', 'Times New Roman', serif }
+.wordmark.has-logo .wm-text { display: none }
+.wordmark .wm-logo, .site-header .wm-logo, .mm-top .wm-logo, .mobile-menu .mm-top .wm-logo { width: auto; height: 50px; max-width: 150px; border-radius: 0; box-shadow: none; object-fit: contain; transition: none }
+.site-header .wordmark:hover .wm-logo { transform: none }
+@media (max-width: 767px) { .wordmark .wm-logo, .site-header .wm-logo { height: 42px } }
+.inv-logo { width: auto; height: 60px; border: 0; padding: 0; border-radius: 0 } .inv-logo img { width: auto; height: 100%; max-width: 160px; object-fit: contain; border-radius: 0 }
+.dpos-inv-logo { width: auto; height: 56px; max-width: 150px; border-radius: 0; object-fit: contain }
+.dpos-logo-prev { width: 150px; border-radius: 12px } .dpos-logo-prev img { max-width: 100%; object-fit: contain }

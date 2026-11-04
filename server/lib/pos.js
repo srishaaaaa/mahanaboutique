@@ -398,7 +398,7 @@ const INVOICE_DEFAULTS = { gstin: '', showGstRetail: false, showGstWholesale: fa
 export const invoiceDefaults = INVOICE_DEFAULTS;
 export async function shopInfo(db) {
   const st = (await one(db, "SELECT value FROM store_settings WHERE key = 'store'"))?.value ?? {};
-  const logo = (await one(db, "SELECT value FROM store_settings WHERE key = 'branding'"))?.value?.logo ?? null;
+  const logo = '/logo.png'; // the built-in rose-gold logo (client/public/logo.png)
   const cfg = { ...INVOICE_DEFAULTS, ...(await getSetting(db, 'invoice', {})) };
   const lines = String(cfg.shopAddress || '').split('\n').map(s => s.trim()).filter(Boolean);
   return { name: cfg.shopName || st.name || 'Mahana Boutique & Tailors', address: lines.length ? lines : (st.address ?? []), phone: cfg.shopPhone || st.phone || null, email: cfg.shopEmail || st.email || null, logo,
