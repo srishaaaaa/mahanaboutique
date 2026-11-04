@@ -4,7 +4,6 @@ import { useApp } from '../context/App';
 import { useModal, useReduced } from '../lib/hooks';
 import { Reveal } from './Motion';
 import { useSiteText } from '../lib/siteText';
-import BlankFrame from './BlankFrame';
 import { Divider } from './NightParts';
 
 const IgIcon = ({ size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none" /></svg>;
@@ -66,7 +65,7 @@ function MediaViewer({ items, index, setIndex, onClose }) {
 const count = (n, one, many) => (n ? `${n} ${n === 1 ? one : many}` : 'COMING SOON');
 
 // "Inside MAHANA BOUTIQUE & TAILORS": a filmstrip of reels (up to 6) and a mosaic photo gallery (up to 6).
-// Both are managed in Admin → Reels & Gallery. Until anything is added, blank frames keep the layout in place.
+// Both are managed in Admin → Reels & Gallery. Only what has been added is shown: no empty frames.
 export default function InstagramStrip() {
   const { site } = useApp();
   const t = useSiteText();
@@ -77,6 +76,7 @@ export default function InstagramStrip() {
   const strip = useRef();
   const [view, setView] = useState(null); // { list, index }
   const slide = d => strip.current?.scrollBy({ left: d * strip.current.clientWidth * 0.6, behavior: 'smooth' });
+  if (!all.length) return null; // nothing added yet: no empty frames
   return (
     <section className="nx nx-ig" id="reels" aria-labelledby="ig-h">
       <span className="ni-glow" aria-hidden="true" />
@@ -93,51 +93,49 @@ export default function InstagramStrip() {
         </Reveal>
 
         {/* Reels: tall frames in a filmstrip, gently staggered; swipe or use the arrows on smaller screens. */}
-        <div className="ni-block">
+        {videos.length > 0 && <div className="ni-block">
           <div className="ni-bh">
             <h3><Play /> Reel Gallery</h3>
             <span className="ni-count">{count(videos.length, 'REEL', 'REELS')}</span>
             <span className="ni-line" aria-hidden="true" />
-            <span className="ni-arrows"><button className="nx-circle sm" onClick={() => slide(-1)} aria-label="Previous reels">←</button><button className="nx-circle sm" onClick={() => slide(1)} aria-label="Next reels">→</button></span>
+            {videos.length > 1 && <span className="ni-arrows"><button className="nx-circle sm" onClick={() => slide(-1)} aria-label="Previous reels">←</button><button className="nx-circle sm" onClick={() => slide(1)} aria-label="Next reels">→</button></span>}
           </div>
           <ul className="ni-reels" ref={strip}>
-            {Array.from({ length: 6 }, (_, i) => {
-              const r = videos[i];
+            {videos.map((r, i) => {
               return (
-                <Reveal as="li" key={(r?.video || r?.embed || 'empty') + i} delay={(i % 6) * 0.06} className="ni-reel">
-                  <div className={`ni-tile ${r ? '' : 'is-empty'}`} onClick={r ? e => { if (!e.target.closest('a,button')) setView({ list: videos, index: i }) } : undefined} style={r ? { cursor: 'pointer' } : undefined}>
-                    {r ? (r.embed ? <EmbedReel post={r} label={r.alt || 'Instagram reel'} /> : <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} />) : <BlankFrame label={`Reel ${i + 1}`} kind="video" to="/admin/reels" where="Reels & Gallery" />}
+                <Reveal as="li" key={(r.video || r.embed) + i} delay={(i % 6) * 0.06} className="ni-reel">
+                  <div className="ni-tile" onClick={e => { if (!e.target.closest('a,button')) setView({ list: videos, index: i }) }} style={{ cursor: 'pointer' }}>
+                    {r.embed ? <EmbedReel post={r} label={r.alt || 'Instagram reel'} /> : <Reel post={r} label={r.alt || 'Boutique video'} fallbackUrl={ig?.url} />}
                     <span className="ni-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                    {r?.embed && <button className="ni-full" onClick={() => setView({ list: videos, index: i })} aria-label="Watch full screen">⤢</button>}
-                    {r?.href && <a className="ni-open" href={r.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
+                    {r.embed && <button className="ni-full" onClick={() => setView({ list: videos, index: i })} aria-label="Watch full screen">⤢</button>}
+                    {r.href && <a className="ni-open" href={r.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
                   </div>
                 </Reveal>
               );
             })}
           </ul>
-        </div>
+        </div>}
 
         {/* Photos: a mosaic with one large feature frame. */}
-        <div className="ni-block">
+        {photos.length > 0 && <div className="ni-block">
           <div className="ni-bh">
             <h3><IgIcon size={14} /> Photo Gallery</h3>
             <span className="ni-count">{count(photos.length, 'PHOTO', 'PHOTOS')}</span>
             <span className="ni-line" aria-hidden="true" />
           </div>
           <ul className="ni-mosaic">
-            {Array.from({ length: 6 }, (_, i) => {
-              const p = photos[i];
+            {photos.map((p, i) => {
               return (
-                <Reveal as="li" key={(p?.image || 'empty') + i} delay={(i % 3) * 0.08} className={`ni-m m${i + 1}`}>
-                  <div className={`ni-tile ${p ? '' : 'is-empty'}`} onClick={p ? e => { if (!e.target.closest('a,button')) setView({ list: photos, index: i }) } : undefined} style={p ? { cursor: 'zoom-in' } : undefined}>
-                    {p ? <img src={p.image} alt={p.alt || 'Boutique photo'} loading="lazy" /> : <BlankFrame label={`Photo ${i + 1}`} to="/admin/reels" where="Reels & Gallery" />}
-                    {p?.href && <a className="ni-open" href={p.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
+                <Reveal as="li" key={p.image + i} delay={(i % 3) * 0.08} className={`ni-m m${i + 1}`}>
+                  <div className="ni-tile" onClick={e => { if (!e.target.closest('a,button')) setView({ list: photos, index: i }) }} style={{ cursor: 'zoom-in' }}>
+                    <img src={p.image} alt={p.alt || 'Boutique photo'} loading="lazy" />
+                    {p.href && <a className="ni-open" href={p.href} target="_blank" rel="noopener noreferrer" aria-label="Open this post on Instagram">↗</a>}
                   </div>
                 </Reveal>
               );
             })}
           </ul>
-        </div>
+        </div>}
         <Divider className="wide" />
       </div>
       {view && createPortal(<MediaViewer items={view.list} index={view.index} setIndex={f => setView(v => ({ ...v, index: typeof f === 'function' ? f(v.index) : f }))} onClose={() => setView(null)} />, document.body)}

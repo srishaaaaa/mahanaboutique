@@ -172,7 +172,7 @@ export function AdminReels() {
     const cur = lists[kind];
     return (
       <div className="dpos-reels six">
-        {Array.from({ length: max }, (_, i) => {
+        {Array.from({ length: Math.min(max, cur.length + 1) }, (_, i) => { // the added ones plus a single box to add the next
           const p = cur[i]; const live = !!p; const canAdd = i <= cur.length; const key = kind + i;
           return (
             <section className="dpos-reel" key={key}>
