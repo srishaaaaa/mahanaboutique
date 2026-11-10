@@ -34,8 +34,8 @@ export default function QuickView() {
         <div className="overlay-root">
           <motion.div className="scrim" onClick={close} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
           <motion.div ref={ref} className="quick glass" role="dialog" aria-modal="true" aria-label={`Quick view: ${quick.name}`}
-            initial={reduced ? { opacity: 0 } : { opacity: 0, rotateX: 16, y: 60, scale: 0.95 }} animate={{ opacity: 1, rotateX: 0, y: 0, scale: 1 }}
-            exit={reduced ? { opacity: 0 } : { opacity: 0, rotateX: -10, y: 30, scale: 0.97 }} transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }} style={{ transformPerspective: 1200 }}>
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
             <button className="icon-btn close" onClick={close} aria-label="Close quick view">✕</button>
             <div className="quick-media"><ProductMedia p={quick} /></div>
             <div className="quick-body">

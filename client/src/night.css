@@ -1411,3 +1411,7 @@
 .inv-logo { width: auto; height: 60px; border: 0; padding: 0; border-radius: 0 } .inv-logo img { width: auto; height: 100%; max-width: 160px; object-fit: contain; border-radius: 0 }
 .dpos-inv-logo { width: auto; height: 56px; max-width: 150px; border-radius: 0; object-fit: contain }
 .dpos-logo-prev { width: 150px; border-radius: 12px } .dpos-logo-prev img { max-width: 100%; object-fit: contain }
+
+/* Quick view: a crisp, solid pop-up. No frosted blur and no 3D tilt (both left the text soft), and it sits above the dimmed page. */
+.overlay-root > .scrim { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(8, 6, 20, .72); z-index: 1 }
+.quick.glass { z-index: 2; backdrop-filter: none; -webkit-backdrop-filter: none; background: #1a123c; will-change: auto }
