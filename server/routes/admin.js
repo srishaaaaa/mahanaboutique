@@ -74,7 +74,7 @@ export default function admin({ db, auth }) {
         if (v.stock) await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason) VALUES ($1,$2,$3)', [row.id, v.stock, 'initial_stock']);
       }
       await t.query('UPDATE products SET material = NULLIF($2, \'\'), new_arrival = $3, best_seller = $4, low_stock_alert = $5 WHERE id = $1', [p.id, d.material ?? '', d.new_arrival, d.best_seller, d.low_stock_alert]);
-      if (d.new_arrival || d.best_seller) await capFlags(t);
+      if (d.best_seller) await capFlags(t);
       if (d.cost_price && await hasCostColumns(t)) await t.query('UPDATE products SET cost_price = $2 WHERE id = $1', [p.id, d.cost_price]);
       await audit(t, req.user.id, 'product.create', 'product', d.slug);
       return p.id;
@@ -98,7 +98,7 @@ export default function admin({ db, auth }) {
   const slugOf = n => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'item';
   const freeSlug = async (table, name) => { const base = slugOf(name); for (let i = 0; ; i++) { const slug = i ? `${base}-${i + 1}` : base; if (!(await one(db, `SELECT 1 AS x FROM ${table} WHERE slug = $1`, [slug]))) return slug } };
   r.get('/taxonomy', staff, wrap(async (_req, res) => res.json({
-    shelves: await one(db, `SELECT COUNT(*) FILTER (WHERE new_arrival)::int AS new, COUNT(*) FILTER (WHERE best_seller)::int AS best, COUNT(*) FILTER (WHERE featured)::int AS trending FROM products WHERE status = 'active'`),
+    shelves: await one(db, `SELECT COUNT(*) FILTER (WHERE best_seller)::int AS best, COUNT(*) FILTER (WHERE featured)::int AS trending FROM products WHERE status = 'active'`),
     categories: await rows(db, `SELECT c.id, c.name, c.slug, c.description, c.active, (SELECT COUNT(*)::int FROM products p WHERE p.category_id = c.id) AS products FROM categories c ORDER BY c.display_order, lower(c.name)`),
     collections: await rows(db, `SELECT c.id, c.name, c.slug, c.description, c.status, (SELECT COUNT(*)::int FROM collection_products cp WHERE cp.collection_id = c.id) AS products FROM collections c ORDER BY c.display_order, lower(c.name)`),
   })));

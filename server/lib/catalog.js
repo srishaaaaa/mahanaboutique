@@ -102,8 +102,8 @@ export const listCollections = (q) => rows(q, `
 
 export const collectionBySlug = (q, slug) => one(q, `SELECT id, name, slug, description, hero_image FROM collections WHERE slug = $1 AND status = 'published'`, [slug]);
 
-// Each home shelf (New Arrivals / Best Sellers) keeps only the 10 newest flagged products; older flags are cleared.
+// The Best Sellers home shelf keeps only the 10 newest flagged products; older flags are cleared.
 export async function capFlags(q, max = 10) {
-  for (const col of ['new_arrival', 'best_seller'])
+  for (const col of ['best_seller'])
     await q.query(`UPDATE products SET ${col} = false WHERE ${col} AND id NOT IN (SELECT id FROM products WHERE ${col} ORDER BY updated_at DESC NULLS LAST, id DESC LIMIT ${max})`);
 }

@@ -88,13 +88,15 @@ function HomePicks({ onSaved, toast, only }) {
   );
 }
 
-// Products flagged Best Seller / New Arrival: list them here, remove one or add another (flags are also set on each product).
+// Products flagged Best Seller: list them here, remove one or add another (flags are also set on each product).
 function FlagPicks({ flag, title, sub, onSaved, toast }) {
-  const [items, setItems] = useState(null); const [q, setQ] = useState(''); const [found, setFound] = useState([]); const [err, setErr] = useState();
+  const [items, setItems] = useState(null); const [q, setQ] = useState(''); const [all, setAll] = useState([]); const [cat, setCat] = useState('all'); const [err, setErr] = useState();
   const key = flag === 'best' ? 'bestSeller' : 'newArrival';
   const load = () => api(`/products?flag=${flag}&sort=newest&limit=24`).then(d => setItems(d.items)).catch(e => setErr(e.message));
   useEffect(() => { load() }, []); // eslint-disable-line
-  useEffect(() => { if (!q.trim()) return setFound([]); const t = setTimeout(() => api('/admin/pos/products?q=' + encodeURIComponent(q)).then(r => setFound(r.filter(p => p.status === 'active').slice(0, 8))).catch(() => {}), 200); return () => clearTimeout(t) }, [q]);
+  useEffect(() => { api('/admin/pos/products?q=').then(r => setAll(r.filter(p => p.status === 'active'))).catch(() => {}) }, []);
+  const cats = [...new Map(all.filter(p => p.categorySlug).map(p => [p.categorySlug, p.category])).entries()];
+  const found = all.filter(p => (cat === 'all' || p.categorySlug === cat) && (!q.trim() || p.name.toLowerCase().includes(q.trim().toLowerCase())) && !items?.some(i => i.id === p.id)).slice(0, 40);
   const set = async (id, on) => { try { await api(`/admin/pos/products/${id}/flags`, { method: 'PUT', body: { [key]: on } }); await load(); onSaved?.(); toast(on ? 'Added.' : 'Removed.') } catch (e) { setErr(e.message) } };
   return (
     <section className="adm-block">
@@ -103,7 +105,8 @@ function FlagPicks({ flag, title, sub, onSaved, toast }) {
       {items && !items.length && <p className="adm-note">Nothing is marked here yet. Search below to add a product.</p>}
       <ol className="adm-picks">{items?.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{(p.image || p.images?.[0]) && <img src={p.image || p.images[0].url || p.images[0]} alt="" width="40" height="50" />}{p.name}</span><span className="adm-pick-act"><button type="button" className="danger" onClick={() => set(p.id, false)}>Remove</button></span></li>)}</ol>
       <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={`Search a product to add to ${title}…`} aria-label={`Search products to add to ${title}`} />
-      <ul className="adm-picks">{found.filter(p => !items?.some(i => i.id === p.id)).map(p => <li key={p.id} className="adm-pick"><b>{p.name}</b><span className="adm-pick-act"><button type="button" onClick={() => { set(p.id, true); setQ('') }}>Add</button></span></li>)}</ul>
+      <div className="inv-chips" role="group" aria-label="Category" style={{ margin: '10px 0' }}><button type="button" className={cat === 'all' ? 'on' : ''} onClick={() => setCat('all')}>ALL</button>{cats.map(([slug, name]) => <button key={slug} type="button" className={cat === slug ? 'on' : ''} onClick={() => setCat(slug)}>{String(name).toUpperCase()}</button>)}</div>
+      <ul className="adm-picks">{found.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{p.image ? <img src={p.image} alt="" width="40" height="50" /> : <i className="sg-ph" />}<span><b>{p.name}</b><br /><small className="muted">{p.category || 'Product'}</small></span></span><span className="adm-pick-act"><button type="button" onClick={() => set(p.id, true)}>+ Add</button></span></li>)}</ul>
     </section>
   );
 }
@@ -114,11 +117,10 @@ export function AdminTrending() {
   const { loadSite, loadCatalog, toast } = useApp();
   return (
     <Gate state={state}>
-      <AdminShell title="Trending collections" sub="Trending collections, Best Sellers and New Arrivals shown on the homepage">
+      <AdminShell title="Trending collections" sub="Trending collections and Best Sellers shown on the homepage">
         <div className="adm">
           <HomePicks only="trending" onSaved={() => { loadSite(); loadCatalog() }} toast={toast} />
-          <FlagPicks flag="best" title="Best Sellers" sub="Products marked Best Seller, shown in “Best Sellers” on the homepage (the 10 newest are kept)" onSaved={loadCatalog} toast={toast} />
-          <FlagPicks flag="new" title="New Arrivals" sub="Products marked New Arrival, shown in “New Arrivals” on the homepage (the 10 newest are kept)" onSaved={loadCatalog} toast={toast} />
+          <FlagPicks flag="best" title="Best Sellers" sub="Products marked Best Seller, shown in “Best Sellers” on the homepage (the 10 newest are kept)" onSaved={loadCatalog} toast={toast} /> 
         </div>
       </AdminShell>
     </Gate>

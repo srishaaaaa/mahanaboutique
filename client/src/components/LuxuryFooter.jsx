@@ -68,7 +68,6 @@ export default function LuxuryFooter() {
         <div className="nf-cols">
           <nav aria-label="Shop"><h2 className="nf-h">Shop</h2><ul>
             <li><Link to="/shop">All Products</Link></li>
-            <li><Link to="/shop?sort=newest">New Arrivals</Link></li>
             <li><Link to="/wishlist">Wishlist</Link></li>
             <li><Link to="/cart">Cart</Link></li>
             <li><Link to="/account">My Account</Link></li>

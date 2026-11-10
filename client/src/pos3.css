@@ -452,3 +452,8 @@
 .inv-foot { flex-wrap: wrap; gap: 8px 12px; margin-top: 10px; font-size: 12.5px }
 .inv-units { padding: 9px 14px; font-size: 14px; white-space: nowrap } .inv-foot > span { flex: 1 1 90px; min-width: 0 }
 .inv-badge { font-size: 10.5px; padding: 5px 9px }
+
+/* full names, no "…" */
+.inv-nm b, .sg-row b { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere }
+.inv-nm { align-items: start }
+.pe-sug { padding: 0 clamp(14px, 2vw, 28px) 24px }

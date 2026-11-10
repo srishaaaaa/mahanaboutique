@@ -82,7 +82,7 @@ function VariantRow({ productId, v, basePrice, onChanged, setErr, onlyOne }) {
 function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
   const [product, setProduct] = useState(start);
   const [f, setF] = useState({ name: start.name, price: rupees(start.price), cost: start.costPrice ? rupees(start.costPrice) : '', tax: start.taxRate, cat: start.categorySlug || '', status: start.status,
-    description: start.description || '', material: start.material || '', featured: !!start.featured, collections: start.collections || [], lowAlert: String(start.lowAlert ?? LOW), newArrival: !!start.newArrival, bestSeller: !!start.bestSeller });
+    description: start.description || '', material: start.material || '', featured: !!start.featured, collections: start.collections || [], lowAlert: String(start.lowAlert ?? LOW), bestSeller: !!start.bestSeller });
   const [cols, setCols] = useState([]); const [sug, setSug] = useState([]); const [sug0, setSug0] = useState('');
   useEffect(() => { api(`/admin/pos/products/${start.id}/suggested`).then(r => { setSug(r); setSug0(r.map(x => x.slug).join()) }).catch(() => {}) }, [start.id]);
   const [nv, setNv] = useState({ size: '', color: '', sku: '', stock: '' });
@@ -93,7 +93,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
     e.preventDefault(); setBusy(true); setErr();
     try {
       await api(`/admin/pos/products/${product.id}`, { method: 'PATCH', body: { name: f.name.trim(), price: toPaise(f.price), costPrice: toPaise(f.cost), taxRate: +f.tax, categorySlug: f.cat || null, status: f.status,
-        description: f.description.trim(), material: f.material.trim(), featured: f.featured, collections: f.collections, lowAlert: Math.max(0, parseInt(f.lowAlert, 10) || 0), newArrival: f.newArrival, bestSeller: f.bestSeller } });
+        description: f.description.trim(), material: f.material.trim(), featured: f.featured, collections: f.collections, lowAlert: Math.max(0, parseInt(f.lowAlert, 10) || 0), bestSeller: f.bestSeller } });
       if (sug.map(x => x.slug).join() !== sug0) await api(`/admin/pos/products/${product.id}/suggested`, { method: 'PUT', body: { slugs: sug.map(x => x.slug) } });
       onDone(); onClose();
     } catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
@@ -116,7 +116,6 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
           <label className="pe-l">DESCRIPTION<textarea rows={6} maxLength={4000} value={f.description} onChange={e => setF({ ...f, description: e.target.value })} placeholder="Fabric, work, fit and care. Shown on the product page." /></label>
           <div className="pe-mg"><h3 className="pe-h">Media Gallery</h3></div>
           <ProductPhotos product={product} onChanged={onPhotos} />
-          <SuggestPicker value={sug} onChange={setSug} selfId={product.id} />
         </div>
         <div className="pe-col2">
           <h3 className="pe-h">Organization &amp; Pricing</h3>
@@ -128,7 +127,6 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
             <label className="pe-l">GST %<select value={f.tax} onChange={e => setF({ ...f, tax: e.target.value })}>{[0, 9].map(r => <option key={r} value={r}>{r}%</option>)}</select></label>
             <label className="pe-l">FABRIC / MATERIAL<input value={f.material} maxLength={80} onChange={e => setF({ ...f, material: e.target.value })} placeholder="e.g. Cotton" /></label>
           </div>
-          <label className="pe-ck"><input type="checkbox" checked={f.newArrival} onChange={e => setF({ ...f, newArrival: e.target.checked })} /> Mark as “New Arrival”</label>
           <label className="pe-ck"><input type="checkbox" checked={f.bestSeller} onChange={e => setF({ ...f, bestSeller: e.target.checked })} /> Show in “Best Sellers”</label>
           <p className="pe-hint">HOME PAGE SHOWS THE FIRST 4 TICKED, NEWEST FIRST</p>
           <label className="pe-ck"><input type="checkbox" checked={f.featured} onChange={e => setF({ ...f, featured: e.target.checked })} /> Featured in Trending <span className="muted small">(used when no trending pieces are picked)</span></label>
@@ -153,13 +151,14 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
         </form>
         <div className="pe-save"><button type="button" className="pe-cancel" onClick={onClose}>Cancel</button><button form="pe-form" className="pe-savebtn" disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</button></div>
       </section>
+      <div className="pe-sug"><SuggestPicker value={sug} onChange={setSug} selfId={product.id} /></div>
     </Modal>
   );
 }
 
 const blankVar = () => ({ size: '', color: '', price: '', cost: '', stock: '' });
 function AddModal({ categories, onClose, onDone }) {
-  const [f, setF] = useState({ name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', newArrival: false, bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
+  const [f, setF] = useState({ name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
   const [sug, setSug] = useState([]); const [vars, setVars] = useState([blankVar()]); const [files, setFiles] = useState([]); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const pick = useRef();
   const setV = (i, p) => setVars(v => v.map((x, n) => n === i ? { ...x, ...p } : x));
   const previews = useMemo(() => files.map(file => URL.createObjectURL(file)), [files]);
@@ -173,7 +172,7 @@ function AddModal({ categories, onClose, onDone }) {
     const rows = vars.filter(v => v.size.trim() || v.color.trim() || v.stock !== '' || v.price !== '');
     const list = rows.length ? rows : [{ size: '', color: '', price: '', stock: '' }];
     const payload = slug => ({ slug, name: f.name.trim(), description: f.description.trim(), category: f.cat || undefined, price: toPaise(f.price), ...(toPaise(f.cost) ? { cost_price: toPaise(f.cost) } : {}), gst_rate: +f.tax, status: f.status,
-      material: f.material.trim() || undefined, new_arrival: f.newArrival, best_seller: f.bestSeller, low_stock_alert: Math.max(0, parseInt(f.lowAlert, 10) || 0),
+      material: f.material.trim() || undefined, best_seller: f.bestSeller, low_stock_alert: Math.max(0, parseInt(f.lowAlert, 10) || 0),
       variants: list.map(v => ({ size: v.size.trim() || 'Free Size', color: v.color.trim() || 'Default', sku: `${slug}-${slugify(v.size) || 'free'}-${slugify(v.color) || 'default'}`.toUpperCase(), stock: v.stock === '' ? dflt : Math.max(0, parseInt(v.stock, 10) || 0), ...(toPaise(v.price) ? { price: toPaise(v.price) } : {}), ...(toPaise(v.cost) ? { cost: toPaise(v.cost) } : {}) })) });
     try {
       let made;
@@ -198,7 +197,6 @@ function AddModal({ categories, onClose, onDone }) {
             {previews.map((u, i) => <div key={u} className="pe-tile"><img src={u} alt="" />{i === 0 && <span className="pe-primary">PRIMARY</span>}<button type="button" aria-label="Remove photo" onClick={() => setFiles(fs => fs.filter((_, n) => n !== i))}>✕</button></div>)}
             {files.length < 8 && <button type="button" className="pe-tile add" aria-label="Add photos" onClick={() => pick.current?.click()}>＋</button>}
           </div>
-          <SuggestPicker value={sug} onChange={setSug} />
         </div>
         <div className="pe-col2">
           <h3 className="pe-h">Organization &amp; Pricing</h3>
@@ -210,7 +208,6 @@ function AddModal({ categories, onClose, onDone }) {
             <label className="pe-l">GST %<select value={f.tax} onChange={e => setF({ ...f, tax: e.target.value })}>{[0, 9].map(r => <option key={r} value={r}>{r}%</option>)}</select></label>
             <label className="pe-l">FABRIC / MATERIAL<input value={f.material} maxLength={80} onChange={e => setF({ ...f, material: e.target.value })} placeholder="e.g. Cotton" /></label>
           </div>
-          <label className="pe-ck"><input type="checkbox" checked={f.newArrival} onChange={e => setF({ ...f, newArrival: e.target.checked })} /> Mark as “New Arrival”</label>
           <label className="pe-ck"><input type="checkbox" checked={f.bestSeller} onChange={e => setF({ ...f, bestSeller: e.target.checked })} /> Show in “Best Sellers”</label>
           <p className="pe-hint">HOME PAGE SHOWS THE FIRST 4 TICKED, NEWEST FIRST</p>
           <h3 className="pe-h pe-h2">Inventory Alerts</h3>
@@ -235,6 +232,7 @@ function AddModal({ categories, onClose, onDone }) {
           </div>))}
         <div className="pe-save"><button type="button" className="pe-cancel" onClick={onClose}>Cancel</button><button form="pa-form" className="pe-savebtn" disabled={busy}>{busy ? 'Saving…' : 'Add to Catalog'}</button></div>
       </section>
+      <div className="pe-sug"><SuggestPicker value={sug} onChange={setSug} /></div>
     </Modal>
   );
 }
@@ -284,7 +282,7 @@ function ProductsStock({ manager, stocker }) {
   const needCount = useMemo(() => (list || []).filter(p => p.stock <= lowOf(p) || p.variants.some(v => v.stock < 1)).length, [list]);
   useEffect(() => { if (list && needCount && !q) { try { if (sessionStorage.getItem('inv-alert-seen')) return; sessionStorage.setItem('inv-alert-seen', '1') } catch { /* private mode */ } setAlertOpen(true) } }, [list]); // eslint-disable-line
   const counts = useMemo(() => { const l = list || []; return { out: l.filter(p => p.stock < 1).length, low: l.filter(p => p.stock >= 1 && p.stock <= lowOf(p)).length, sizes: l.filter(p => p.stock >= 1 && p.variants.some(v => v.stock < 1)).length, na: l.filter(p => p.newArrival).length, best: l.filter(p => p.bestSeller).length } }, [list]);
-  const shown = useMemo(() => (list || []).filter(p => (!catF || p.categorySlug === catF) && (stock === 'all' || (stock === 'new' ? p.newArrival : stock === 'best' ? p.bestSeller : stock === 'out' ? p.stock < 1 : stock === 'low' ? p.stock >= 1 && p.stock <= lowOf(p) : p.stock > lowOf(p)))).sort((a, b) => sort === 'stock-asc' ? a.stock - b.stock : sort === 'stock-desc' ? b.stock - a.stock : sort === 'price-asc' ? a.price - b.price : sort === 'price-desc' ? b.price - a.price : a.name.localeCompare(b.name)), [list, stock, catF, sort]);
+  const shown = useMemo(() => (list || []).filter(p => (!catF || p.categorySlug === catF) && (stock === 'all' || (stock === 'best' ? p.bestSeller : stock === 'out' ? p.stock < 1 : stock === 'low' ? p.stock >= 1 && p.stock <= lowOf(p) : p.stock > lowOf(p)))).sort((a, b) => sort === 'stock-asc' ? a.stock - b.stock : sort === 'stock-desc' ? b.stock - a.stock : sort === 'price-asc' ? a.price - b.price : sort === 'price-desc' ? b.price - a.price : a.name.localeCompare(b.name)), [list, stock, catF, sort]);
   const del = async p => { if (!confirm(`Delete "${p.name}" permanently, with its sizes and photos? Past bills keep their own copy.`)) return; try { await api('/admin/products/' + p.id, { method: 'DELETE' }); toast('Product deleted.'); if (open === p.id) setOpen(null); load() } catch (e) { setErr(e.message) } };
   const addVariant = async (p, e) => {
     e.preventDefault(); setErr();
@@ -304,7 +302,7 @@ function ProductsStock({ manager, stocker }) {
         </div></div>
       {list && (counts.out > 0 || counts.low > 0 || counts.sizes > 0) && <div className="inv-banner" role="status">⚠ {[counts.out ? `${counts.out} out of stock` : null, counts.low ? `${counts.low} running low` : null, counts.sizes ? `${counts.sizes} with a size sold out` : null].filter(Boolean).join(' · ')} — restock soon.</div>}
       <div className="inv-filters">
-        <div className="inv-chips" role="group" aria-label="Stock filter">{[['all', 'All'], ['new', `New Arrivals (${counts.na})`], ['best', `Best Sellers (${counts.best})`], ['low', 'Low Stock'], ['out', 'Out of Stock']].map(([v, l]) => <button key={v} type="button" className={`${stock === v ? 'on' : ''} ${v === 'new' || v === 'best' ? 'hl' : ''}`} aria-pressed={stock === v} onClick={() => setStock(v)}>{l}</button>)}</div>
+        <div className="inv-chips" role="group" aria-label="Stock filter">{[['all', 'All'], ['best', `Best Sellers (${counts.best})`], ['low', 'Low Stock'], ['out', 'Out of Stock']].map(([v, l]) => <button key={v} type="button" className={`${stock === v ? 'on' : ''} ${v === 'new' || v === 'best' ? 'hl' : ''}`} aria-pressed={stock === v} onClick={() => setStock(v)}>{l}</button>)}</div>
         <select value={catF} onChange={e => setCatF(e.target.value)} aria-label="Category">{[['', 'All Categories'], ...cats.map(c => [c.slug, c.name])].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort">{[['name', 'Name A–Z'], ['stock-asc', 'Stock: low to high'], ['stock-desc', 'Stock: high to low'], ['price-asc', 'Price: low to high'], ['price-desc', 'Price: high to low']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <div className="inv-view" role="group" aria-label="View">{[['grid', 'Grid'], ['list', 'List']].map(([v, l]) => <button key={v} type="button" className={view === v ? 'on' : ''} aria-pressed={view === v} onClick={() => setView(v)}>{l}</button>)}</div>

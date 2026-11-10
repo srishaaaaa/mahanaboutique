@@ -50,13 +50,11 @@ test('gallery and videos: up to 6 photos and 6 videos, no more', async () => {
   assert.equal((await put([...six(video), video(7)])).status, 400, 'a 7th video is refused');
 });
 
-test('collection and category pieces: staff edit membership, order and description; New Arrivals is editable', async () => {
+test('collection and category pieces: staff edit membership, order and description', async () => {
   const pub = client();
   const owner = client(); await owner('POST', '/auth/login', { email: 'owner@test.dev', password: 'OwnerPass123!' });
   const tx = (await owner('GET', '/admin/taxonomy')).body;
   const festive = tx.collections.find(c => c.slug === 'festive-edit');
-  assert.ok(tx.collections.some(c => c.slug === 'new-arrivals'), 'New Arrivals collection exists');
-  assert.ok((await owner('GET', `/admin/collections/${tx.collections.find(c => c.slug === 'new-arrivals').id}/products`)).body.length > 0, 'New Arrivals starts with the newest pieces');
   assert.ok([401, 403].includes((await pub('PUT', `/admin/collections/${festive.id}/products`, { slugs: [] })).status), 'visitors cannot change it');
 
   assert.equal((await owner('PUT', `/admin/collections/${festive.id}/products`, { slugs: ['dusk-silk-dress', 'banarasi-silk-saree'] })).status, 200);
