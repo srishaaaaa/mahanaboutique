@@ -4,9 +4,7 @@ import { useApp } from '../context/App';
 import { Magnetic, Reveal } from '../components/Motion';
 import BoutiqueHero from '../components/hero/BoutiqueHero';
 import Ticker from '../components/Ticker';
-import FeaturedCollections from '../components/FeaturedCollections';
 import EditorialSection from '../components/EditorialSection';
-import CollectionsFlow from '../components/CollectionsFlow';
 import CategoryCircles from '../components/CategoryCircles';
 import CustomerReviews from '../components/CustomerReviews';
 import EnquirySection from '../components/EnquirySection';
@@ -58,7 +56,7 @@ function Details() {
   );
 }
 
-// Order: hero → ticker → trending → editorial → categories → collections → reviews →
+// Order: hero → ticker → trending → editorial → categories → reviews →
 // Instagram reels → shop story → live map → enquiries/contact → footer.
 export default function Home() {
   const { hash } = useLocation();
@@ -75,10 +73,8 @@ export default function Home() {
       <HomeFx />
       <BoutiqueHero />
       <Ticker />
-      <FeaturedCollections />
       <EditorialSection />
       <CategoryCircles />
-      <CollectionsFlow />
       <Details />
       <ServiceHighlights />
       <Story />

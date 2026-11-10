@@ -24,7 +24,7 @@ export default function AboutBand() {
         </Reveal>
 
         <Reveal className="ab4-right" delay={0.1}>
-          <h2 className="ab4-h ab4-h-c">OUR COLLECTIONS</h2>
+          <h2 className="ab4-h ab4-h-c">OUR CATEGORIES</h2>
           <p>{brand.story[0]}</p>
           <p>{brand.story[1]}</p>
           {top.length > 0 && (

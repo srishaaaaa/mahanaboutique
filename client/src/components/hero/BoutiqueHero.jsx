@@ -13,7 +13,7 @@ import EditorialTypography from './EditorialTypography';
 import HeroSlides from './HeroSlides';
 
 const rise = d => ({ initial: { opacity: 0, y: 24 }, transition: { duration: 0.9, delay: d, ease: [0.22, 1, 0.36, 1] } });
-const CHIPS = [['ALL', '/shop?category=sarees'], ['SILK', '/search?q=silk'], ['COTTON', '/search?q=cotton'], ['FESTIVE', '/collections/festive-edit'], ['BRIDAL', '/collections/bridal-silk-sarees']];
+const CHIPS = [['ALL', '/shop?category=sarees'], ['SILK', '/search?q=silk'], ['COTTON', '/search?q=cotton'], ['FESTIVE', '/search?q=festive'], ['BRIDAL', '/search?q=bridal']];
 
 // A zari-style diamond motif; used as a small ornament (divider, caption).
 const Motif = ({ className = '' }) => (

@@ -35,7 +35,7 @@ export default function SearchOverlay() {
     return () => { dead = true; clearTimeout(t) };
   }, [term]);
 
-  const { products: prods, categories: cats, collections: cols } = res;
+  const { products: prods, categories: cats } = res, cols = []; // collections are not offered
   const options = [
     ...prods.map(p => ({ key: 'p' + p.id, to: `/product/${p.slug}` })),
     ...cats.map(c => ({ key: 'c' + c.slug, to: `/shop?category=${c.slug}` })),
@@ -77,7 +77,6 @@ export default function SearchOverlay() {
                     <section><div className="row between"><h3 className="eyebrow">Recent searches</h3><button className="link-u small" onClick={clearHist}>Clear</button></div>
                       <div className="chips">{hist.map(h => <button key={h} className="chip" onClick={() => setQ(h)}>{h}</button>)}</div></section>
                   ) : <p className="muted">Start typing to search the collection.</p>}
-                  {catalog.collections.length > 0 && <section><h3 className="eyebrow">Browse</h3><div className="chips">{catalog.collections.slice(0, 6).map(c => <button key={c.slug} className="chip" onClick={() => go(`/collections/${c.slug}`, '')}>{c.name}</button>)}</div></section>}
                 </>
               )}
               {term && busy && !prods.length && <p className="muted small">Searching…</p>}

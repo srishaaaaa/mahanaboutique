@@ -13,7 +13,7 @@ import QuickView from './components/QuickView';
 import PageTransition from './components/PageTransition';
 import Home from './pages/Home';
 import SmoothScroll from './components/SmoothScroll';
-import { Shop, Collections, CollectionPage, Search } from './pages/Browse';
+import { Shop, Search } from './pages/Browse';
 import Product from './pages/Product';
 import { Wishlist, CartPage, Checkout, Auth } from './pages/Shopping';
 import { Account } from './pages/Account';
@@ -55,8 +55,7 @@ export default function App() {
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
-          <Route path="/collections" element={<Collections />} />
-          <Route path="/collections/:slug" element={<CollectionPage />} />
+          <Route path="/collections/*" element={<Navigate to="/shop" replace />} />
           <Route path="/product/:slug" element={<Product />} />
           <Route path="/search" element={<Search />} />
           <Route path="/wishlist" element={<Wishlist />} />
