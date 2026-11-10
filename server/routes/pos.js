@@ -272,6 +272,12 @@ export default function pos({ db, auth }) {
     const p = normPhone(phone);
     res.json(p ? (await one(db, `SELECT c.id, c.name, c.phone, c.dob::text AS dob, COALESCE((SELECT s.customer_address FROM pos_sales s WHERE ${PHONE_SQL('s.customer_phone')} = c.phone AND s.customer_address <> '' ORDER BY s.id DESC LIMIT 1), '') AS address FROM pos_customers c WHERE c.phone = $1`, [p])) : null);
   }));
+  // Quick flag switch used by the Trending page: add / remove a product from New Arrivals or Best Sellers (each keeps the 10 newest).
+  r.put('/pos/products/:id/flags', manager, wrap(async (req, res) => {
+    const d = z.object({ newArrival: z.boolean().optional(), bestSeller: z.boolean().optional() }).parse(req.body);
+    await db.query('UPDATE products SET new_arrival = COALESCE($2, new_arrival), best_seller = COALESCE($3, best_seller), updated_at = now() WHERE id = $1', [id.parse(req.params.id), d.newArrival ?? null, d.bestSeller ?? null]);
+    await capFlags(db); res.json({ ok: true });
+  }));
   // "Complete the look": up to 4 suggested products per product, in order.
   r.get('/pos/products/:id/suggested', manager, wrap(async (req, res) => res.json(await rows(db, `SELECT p.id, p.slug, p.name, p.status, (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY display_order, id LIMIT 1) AS image, (SELECT c.name FROM categories c WHERE c.id = p.category_id) AS category
       FROM product_suggestions ps JOIN products p ON p.id = ps.suggested_id WHERE ps.product_id = $1 ORDER BY ps.position`, [id.parse(req.params.id)]))));

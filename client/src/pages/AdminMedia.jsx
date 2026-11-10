@@ -88,14 +88,38 @@ function HomePicks({ onSaved, toast, only }) {
   );
 }
 
+// Products flagged Best Seller / New Arrival: list them here, remove one or add another (flags are also set on each product).
+function FlagPicks({ flag, title, sub, onSaved, toast }) {
+  const [items, setItems] = useState(null); const [q, setQ] = useState(''); const [found, setFound] = useState([]); const [err, setErr] = useState();
+  const key = flag === 'best' ? 'bestSeller' : 'newArrival';
+  const load = () => api(`/products?flag=${flag}&sort=newest&limit=24`).then(d => setItems(d.items)).catch(e => setErr(e.message));
+  useEffect(() => { load() }, []); // eslint-disable-line
+  useEffect(() => { if (!q.trim()) return setFound([]); const t = setTimeout(() => api('/admin/pos/products?q=' + encodeURIComponent(q)).then(r => setFound(r.filter(p => p.status === 'active').slice(0, 8))).catch(() => {}), 200); return () => clearTimeout(t) }, [q]);
+  const set = async (id, on) => { try { await api(`/admin/pos/products/${id}/flags`, { method: 'PUT', body: { [key]: on } }); await load(); onSaved?.(); toast(on ? 'Added.' : 'Removed.') } catch (e) { setErr(e.message) } };
+  return (
+    <section className="adm-block">
+      <h2 className="adm-h2">{title} ({items?.length ?? '…'} of 10)</h2><p className="muted adm-help">{sub}</p>
+      {err && <p role="alert" className="err">{err}</p>}
+      {items && !items.length && <p className="adm-note">Nothing is marked here yet. Search below to add a product.</p>}
+      <ol className="adm-picks">{items?.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{(p.image || p.images?.[0]) && <img src={p.image || p.images[0].url || p.images[0]} alt="" width="40" height="50" />}{p.name}</span><span className="adm-pick-act"><button type="button" className="danger" onClick={() => set(p.id, false)}>Remove</button></span></li>)}</ol>
+      <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={`Search a product to add to ${title}…`} aria-label={`Search products to add to ${title}`} />
+      <ul className="adm-picks">{found.filter(p => !items?.some(i => i.id === p.id)).map(p => <li key={p.id} className="adm-pick"><b>{p.name}</b><span className="adm-pick-act"><button type="button" onClick={() => { set(p.id, true); setQ('') }}>Add</button></span></li>)}</ul>
+    </section>
+  );
+}
+
 // Admin → Trending: just the four "Trending collections" pieces on the homepage.
 export function AdminTrending() {
   const state = useStaff();
   const { loadSite, loadCatalog, toast } = useApp();
   return (
     <Gate state={state}>
-      <AdminShell title="Trending collections" sub="The 4 pieces shown in “Trending collections” on the homepage, in this order">
-        <div className="adm"><HomePicks only="trending" onSaved={() => { loadSite(); loadCatalog() }} toast={toast} /></div>
+      <AdminShell title="Trending collections" sub="Trending collections, Best Sellers and New Arrivals shown on the homepage">
+        <div className="adm">
+          <HomePicks only="trending" onSaved={() => { loadSite(); loadCatalog() }} toast={toast} />
+          <FlagPicks flag="best" title="Best Sellers" sub="Products marked Best Seller, shown in “Best Sellers” on the homepage (the 10 newest are kept)" onSaved={loadCatalog} toast={toast} />
+          <FlagPicks flag="new" title="New Arrivals" sub="Products marked New Arrival, shown in “New Arrivals” on the homepage (the 10 newest are kept)" onSaved={loadCatalog} toast={toast} />
+        </div>
       </AdminShell>
     </Gate>
   );
