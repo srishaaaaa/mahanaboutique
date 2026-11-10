@@ -39,7 +39,7 @@ function Slot({ title, hint, value, fallback, onUpload, onReset, alt, onAlt, acc
   );
 }
 
-// Which products are "Trending now" (up to 4, in order) and which collections appear in "Choose your world" (up to 8, in order).
+// Which products are "Trending now" (up to 4, in order).
 function HomePicks({ onSaved, toast, only }) {
   const { site, catalog } = useApp();
   const hp = site.homepage || { trending: [], collections: [] };
@@ -74,10 +74,6 @@ function HomePicks({ onSaved, toast, only }) {
         <ul className="adm-picks">{found.filter(p => !trend.includes(p.slug)).map(p => <li key={p.id} className="adm-pick"><b>{p.name}</b><span className="adm-pick-act"><button type="button" onClick={() => { setNames(n => ({ ...n, [p.slug]: p.name })); setTrend([...trend, p.slug]); setQ('') }}>Add</button></span></li>)}</ul>
       </>}
       {!only && <>
-      <h3 className="adm-h3">Choose your world ({colSel.length} of 8)</h3>
-      <p className="muted small">The collections listed on the homepage, in this order. Leave empty to list every published collection.</p>
-      <ol className="adm-picks">{colSel.map((s, i) => row(colName(s), i, colSel, setColSel))}</ol>
-      <ul className="adm-picks">{catalog.collections.filter(c => !colSel.includes(c.slug)).map(c => <li key={c.slug} className="adm-pick"><b>{c.name}</b><span className="adm-pick-act"><button type="button" disabled={colSel.length >= 8} onClick={() => setColSel([...colSel, c.slug])}>Add</button></span></li>)}</ul>
       <h3 className="adm-h3">Categories ({catSel.length} of 12)</h3>
       <p className="muted small">The categories in the “Categories” menu and the “Featured categories” section, in this order. Leave empty to list every category.</p>
       <ol className="adm-picks">{catSel.map((s, i) => row(catName(s), i, catSel, setCatSel))}</ol>
@@ -302,7 +298,6 @@ export function AdminSample() {
 const TEXT_GROUPS = [
   ['Shop Story', [['storyTitle', 'Title'], ['story', 'Story (one paragraph per box)', 'paras']]],
   ['Trending collections', [['trendingEyebrow', 'Small label'], ['trendingTitle', 'Title'], ['trendingSub', 'Line under the title']]],
-  ['Choose your world', [['worldEyebrow', 'Small label'], ['worldTitle', 'Title']]],
   ['Inside MAHANA BOUTIQUE & TAILORS (reels & photos)', [['instaTitle', 'Title'], ['instaSub', 'Line under the title', 'area']]],
   ['Enquiry / contact', [['contactEyebrow', 'Small label'], ['contactTitle', 'Title (press Enter for a new line)', 'area'], ['contactSub', 'Line under the title', 'area']]],
   ['About page', [['aboutTitle', 'Title (press Enter for a new line)', 'area'], ['aboutLead', 'Main line', 'area'], ['aboutSub', 'Second line', 'area']]],
