@@ -144,7 +144,7 @@ export default function Product() {
 
       {related.length > 0 && (
         <section className="related" aria-labelledby="rel-h">
-          <Reveal><h2 id="rel-h" className="serif">Complete the look</h2></Reveal>
+          <Reveal><h2 id="rel-h" className="serif">More from {p.category}</h2></Reveal>
           <div className="pgrid cols-4">{related.map(r => <ProductCard key={r.id} p={r} />)}</div>
         </section>
       )}

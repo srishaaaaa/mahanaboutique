@@ -79,7 +79,7 @@ export async function productBySlug(q, slug) {
              FROM product_variants v WHERE v.product_id = $1 AND v.active ORDER BY v.id`, [p.id, p.price]),
     rows(q, 'SELECT image_url AS url, alt_text AS alt, variant_id, color, focus_x AS "focusX", focus_y AS "focusY" FROM product_images WHERE product_id = $1 ORDER BY display_order, id', [p.id]),
   ]);
-  const related = await rows(q, `${BASE_SELECT} WHERE p.status = 'active' AND p.id <> $1 ORDER BY (p.category_id IS NOT DISTINCT FROM (SELECT category_id FROM products WHERE id = $1)) DESC, p.featured DESC, p.id DESC LIMIT 4`, [p.id]);
+  const related = await rows(q, `${BASE_SELECT} WHERE p.status = 'active' AND p.id <> $1 AND p.category_id IS NOT NULL AND p.category_id = (SELECT category_id FROM products WHERE id = $1) ORDER BY p.featured DESC, p.id DESC LIMIT 8`, [p.id]);
   return { ...p, material: extra.material, variants, images, related };
 }
 

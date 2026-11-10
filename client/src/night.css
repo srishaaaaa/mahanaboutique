@@ -1419,3 +1419,9 @@
 /* Featured categories: vertical rectangles instead of arches */
 .home .nk-card { border-radius: 22px }
 .home .nk-arch { border-radius: 14px; aspect-ratio: 3 / 4 }
+
+/* Shop: category tabs (replace the filter drawer) */
+.cat-tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 18px var(--pad) 4px }
+.cat-tabs button { padding: 10px 20px; border-radius: 999px; border: 1px solid rgba(201, 137, 122, .5); background: #fff; color: #141c38; font: 700 12px var(--n-sans, inherit); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .25s, color .25s }
+.cat-tabs button:hover { background: #fbeee9 }
+.cat-tabs button.on { background: #2d1a3a; color: #fff; border-color: #2d1a3a }
