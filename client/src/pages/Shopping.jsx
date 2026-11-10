@@ -133,8 +133,13 @@ export function Auth({ mode }) {
     } catch (x) { setErr(x.message === 'Validation failed' ? 'Please enter a valid email and a password of at least 8 characters.' : x.message); setBusy(false) }
   }
   return (
-    <div className="auth">
-      <form onSubmit={submit} noValidate>
+    <div className="auth auth-split">
+      <aside className="auth-brand" aria-hidden="true">
+        <img src="/logo.png" alt="" />
+        <p className="auth-tag">{reg ? 'Join the Mahana family' : 'Welcome back'}</p>
+        <ul><li>Track your orders and bills</li><li>Save addresses for one-tap checkout</li><li>Keep a wishlist of pieces you love</li></ul>
+      </aside>
+      <form onSubmit={submit} noValidate className="auth-card">
         <p className="eyebrow">{reg ? 'JOIN' : 'WELCOME BACK'}</p>
         <h1 className="serif">{reg ? 'Create your account' : 'Sign in'}</h1>
         {reg && <label className="field"><span>Full name</span><input autoComplete="name" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} /></label>}

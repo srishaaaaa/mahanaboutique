@@ -32,7 +32,7 @@ function ProfileTab({ data, onSaved }) {
       </div>
       <Field label="Full name"><input required autoComplete="name" maxLength={80} value={f.name} onChange={set('name')} /></Field>
       <Field label="Email"><input value={p.email} readOnly aria-readonly="true" className="ro" /></Field>
-      <Field label="Phone"><input type="tel" autoComplete="tel" inputMode="tel" placeholder="+91 98765 43210" value={f.phone} onChange={set('phone')} /></Field>
+      <Field label="Phone"><input type="tel" autoComplete="tel" inputMode="tel" placeholder="+65 9123 4567" value={f.phone} onChange={set('phone')} /></Field>
       <div className="acc-two">
         <Field label="Birthday"><input type="date" autoComplete="bday" max={new Date().toISOString().slice(0, 10)} value={f.birthday} onChange={set('birthday')} /></Field>
         <Field label="Gender"><select value={f.gender} onChange={set('gender')}><option value="">Prefer not to say</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option></select></Field>
@@ -98,17 +98,22 @@ function AddressesTab({ data, onSaved }) {
   );
 }
 
-function OrdersTab() {
-  const [orders, setOrders] = useState(null); const [err, setErr] = useState();
-  useEffect(() => { api('/orders').then(setOrders).catch(e => setErr(e.message)) }, []);
+const STATUS_TONE = { paid: 'ok', delivered: 'ok', shipped: 'info', processing: 'info', pending: 'warn', cancelled: 'bad', failed: 'bad', refunded: 'bad' };
+const pill = v => <span className={`acc-pill ${STATUS_TONE[String(v).toLowerCase()] || ''}`}>{String(v).replace(/_/g, ' ')}</span>;
+
+function OrdersTab({ orders, err }) {
   return (
     <div>
       {err && <p role="alert" className="err">{err}</p>}
       {!orders && !err && <p className="muted">Loading…</p>}
-      {orders?.length === 0 && <div className="empty"><p className="serif big">No orders yet.</p><Link className="btn dark" to="/shop">EXPLORE THE COLLECTION</Link></div>}
+      {orders?.length === 0 && <div className="acc-empty"><p className="serif big">No orders yet.</p><p className="muted">When you place an order it will appear here with its status.</p><Link className="btn dark" to="/shop">START SHOPPING</Link></div>}
       {orders?.length > 0 && (
-        <div className="acc-scroll"><table className="tbl"><thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Payment</th><th className="r">Total</th></tr></thead>
-          <tbody>{orders.map(o => <tr key={o.order_number}><td>{o.order_number}</td><td>{when(o.created_at)}</td><td>{o.status}</td><td>{o.payment_status}</td><td className="r">{inr(o.total)}</td></tr>)}</tbody></table></div>
+        <ul className="acc-orders">{orders.map(o => (
+          <li key={o.order_number} className="acc-order">
+            <div><p className="eyebrow">ORDER</p><strong>{o.order_number}</strong><p className="muted small">Placed {when(o.created_at)}</p></div>
+            <div className="acc-order-st">{pill(o.status)}{pill(o.payment_status)}</div>
+            <div className="acc-order-tot"><p className="eyebrow">TOTAL</p><strong>{inr(o.total)}</strong><p className="muted small">incl. GST</p></div>
+          </li>))}</ul>
       )}
     </div>
   );
@@ -140,29 +145,51 @@ function SecurityTab({ data, onSaved }) {
   );
 }
 
+const TAB_ICON = { profile: '◎', addresses: '⌂', orders: '▤', security: '◈' };
+
 export function Account() {
-  const { user, authReady, signOut } = useApp();
+  const { user, authReady, signOut, wish } = useApp();
   const [sp, setSp] = useSearchParams();
   const tab = TABS.some(([k]) => k === sp.get('tab')) ? sp.get('tab') : 'profile';
   const [data, setData] = useState(null); const [err, setErr] = useState();
-  useEffect(() => { if (user) api('/auth/profile').then(setData).catch(e => setErr(e.message)) }, [user?.id]); // eslint-disable-line
+  const [orders, setOrders] = useState(null); const [oerr, setOerr] = useState();
+  useEffect(() => { if (user) { api('/auth/profile').then(setData).catch(e => setErr(e.message)); api('/orders').then(setOrders).catch(e => setOerr(e.message)) } }, [user?.id]); // eslint-disable-line
   if (!authReady) return <div className="page-pad"><p className="muted">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
+  const first = user.name ? user.name.split(' ')[0] : 'there';
+  const initial = (user.name || user.email || 'M').trim().charAt(0).toUpperCase();
+  const spent = (orders || []).filter(o => String(o.payment_status).toLowerCase() === 'paid').reduce((t, o) => t + (o.total || 0), 0);
+  const stats = [['Orders', orders ? orders.length : '—'], ['Total spent', orders ? inr(spent) : '—'], ['Saved addresses', data ? data.addresses.length : '—'], ['Wishlist', wish.length]];
   return (
-    <div className="account">
-      <p className="eyebrow">ACCOUNT</p>
-      <h1 className="serif">{user.name ? `Hello, ${user.name.split(' ')[0]}` : 'Your account'}</h1>
-      {user.role !== 'customer' && <p><Link className="link-u" to="/admin">Open the staff dashboard</Link></p>}
-      <nav className="acc-tabs" aria-label="Account sections">
-        {TABS.map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} aria-current={tab === k ? 'page' : undefined} onClick={() => setSp(k === 'profile' ? {} : { tab: k })}>{l}</button>)}
-      </nav>
-      {err && <p role="alert" className="err">{err}</p>}
-      {!data && !err && <p className="muted">Loading…</p>}
-      {data && tab === 'profile' && <ProfileTab data={data} onSaved={setData} />}
-      {data && tab === 'addresses' && <AddressesTab data={data} onSaved={setData} />}
-      {tab === 'orders' && <OrdersTab />}
-      {data && tab === 'security' && <SecurityTab data={data} onSaved={setData} />}
-      <button className="btn dark acc-out" onClick={signOut}>SIGN OUT</button>
+    <div className="account acc-dash">
+      <header className="acc-hero">
+        <span className="acc-avatar lg" aria-hidden="true">{initial}</span>
+        <div className="acc-hero-t">
+          <p className="eyebrow">MY ACCOUNT</p>
+          <h1 className="serif">Hello, {first}</h1>
+          <p className="muted">{user.email}{data?.profile?.memberSince ? ` · Member since ${when(data.profile.memberSince)}` : ''}</p>
+        </div>
+        <div className="acc-hero-a">
+          {user.role !== 'customer' && <Link className="btn" to="/admin">STAFF DASHBOARD</Link>}
+          <Link className="btn" to="/wishlist">WISHLIST ({wish.length})</Link>
+        </div>
+      </header>
+      <ul className="acc-stats">{stats.map(([l, v]) => <li key={l}><strong>{v}</strong><span>{l}</span></li>)}</ul>
+      <div className="acc-layout">
+        <nav className="acc-side" aria-label="Account sections">
+          {TABS.map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} aria-current={tab === k ? 'page' : undefined} onClick={() => setSp(k === 'profile' ? {} : { tab: k })}><i aria-hidden="true">{TAB_ICON[k]}</i>{l}</button>)}
+          <button className="acc-signout" onClick={signOut}><i aria-hidden="true">⏻</i>Sign out</button>
+        </nav>
+        <section className="acc-panel" aria-live="polite">
+          <h2 className="serif acc-ph">{TABS.find(([k]) => k === tab)[1]}</h2>
+          {err && <p role="alert" className="err">{err}</p>}
+          {!data && !err && tab !== 'orders' && <p className="muted">Loading…</p>}
+          {data && tab === 'profile' && <ProfileTab data={data} onSaved={setData} />}
+          {data && tab === 'addresses' && <AddressesTab data={data} onSaved={setData} />}
+          {tab === 'orders' && <OrdersTab orders={orders} err={oerr} />}
+          {data && tab === 'security' && <SecurityTab data={data} onSaved={setData} />}
+        </section>
+      </div>
     </div>
   );
 }
