@@ -28,6 +28,7 @@ function where(f, { baseOnly = false } = {}) {
   if (f.slugs?.length) w.push(`p.slug = ANY(${add(f.slugs)})`);
   if (f.q) { const p = add(like(f.q)); w.push(`(p.name ILIKE ${p} OR p.description ILIKE ${p} OR c.name ILIKE ${p} OR p.material ILIKE ${p})`) }
   if (f.featured) w.push('p.featured');
+  if (f.flag === 'new') w.push('p.new_arrival'); else if (f.flag === 'best') w.push('p.best_seller');
   if (!baseOnly) {
     if (f.category?.length) w.push(`c.slug = ANY(${add(f.category)})`);
     if (f.material?.length) w.push(`p.material = ANY(${add(f.material)})`);

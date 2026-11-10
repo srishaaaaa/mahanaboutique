@@ -19,6 +19,7 @@ export default function admin({ db, auth }) {
 
   r.get('/orders', staff, wrap(async (_req, res) => res.json(await rows(db, `
     SELECT o.id, o.order_number, o.email, o.status, o.payment_status, o.total_amount AS total, o.created_at,
+           o.shipping_address_snapshot->>'name' AS name, o.shipping_address_snapshot->>'phone' AS phone,
            (SELECT COUNT(*)::int FROM order_items oi WHERE oi.order_id = o.id) AS item_count
     FROM orders o ORDER BY o.id DESC LIMIT 200`))));
 
@@ -57,7 +58,8 @@ export default function admin({ db, auth }) {
     slug: z.string().regex(/^[a-z0-9-]+$/), name: z.string().min(1).max(160), description: z.string().max(5000).optional(),
     category: z.string().optional(), price: z.number().int().min(0), gst_rate: z.number().int().min(0).max(28).default(0),
     status: z.enum(['draft', 'active', 'archived']).default('draft'), featured: z.boolean().default(false), cost_price: z.number().int().min(0).optional(),
-    variants: z.array(z.object({ sku: z.string().min(1), size: z.string().min(1), color: z.string().default('Default'), stock: z.number().int().min(0).default(0) })).default([]),
+    material: z.string().max(80).optional(), new_arrival: z.boolean().default(false), best_seller: z.boolean().default(false), low_stock_alert: z.number().int().min(0).max(100000).default(3),
+    variants: z.array(z.object({ sku: z.string().min(1), size: z.string().min(1), color: z.string().default('Default'), stock: z.number().int().min(0).default(0), price: z.number().int().min(0).nullable().optional() })).default([]),
   });
   r.post('/products', staff, wrap(async (req, res) => {
     const d = productBody.parse(req.body);
@@ -66,9 +68,10 @@ export default function admin({ db, auth }) {
       const p = await one(t, `INSERT INTO products (slug, name, description, category_id, base_price, tax_rate, status, featured) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
         [d.slug, d.name, d.description ?? '', cat?.id ?? null, d.price, d.gst_rate, d.status, d.featured]);
       for (const v of d.variants) {
-        const row = await one(t, 'INSERT INTO product_variants (product_id, sku, size, color, stock_quantity) VALUES ($1,$2,$3,$4,$5) RETURNING id', [p.id, v.sku, v.size, v.color, v.stock]);
+        const row = await one(t, 'INSERT INTO product_variants (product_id, sku, size, color, stock_quantity, price_override) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id', [p.id, v.sku, v.size, v.color, v.stock, v.price ?? null]);
         if (v.stock) await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason) VALUES ($1,$2,$3)', [row.id, v.stock, 'initial_stock']);
       }
+      await t.query('UPDATE products SET material = NULLIF($2, \'\'), new_arrival = $3, best_seller = $4, low_stock_alert = $5 WHERE id = $1', [p.id, d.material ?? '', d.new_arrival, d.best_seller, d.low_stock_alert]);
       if (d.cost_price && await hasCostColumns(t)) await t.query('UPDATE products SET cost_price = $2 WHERE id = $1', [p.id, d.cost_price]);
       await audit(t, req.user.id, 'product.create', 'product', d.slug);
       return p.id;

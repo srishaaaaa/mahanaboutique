@@ -120,3 +120,4 @@
   .inv-th, .inv-th * { color: #000 !important; -webkit-print-color-adjust: exact }
   .inv-th .inv-tr { break-inside: avoid }
 }
+.inv-edited { margin: -6px 0 8px; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; color: #b45309 }

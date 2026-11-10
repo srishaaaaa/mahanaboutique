@@ -10,6 +10,7 @@ import { Chips, PeriodFilter, inPeriod, periodRange, todayStr, usePeriod } from 
 import { MODE, clock, longDate, money } from '../lib/invoiceFormat';
 import PayPicker, { blankPay, payParts } from '../components/PayPicker';
 import BillSummary from '../components/BillSummary';
+import EditSaleModal from '../components/EditSaleModal';
 
 // "Cash S$500 · PayNow S$500" for a {cash, upi, card} split.
 const SPLIT_L = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card']];
@@ -30,9 +31,9 @@ const TrashIcon = () => <Ico><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14
 
 // ============================ order history ============================
 // Quick details for one bill (the eye button): who, when, what and the full split-up. "View invoice" opens the invoice preview.
-function OrderQuick({ r, onClose, openInvoice }) {
-  const [sale, setSale] = useState(null); const [err, setErr] = useState();
-  useEffect(() => { api('/admin/pos/sales/' + encodeURIComponent(r.invoiceNo)).then(x => setSale(x.sale || x)).catch(e => setErr(e.message)) }, [r.invoiceNo]);
+function OrderQuick({ r, onClose, openInvoice, manager, onEdited }) {
+  const [sale, setSale] = useState(null); const [err, setErr] = useState(); const [editing, setEditing] = useState(false); const [n, setN] = useState(0);
+  useEffect(() => { api('/admin/pos/sales/' + encodeURIComponent(r.invoiceNo)).then(x => setSale(x.sale || x)).catch(e => setErr(e.message)) }, [r.invoiceNo, n]);
   return (
     <div className="dpos-modal" role="dialog" aria-modal="true" aria-label={`Order ${r.invoiceNo}`} onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div className="dpos-mbox oq">
@@ -47,8 +48,10 @@ function OrderQuick({ r, onClose, openInvoice }) {
             {sale.items.map((i, n) => <div key={n} className="oq-it"><span>{i.name}{i.variant?.size ? ` (${i.variant.size})` : ''} <small>× {i.quantity}</small></span><b>{money(i.lineTotal)}</b></div>)}
             <BillSummary bill={sale} />
           </div>)}
-        <div className="oq-f"><button type="button" className="dpos-btn ghost" onClick={onClose}>Close</button><button type="button" className="dpos-btn" onClick={() => { onClose(); openInvoice(r.invoiceNo, r) }}>View invoice</button></div>
+        <div className="oq-f"><button type="button" className="dpos-btn ghost" onClick={onClose}>Close</button>
+          {manager && sale && sale.status === 'completed' && !sale.returns?.length && <button type="button" className="dpos-btn outline" onClick={() => setEditing(true)}>✎ Edit invoice</button>}<button type="button" className="dpos-btn" onClick={() => { onClose(); openInvoice(r.invoiceNo, r) }}>View invoice</button></div>
       </div>
+      {editing && <EditSaleModal invoiceNo={r.invoiceNo} onClose={() => setEditing(false)} onSaved={() => { setN(x => x + 1); onEdited?.() }} />}
     </div>
   );
 }
@@ -114,7 +117,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                 </div></td></tr>
               {openNo === r.invoiceNo && <tr className="dpos-xrow"><td colSpan={7}>{!detail ? <span className="muted">Loading…</span> : <div className="dpos-xsum"><BillSummary bill={detail} /></div>}</td></tr>}</Fragment>) })}</tbody></table></div>)}
       </section>
-      {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={openInvoice} />}
+      {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={openInvoice} manager={manager} onEdited={() => setN(x => x + 1)} />}
     </>
   );
 }

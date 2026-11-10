@@ -317,37 +317,70 @@
 .ms-cm { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px } .ms-cm > div { padding: 12px 16px; border-radius: 14px; background: #eef0f9; border: 1px solid #d6dbee } .ms-cm small { display: block; font: 700 11px 'Poppins', sans-serif; letter-spacing: .1em; color: #6b7390 } .ms-cm b { font-size: 22px }
 .ms-rem small { font: 800 12px 'Poppins', sans-serif; letter-spacing: .1em } .ms-rem ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.7 }
 
-/* ======== Admin scale and proportions (final): large text, tight boxes, capped width ======== */
-.dpos { --z: 1; zoom: var(--z); min-height: calc(100vh / var(--z)); width: 100%; max-width: 1680px; margin-left: auto; margin-right: auto; grid-template-columns: 270px minmax(0, 1fr); gap: 18px; padding: 16px clamp(10px, 1.2vw, 22px) 14px; font-size: 18px; line-height: 1.35 }
-.dpos-side { max-height: calc((100vh - 32px) / var(--z)); padding: 10px; gap: 2px; top: 16px }
-.dpos-main { gap: 12px; min-height: calc(100vh / var(--z) - 32px) }
-.dpos-brand img { max-width: 170px } .dpos-brand { padding: 4px 8px 8px }
-.dpos-nav { padding: 9px 12px; gap: 12px; border-radius: 12px; font-size: 18px; font-weight: 600; line-height: 1.2 }
-.dpos-grp, .dpos-side [class*="grp"] { font-size: 12px }
-.dpos-top-t { font-size: 21px }
-.dpos-head h1 { font-size: 38px; line-height: 1.05; margin: 0 } .dpos-head .sub { font-size: 16.5px; margin-top: 2px }
-.dpos .dpos-head h2, .dpos-main > .dpos-card > h2 { font-size: 21px; margin: 0 0 8px }
-.dpos .dpos-card { padding: 14px 16px; border-radius: 18px }
-.dpos table { font-size: 17px }
-.dpos th { font-size: 13px; padding: 9px 12px }
-.dpos td { padding: 10px 12px }
-.dpos input:not([type=checkbox]):not([type=radio]), .dpos select, .dpos textarea { font-size: 17.5px; padding: 9px 13px; border-radius: 10px }
-.dpos td input, .dpos td select { padding: 7px 10px }
-.dpos label.f, .dpos .cp-l, .dpos .pe-l { font-size: 13.5px; letter-spacing: .06em }
-.dpos label.f { gap: 5px }
-.dpos-btn { font-size: 16.5px; padding: 8px 15px }
-.dpos-tabs { gap: 22px } .dpos-tabs button { font-size: 16px; padding: 9px 2px }
-.dpos .dpos-card2 { padding: 11px 15px; gap: 4px; border-radius: 14px } .dpos .dpos-card2 .t { font-size: 13px } .dpos .dpos-card2 .v { font-size: 32px } .dpos .dpos-card2 .v.txt { font-size: 21px } .dpos .dpos-card2 .s { font-size: 14px }
-.dpos .cost-card { padding: 12px 16px } .dpos .cost-card b { font-size: 32px }
-.dpos-k4 { gap: 8px }
-.dpos-foot { font-size: 14px; padding-top: 9px; padding-bottom: 9px }
-.dpos-pills button, .dpos-two button, .adv-modes button { font-size: 15px }
-.dpos-ledger, .dpos-lrow { font-size: 17px }
-.dpos-cta { font-size: 17px; padding: 12px }
-@media (max-width: 859px) { .dpos { zoom: 1; min-height: 100vh; grid-template-columns: 1fr; font-size: 16px } .dpos-side { max-height: none } .dpos-main { min-height: 0 } }
+/* ======== Admin scale and proportions (final): the exact type sizes of the reference admin, roomy padding ======== */
+.dpos { --z: 1; zoom: var(--z); min-height: calc(100vh / var(--z)); width: 100%; max-width: 1760px; margin-left: auto; margin-right: auto; grid-template-columns: 262px minmax(0, 1fr); gap: 22px; padding: 18px clamp(10px, 1.4vw, 26px) 16px; font-size: 14.5px; line-height: 1.4 }
+.dpos-side { max-height: calc((100vh - 36px) / var(--z)); padding: 12px; gap: 3px; top: 18px }
+.dpos-main { gap: 18px; min-height: calc(100vh / var(--z) - 36px) }
+.dpos-brand img { max-width: 150px } .dpos-brand { padding: 4px 8px 10px }
+.dpos-nav { padding: 13px 16px; gap: 14px; border-radius: 14px; font-size: 15px; font-weight: 500; line-height: 1.25 }
+.dpos-nav.on { font-weight: 600 }
+.dpos-grp, .dpos-side [class*="grp"] { font-size: 10.5px }
+.dpos-top-t { font-size: 17px }
+.dpos-head h1 { font-size: 27px; line-height: 1.1; margin: 0 } .dpos-head .sub { font-size: 14px; margin-top: 3px }
+.dpos .dpos-head h2, .dpos-main > .dpos-card > h2 { font-size: 17px; margin: 0 0 12px }
+.dpos .dpos-card { padding: 20px 24px; border-radius: 22px }
+.dpos table { font-size: 14px }
+.dpos th { font-size: 10.5px; padding: 13px 16px }
+.dpos td { padding: 15px 16px }
+.dpos input:not([type=checkbox]):not([type=radio]), .dpos select, .dpos textarea { font-size: 14.5px; padding: 12px 15px; border-radius: 12px }
+.dpos td input, .dpos td select { padding: 8px 11px }
+.dpos label.f, .dpos .cp-l, .dpos .pe-l { font-size: 11.5px; letter-spacing: .1em }
+.dpos label.f { gap: 7px }
+.dpos-btn { font-size: 13.5px; padding: 10px 17px }
+.dpos-tabs { gap: 26px } .dpos-tabs button { font-size: 13px; padding: 13px 3px }
+.dpos .dpos-card2 { padding: 18px 22px; gap: 8px; border-radius: 20px } .dpos .dpos-card2 .t { font-size: 11px } .dpos .dpos-card2 .v { font-size: 27px } .dpos .dpos-card2 .v.txt { font-size: 18px } .dpos .dpos-card2 .s { font-size: 12px }
+.dpos .cost-card { padding: 20px 24px } .dpos .cost-card b { font-size: 30px }
+.dpos-k4 { gap: 14px }
+.dpos-foot { font-size: 11.5px; padding-top: 14px; padding-bottom: 14px }
+.dpos-pills button, .dpos-two button, .adv-modes button { font-size: 12px }
+.dpos-ledger, .dpos-lrow { font-size: 14.5px }
+.dpos-cta { font-size: 14.5px; padding: 15px }
+@media (max-width: 859px) { .dpos { zoom: 1; min-height: 100vh; grid-template-columns: 1fr; font-size: 14px } .dpos-side { max-height: none } .dpos-main { min-height: 0 } }
 .cp, .ms { max-width: none; margin: 0 }
 .cp-l { display: block } .cp-l > input, .cp-l > select { display: block; width: 100%; margin-top: 6px } .cp-l em { margin-left: 4px }
 .inv-filters select { width: auto; min-width: 210px }
 .an-head { margin-bottom: 0 } .an-period { padding: 4px 6px 4px 8px }
 .an-bar { margin: 0 }
-.dpos-pills button, .adv-modes button { white-space: nowrap; padding-left: 6px; padding-right: 6px; font-size: 14px; letter-spacing: .04em }
+.dpos-pills button, .adv-modes button { white-space: nowrap; padding-left: 6px; padding-right: 6px; font-size: 12px; letter-spacing: .06em }
+
+/* Add Product: media gallery, variant rows */
+.pe-mg { display: flex; justify-content: space-between; align-items: center; margin-top: 10px } .pe-up { font-weight: 800; font-size: 16px; padding: 4px 6px }
+.pe-gal { display: flex; flex-wrap: wrap; gap: 12px }
+.pe-tile { position: relative; width: 104px; height: 104px; border-radius: 14px; overflow: hidden; background: #f3f1ec; border: 1px solid #e4e1db; display: grid; place-items: center } .pe-tile img { width: 100%; height: 100%; object-fit: cover; display: block }
+.pe-tile.add { border: 1.5px dashed #cfcac2; background: #fafafa; font-size: 28px; color: #8a867f; cursor: pointer }
+.pe-primary { position: absolute; top: 0; left: 0; right: 0; padding: 3px 0; background: rgba(20, 20, 20, .82); color: #fff; font: 800 10px 'Poppins', sans-serif; letter-spacing: .08em; text-align: center }
+.pe-tile > button:not(.add) { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, .92); font-size: 13px }
+.pe-vh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px }
+.pe-vhead, .pe-vrow { display: grid; grid-template-columns: 1.3fr 1.3fr .9fr .8fr 40px; gap: 10px; align-items: center }
+.pe-vhead { padding: 0 14px; font: 800 12px 'Poppins', sans-serif; letter-spacing: .1em; color: #8a867f }
+.pe-vrow { padding: 10px 14px; border-radius: 16px; background: #fff; box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .3) } .pe-vrow input { width: 100% }
+.pe-vdel { width: 36px; height: 36px; border-radius: 10px; color: #8a867f; font-size: 17px } .pe-vdel:disabled { opacity: .3 }
+@media (max-width: 700px) { .pe-vhead { display: none } .pe-vrow { grid-template-columns: 1fr 1fr } }
+
+/* Online orders as cards */
+.oo-count { margin: 4px 2px; color: #6d6a64; font-size: 16px }
+.oo-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px }
+.oo-card { background: #fff; border-radius: 18px; padding: 16px 20px 14px; border: 1px solid rgba(0, 0, 0, .05); box-shadow: 0 8px 22px -18px rgba(0, 0, 0, .35) }
+.oo-top { display: flex; justify-content: space-between; align-items: center; gap: 12px } .oo-id { display: flex; align-items: center; gap: 10px; flex-wrap: wrap } .oo-id b { font-size: 19px }
+.oo-tag { padding: 3px 12px; border-radius: 999px; border: 1px solid #9fe3c4; background: #effcf6; color: #0c8a5a; font: 800 12px 'Poppins', sans-serif; letter-spacing: .04em }
+.oo-amt { display: flex; align-items: center; gap: 10px } .oo-amt b { font-size: 19px }
+.oo-name { margin: 6px 0 0; font-size: 19px; font-weight: 700 } .oo-meta { margin: 2px 0 0; color: #8a867f; font-size: 15.5px }
+.oo-foot { margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee }
+.oo-st { padding: 7px 14px; border-radius: 10px; border: 1px solid #cfd6e6; background: #f3f5fb; color: #2d3e76; font: 800 13px 'Poppins', sans-serif; letter-spacing: .05em; text-transform: uppercase; width: auto }
+.oo-st.st-shipped, .oo-st.st-delivered { background: #e9fbf2; border-color: #a6e6c7; color: #0c8a5a } .oo-st.st-cancelled { background: #fdecec; border-color: #f3b8b8; color: #b91c1c } .oo-st.st-packed { background: #fff7e0; border-color: #f4d58b; color: #a16207 }
+.inv-edited { margin: -6px 0 8px; font: 700 10.5px Arial, sans-serif; letter-spacing: .12em; color: #b45309 }
+/* wide admin windows (Edit / Add product, Edit invoice, Return items) */
+.dpos-sheet.wide { width: min(1000px, 96vw); max-width: none }
+.dpos-sheet.pe-wide { width: min(1160px, 96vw); max-width: none }
+.dpos-head h1 { font-size: 24px }
+.dpos-btn.sm, .dpos-head .dpos-btn { font-size: 11.5px; padding: 8px 13px; letter-spacing: .05em; white-space: nowrap }

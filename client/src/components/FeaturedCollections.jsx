@@ -12,7 +12,7 @@ import { Eyebrow, Divider } from './NightParts';
 
 const LIMIT = 4;
 
-function Item({ p, i }) {
+export function Item({ p, i }) {
   const { addToBag, setQuick, toast, wish, toggleWish, site } = useApp();
   const [busy, setBusy] = useState(false);
   const out = p.stock < 1, liked = wish.includes(p.slug);

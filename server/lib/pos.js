@@ -116,7 +116,7 @@ export async function getSale(q, invoice) {
            s.tax_amount AS tax, s.delivery_fee AS "deliveryFee", s.total_amount AS total, s.payment_mode AS "paymentMode",
            s.pay_cash AS "payCash", s.pay_upi AS "payUpi", s.pay_card AS "payCard", s.cash_tendered AS "cashTendered", s.change_given AS change,
            s.payment_ref AS "paymentRef", s.customer_dob::text AS "customerDob", s.coupon_code AS "couponCode", s.notes,
-           s.share_token AS "shareToken", s.bill_date::text AS "billDate", s.customer_address AS "customerAddress", s.source, s.gst_rate AS "gstRate", s.created_at AS "createdAt", s.voided_at AS "voidedAt", s.void_reason AS "voidReason", pr.full_name AS cashier
+           s.share_token AS "shareToken", s.bill_date::text AS "billDate", s.customer_address AS "customerAddress", s.source, s.gst_rate AS "gstRate", s.created_at AS "createdAt", s.edited_at AS "editedAt", s.voided_at AS "voidedAt", s.void_reason AS "voidReason", pr.full_name AS cashier
     FROM pos_sales s LEFT JOIN profiles pr ON pr.id = s.cashier_id WHERE s.invoice_no = $1`, [invoice]);
   if (!sale) return null;
   sale.items = await rows(q, `
@@ -218,6 +218,65 @@ export async function createSale(db, user, d) {
     }
     throw e;
   }
+}
+
+// Corrects an issued bill (owner/admin): customer details, note, delivery fee, discount, and each line's quantity, price or removal.
+// Stock follows the quantity change exactly (a movement is logged), the bill is recomputed and, if the total moved, the payment is re-recorded.
+export async function editSale(db, user, invoice, d) {
+  await db.tx(async t => {
+    const s = await one(t, 'SELECT * FROM pos_sales WHERE invoice_no = $1 FOR UPDATE', [invoice]);
+    if (!s) throw new HttpError(404, 'Invoice not found');
+    if (s.status === 'voided') throw new HttpError(409, 'A voided invoice cannot be edited', 'voided');
+    if (await one(t, 'SELECT 1 AS x FROM pos_returns WHERE sale_id = $1 LIMIT 1', [s.id])) throw new HttpError(409, 'This invoice has returns, so it can no longer be edited', 'has_returns');
+    const adv = await one(t, 'SELECT 1 AS x FROM pos_advances WHERE finalized_invoice = $1', [invoice]);
+    const old = await rows(t, 'SELECT * FROM pos_sale_items WHERE sale_id = $1 ORDER BY id', [s.id]);
+    const patch = new Map((d.items ?? []).map(i => [i.id, i]));
+    for (const id of patch.keys()) if (!old.some(o => o.id === id)) throw new HttpError(400, 'One of the items is not on this invoice', 'bad_item');
+    const next = old.map(o => { const p = patch.get(o.id) ?? {}; return { o, qty: p.remove ? 0 : (p.qty ?? o.quantity), price: p.price ?? o.unit_price } }).filter(x => x.qty > 0);
+    if (!next.length) throw new HttpError(400, 'A bill needs at least one item. Void it instead.', 'empty');
+    if (d.discountType !== undefined || d.discountValue !== undefined) { if (s.coupon_code) throw new HttpError(409, 'This bill used a coupon, so its discount cannot be changed', 'coupon') }
+    const discountType = d.discountType ?? s.discount_type, discountValue = d.discountValue ?? s.discount_value, deliveryFee = d.deliveryFee ?? s.delivery_fee;
+    const bill = computeBill(next.map(x => ({ price: x.price, qty: x.qty, taxRate: x.o.tax_rate })), { isGst: s.is_gst, gstRate: s.gst_rate ?? null, discountType, discountValue, deliveryFee });
+    const changed = bill.total !== s.total_amount;
+    if (adv && (changed || next.length !== old.length || next.some(x => x.qty !== x.o.quantity))) throw new HttpError(409, 'This bill came from an advance order, so only the customer details and note can be edited', 'advance');
+    // stock follows the change
+    for (const x of next) {
+      const delta = x.qty - x.o.quantity;
+      if (!delta || !x.o.variant_id) continue;
+      const r = await t.query('UPDATE product_variants SET stock_quantity = stock_quantity - $1 WHERE id = $2 AND stock_quantity - $1 >= 0 RETURNING id', [delta, x.o.variant_id]);
+      if (!r.rows.length) throw new HttpError(409, `Not enough stock of ${x.o.name_snapshot} for ${x.qty}`, 'stock');
+      await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason, reference_id) VALUES ($1,$2,$3,$4)', [x.o.variant_id, -delta, 'pos_edit', invoice]);
+    }
+    for (const o of old) if (!next.some(x => x.o.id === o.id) && o.variant_id) {
+      await t.query('UPDATE product_variants SET stock_quantity = stock_quantity + $1 WHERE id = $2', [o.quantity, o.variant_id]);
+      await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason, reference_id) VALUES ($1,$2,$3,$4)', [o.variant_id, o.quantity, 'pos_edit', invoice]);
+    }
+    const kept = new Set(next.map(x => x.o.id));
+    for (const o of old) if (!kept.has(o.id)) await t.query('DELETE FROM pos_sale_items WHERE id = $1', [o.id]);
+    for (let i = 0; i < next.length; i++) {
+      const l = bill.lines[i];
+      await t.query('UPDATE pos_sale_items SET unit_price = $2, quantity = $3, line_total = $4, discount_alloc = $5, tax_rate = $6, tax_amount = $7 WHERE id = $1', [next[i].o.id, l.price, l.qty, l.lineTotal, l.alloc, l.taxRate, l.tax]);
+    }
+    // payment: unchanged total keeps the payment as it was; a new total needs the money re-recorded
+    let pay = { cash: s.pay_cash, upi: s.pay_upi, card: s.pay_card, mode: s.payment_mode, tendered: s.cash_tendered, change: s.change_given };
+    if (changed) {
+      const p = d.payment ?? (s.payment_mode === 'split' ? null : { mode: s.payment_mode });
+      if (!p) throw new HttpError(400, 'The total changed: choose how the new total was paid', 'payment');
+      if (p.mode === 'split') {
+        const sp = { cash: p.split?.cash ?? 0, upi: p.split?.upi ?? 0, card: p.split?.card ?? 0 };
+        if (sp.cash + sp.upi + sp.card !== bill.total) throw new HttpError(400, `The split must add up exactly to ${(bill.total / 100).toLocaleString('en-SG')}`, 'bad_split');
+        pay = { ...sp, mode: 'split', tendered: 0, change: 0 };
+      } else pay = { cash: p.mode === 'cash' ? bill.total : 0, upi: p.mode === 'upi' ? bill.total : 0, card: p.mode === 'card' ? bill.total : 0, mode: p.mode, tendered: p.mode === 'cash' ? bill.total : 0, change: 0 };
+    }
+    const c = { name: d.customerName ?? s.customer_name, phone: d.customerPhone ?? s.customer_phone, address: d.customerAddress ?? s.customer_address, notes: d.notes === undefined ? s.notes : (d.notes || null) };
+    await t.query(`UPDATE pos_sales SET customer_name = $2, customer_phone = $3, customer_address = $4, notes = $5, discount_type = $6, discount_value = $7, discount_amount = $8, tax_amount = $9, delivery_fee = $10,
+        subtotal = $11, total_amount = $12, payment_mode = $13, pay_cash = $14, pay_upi = $15, pay_card = $16, cash_tendered = $17, change_given = $18, edited_at = now() WHERE id = $1`,
+      [s.id, c.name, c.phone, c.address, c.notes, discountType, discountValue, bill.discount, bill.tax, bill.deliveryFee, bill.subtotal, bill.total, pay.mode, pay.cash, pay.upi, pay.card, pay.tendered, pay.change]);
+    const ph = normPhone(c.phone);
+    if (ph) await t.query(`INSERT INTO pos_customers (name, phone) VALUES ($1,$2) ON CONFLICT (phone) DO UPDATE SET name = COALESCE(NULLIF(EXCLUDED.name, ''), pos_customers.name), updated_at = now()`, [c.name, ph]);
+    await audit(t, user.id, 'pos.sale.edit', 'pos_sale', invoice, { reason: d.reason, before: s.total_amount, after: bill.total });
+  });
+  return getSale(db, invoice);
 }
 
 // Voids a completed bill, returns its stock and frees its coupon use. Safe to call twice.
@@ -397,7 +456,7 @@ export const listProducts = async (db, q = '', onlyId = null) => {
   const costSql = (await hasCostColumns(db)) ? 'p.cost_price' : '0';
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   return rows(db, `
-    SELECT p.id, p.slug, p.name, p.status, p.base_price AS price, ${costSql}::int AS "costPrice", p.tax_rate AS "taxRate", p.description, p.material, p.featured, p.is_sample AS "isSample", p.low_stock_alert AS "lowAlert",
+    SELECT p.id, p.slug, p.name, p.status, p.base_price AS price, ${costSql}::int AS "costPrice", p.tax_rate AS "taxRate", p.description, p.material, p.featured, p.is_sample AS "isSample", p.low_stock_alert AS "lowAlert", p.new_arrival AS "newArrival", p.best_seller AS "bestSeller",
            COALESCE((SELECT json_agg(col.slug ORDER BY col.display_order) FROM collection_products cp JOIN collections col ON col.id = cp.collection_id WHERE cp.product_id = p.id), '[]'::json) AS collections,
            c.name AS category, c.slug AS "categorySlug",
            (SELECT image_url FROM product_images i WHERE i.product_id = p.id ORDER BY i.display_order, i.id LIMIT 1) AS image,

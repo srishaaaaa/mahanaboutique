@@ -5,6 +5,7 @@ import { HttpError, wrap } from '../lib/http.js';
 import { audit } from '../lib/orders.js';
 import { hasCostColumns } from '../lib/cost.js';
 import { createReturn, getReturn } from '../lib/returns.js';
+import { editSale } from '../lib/pos.js';
 import { listMeasurementBills, setTailoringStatus } from '../lib/measurements.js';
 import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, couponAccessProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
 
@@ -71,7 +72,7 @@ const wsItem = z.object({ code: text(60).min(1), company: text(120).default(''),
 const customerBody = z.object({ name: text(120).default(''), phone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits'), dob: date.nullable().default(null), notes: text(300).nullable().default(null) });
 const expenseBody = z.object({ title: text(120).min(1), category: text(60).default('General'), amount: z.number().int().min(1).max(100_000_000), paymentMode: z.enum(['cash', 'upi', 'card']).default('cash'), notes: text(300).nullable().default(null), date: date.optional() });
 const productPatch = z.object({ name: text(160).min(1), price: paise, costPrice: paise.optional(), taxRate: z.number().int().min(0).max(28), categorySlug: text(80).nullable().default(null), status: z.enum(['draft', 'active', 'archived']),
-  description: text(4000).optional(), material: text(80).optional(), featured: z.boolean().optional(), collections: z.array(text(120).min(1)).max(50).optional(), lowAlert: z.number().int().min(0).max(100000).optional() });
+  description: text(4000).optional(), material: text(80).optional(), featured: z.boolean().optional(), collections: z.array(text(120).min(1)).max(50).optional(), lowAlert: z.number().int().min(0).max(100000).optional(), newArrival: z.boolean().optional(), bestSeller: z.boolean().optional() });
 const variantPatch = z.object({ size: text(40).min(1), color: text(40).min(1), sku: text(80).min(1), price: paise.nullable(), active: z.boolean() }).partial();
 const variantBody = z.object({ size: text(40).min(1), color: text(40).default('Default'), sku: text(80).min(1), stock: z.number().int().min(0).max(1_000_000).default(0) });
 const colourBody = z.object({ color: text(40).min(1), price: paise.nullable().default(null),
@@ -142,6 +143,16 @@ export default function pos({ db, auth }) {
   r.patch('/pos/sales/:invoice/tailoring', biller, wrap(async (req, res) => {
     const { status } = z.object({ status: z.enum(['pending', 'completed']) }).parse(req.body);
     res.json(await setTailoringStatus(db, req.user, String(req.params.invoice), status));
+  }));
+  // Edit an issued bill (owner/admin): details, items, discount, delivery; stock and totals follow.
+  r.patch('/pos/sales/:invoice', manager, wrap(async (req, res) => {
+    const b = z.object({
+      reason: text(200).min(3, 'Give a reason for the edit'), customerName: text(120).optional(), customerPhone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits').optional(), customerAddress: text(300).optional(), notes: text(500).nullable().optional(),
+      deliveryFee: paise.optional(), discountType: z.enum(['percent', 'fixed']).optional(), discountValue: z.number().int().min(0).max(100_000_000).optional(),
+      items: z.array(z.object({ id: id, qty: z.number().int().min(1).max(10000).optional(), price: paise.optional(), remove: z.boolean().optional() })).max(100).optional(),
+      payment: z.object({ mode: z.enum(['cash', 'upi', 'card', 'split']), split: z.object({ cash: paise.default(0), upi: paise.default(0), card: paise.default(0) }).optional() }).optional(),
+    }).parse(req.body);
+    res.json(await editSale(db, req.user, String(req.params.invoice), b));
   }));
   r.post('/pos/sales/:invoice/returns', manager, wrap(async (req, res) => {
     const b = z.object({ items: z.array(z.object({ itemId: id, qty: z.number().int().min(1).max(10000) })).min(1).max(100), reason: text(300).default(''), refundMode: z.enum(['cash', 'upi', 'card']) }).parse(req.body);
@@ -304,6 +315,7 @@ export default function pos({ db, auth }) {
     }
     const pid = id.parse(req.params.id);
     if (d.lowAlert !== undefined) await db.query('UPDATE products SET low_stock_alert = $2 WHERE id = $1', [pid, d.lowAlert]);
+    if (d.newArrival !== undefined || d.bestSeller !== undefined) await db.query('UPDATE products SET new_arrival = COALESCE($2, new_arrival), best_seller = COALESCE($3, best_seller) WHERE id = $1', [pid, d.newArrival ?? null, d.bestSeller ?? null]);
     if (d.description !== undefined || d.material !== undefined || d.featured !== undefined)
       await db.query(`UPDATE products SET description = COALESCE($2, description), material = CASE WHEN $3::text IS NULL THEN material ELSE NULLIF($3, '') END, featured = COALESCE($4, featured) WHERE id = $1`,
         [pid, d.description ?? null, d.material ?? null, d.featured ?? null]);

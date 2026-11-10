@@ -5,6 +5,7 @@ import { Magnetic, Reveal } from '../components/Motion';
 import BoutiqueHero from '../components/hero/BoutiqueHero';
 import FeaturedCollections from '../components/FeaturedCollections';
 import Ticker from '../components/Ticker';
+import FlagShelf from '../components/FlagShelf';
 import EditorialSection from '../components/EditorialSection';
 import CategoryCircles from '../components/CategoryCircles';
 import CustomerReviews from '../components/CustomerReviews';
@@ -75,6 +76,8 @@ export default function Home() {
       <BoutiqueHero />
       <Ticker />
       <FeaturedCollections />
+      <FlagShelf flag="new" id="new-arrivals" eyebrow="JUST LANDED" title="NEW ARRIVALS" sub="The newest pieces in the boutique." />
+      <FlagShelf flag="best" id="best-sellers" eyebrow="CUSTOMER FAVOURITES" title="BEST SELLERS" sub="The pieces our customers love most." />
       <EditorialSection />
       <CategoryCircles />
       <Details />

@@ -8,6 +8,7 @@ import { CHANNEL, MODE, clock, inWords, longDate, money, num2 } from '../lib/inv
 import { measureSummary } from '../components/MeasureModal';
 import { billRows, modeName, returnRows } from '../lib/billSummary';
 import ReturnModal from '../components/ReturnModal';
+import EditSaleModal from '../components/EditSaleModal';
 import '../invoice.css';
 
 const phoneShown = p => { const d = String(p || '').replace(/\D/g, ''); return d.length === 8 ? `+65 ${d.slice(0, 4)} ${d.slice(4)}` : p || '' };
@@ -34,6 +35,7 @@ export function A4Doc({ sale, shop }) {
         <div className="inv-meta">
           <h2>{sale.isGst ? 'TAX INVOICE' : 'INVOICE'}</h2>
           <p className="inv-no">#{sale.invoiceNo}</p>
+          {sale.editedAt && <p className="inv-edited">EDITED · {longDate(String(sale.editedAt).slice(0, 10))}</p>}
           <dl>
             <div><dt>Date:</dt><dd>{longDate(sale.billDate)}</dd></div>
             <div><dt>Time:</dt><dd>{clock(sale.createdAt)}</dd></div>
@@ -205,7 +207,7 @@ export default function InvoicePage() {
   }, [paper, fmt, d]);
   useEffect(() => { if (d && qs.get('print') === '1') { const t = setTimeout(() => window.print(), 700); return () => clearTimeout(t) } }, [d]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { document.title = d ? (d.kind === 'return' ? `Return ${d.ret.returnNo} · ${d.shop.name}` : `Invoice ${d.sale.invoiceNo} · ${d.shop.name}`) : 'Invoice' }, [d]);
-  const [retOpen, setRetOpen] = useState(false);
+  const [retOpen, setRetOpen] = useState(false); const [editOpen, setEditOpen] = useState(false);
 
   if (err) return <div className="inv-page"><p className="inv-err">{err}</p></div>;
   if (!d) return <div className="inv-page"><p className="inv-err">Loading invoice…</p></div>;
@@ -246,12 +248,14 @@ export default function InvoicePage() {
         <a className="inv-btn" href={wa} target="_blank" rel="noopener noreferrer">Share WhatsApp</a>
         <button className="inv-btn" onClick={copy}>{copied ? 'Link copied ✓' : 'Copy Link'}</button>
         {manager && sale.status === 'completed' && !sale.returns?.length && <button className="inv-btn bad" onClick={voidIt} disabled={busy}>Void</button>}
+        {manager && sale.status === 'completed' && !sale.returns?.length && sale.items.some(i => i.id != null) && <button className="inv-btn" onClick={() => setEditOpen(true)}>✎ Edit</button>}
         {manager && sale.status === 'completed' && sale.items.some(i => i.id != null && i.returnedQty < i.quantity) && <button className="inv-btn" onClick={() => setRetOpen(true)}>↩ Return items</button>}
         <button className="inv-btn dark" onClick={() => setPs(true)}><PrintIcon size={15} /> Print</button>
       </div>
       {fmt === 'thermal' ? <Thermal sale={sale} shop={shop} paper={paper} /> : <A4Doc sale={sale} shop={shop} />}
       {ps && <PrintSettings onClose={() => setPs(false)} onPrint={printNow} />}
       {retOpen && <ReturnModal sale={sale} onClose={() => setRetOpen(false)} />}
+      {editOpen && <EditSaleModal invoiceNo={sale.invoiceNo} onClose={() => setEditOpen(false)} onSaved={() => load()} />}
     </div>
   );
 }

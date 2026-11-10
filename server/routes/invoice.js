@@ -27,7 +27,7 @@ export default function invoicePublic({ db }) {
       sale: { invoiceNo: s.invoiceNo, status: s.status, channel: s.channel, source: s.source, billDate: s.billDate, createdAt: s.createdAt, customerName: s.customerName, customerPhone: s.customerPhone,
         customerAddress: s.customerAddress, isGst: s.isGst, gstRate: s.gstRate, subtotal: s.subtotal, discount: s.discount, discountType: s.discountType, discountValue: s.discountValue,
         couponCode: s.couponCode, tax: s.tax, deliveryFee: s.deliveryFee, total: s.total, paymentMode: s.paymentMode, payCash: s.payCash, payUpi: s.payUpi, payCard: s.payCard,
-        cashTendered: s.cashTendered, change: s.change, notes: s.notes, items: s.items.map(({ id: _i, ...it }) => it), returns: (s.returns || []).map(({ items, ...r }) => ({ ...r, items })), ...(s.advance ? { advance: s.advance } : {}) },
+        cashTendered: s.cashTendered, change: s.change, notes: s.notes, editedAt: s.editedAt, items: s.items.map(({ id: _i, ...it }) => it), returns: (s.returns || []).map(({ items, ...r }) => ({ ...r, items })), ...(s.advance ? { advance: s.advance } : {}) },
     });
   }));
   // The coupon card a customer opens from WhatsApp: only what is printed on the coupon, never usage counts or who it was sent to.
