@@ -1287,8 +1287,7 @@
 .home .nm-card .nx-eyebrow i { background: var(--n-grad) }
 
 /* the sticky filter bar sticks below the floating header, not under it */
-.catalog .toolbar { top: 112px }
-@media (max-width: 900px) { .catalog .toolbar { top: 84px } }
+.catalog .toolbar { position: static; backdrop-filter: none; -webkit-backdrop-filter: none; background: transparent }
 
 /* tighter horizontal spacing: smaller side margins and gaps between cards */
 .catalog { --n-pad: clamp(14px, 2.4vw, 34px) }

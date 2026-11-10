@@ -5,8 +5,10 @@ import { HttpError, wrap } from '../lib/http.js';
 import { audit } from '../lib/orders.js';
 import { hasCostColumns } from '../lib/cost.js';
 import { createReturn, getReturn } from '../lib/returns.js';
-import { editSale } from '../lib/pos.js';
-import { listMeasurementBills, setTailoringStatus } from '../lib/measurements.js';
+import { editSale, PHONE_SQL } from '../lib/pos.js';
+import { capFlags } from '../lib/catalog.js';
+import { loadRules } from '../lib/delivery.js';
+import { listMeasurementBills, setTailoringStatus, listStitchingOrders, stitchingOverview } from '../lib/measurements.js';
 import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, couponAccessProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
@@ -140,6 +142,15 @@ export default function pos({ db, auth }) {
     const f = z.object({ q: text(80).default(''), name: text(80).default(''), phone: text(20).default(''), status: z.enum(['all', 'pending', 'completed', 'cancelled']).default('all'), from: date.optional(), to: date.optional() }).parse(req.query);
     res.json(await listMeasurementBills(db, f));
   }));
+  // Stitching pages: orders (bills with stitching lines + open advance orders) and the dashboard / reports overview.
+  r.get('/pos/stitching/orders', biller, wrap(async (req, res) => {
+    const f = z.object({ q: text(80).default(''), name: text(80).default(''), phone: text(20).default(''), status: z.enum(['all', 'pending', 'completed', 'cancelled']).default('all'), from: date.optional(), to: date.optional() }).parse(req.query);
+    res.json(await listStitchingOrders(db, f));
+  }));
+  r.get('/pos/stitching/overview', biller, wrap(async (req, res) => {
+    const f = z.object({ from: date.optional(), to: date.optional() }).parse(req.query);
+    res.json(await stitchingOverview(db, f));
+  }));
   r.patch('/pos/sales/:invoice/tailoring', biller, wrap(async (req, res) => {
     const { status } = z.object({ status: z.enum(['pending', 'completed']) }).parse(req.body);
     res.json(await setTailoringStatus(db, req.user, String(req.params.invoice), status));
@@ -259,7 +270,38 @@ export default function pos({ db, auth }) {
   r.get('/pos/customers/lookup', biller, wrap(async (req, res) => {
     const { phone } = z.object({ phone: text(20) }).parse(req.query);
     const p = normPhone(phone);
-    res.json(p ? (await one(db, 'SELECT id, name, phone, dob::text AS dob FROM pos_customers WHERE phone = $1', [p])) : null);
+    res.json(p ? (await one(db, `SELECT c.id, c.name, c.phone, c.dob::text AS dob, COALESCE((SELECT s.customer_address FROM pos_sales s WHERE ${PHONE_SQL('s.customer_phone')} = c.phone AND s.customer_address <> '' ORDER BY s.id DESC LIMIT 1), '') AS address FROM pos_customers c WHERE c.phone = $1`, [p])) : null);
+  }));
+  // "Complete the look": up to 4 suggested products per product, in order.
+  r.get('/pos/products/:id/suggested', manager, wrap(async (req, res) => res.json(await rows(db, `SELECT p.id, p.slug, p.name, p.status, (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY display_order, id LIMIT 1) AS image, (SELECT c.name FROM categories c WHERE c.id = p.category_id) AS category
+      FROM product_suggestions ps JOIN products p ON p.id = ps.suggested_id WHERE ps.product_id = $1 ORDER BY ps.position`, [id.parse(req.params.id)]))));
+  r.put('/pos/products/:id/suggested', manager, wrap(async (req, res) => {
+    const pid = id.parse(req.params.id), { slugs } = z.object({ slugs: z.array(z.string().max(160)).max(4) }).parse(req.body);
+    await db.tx(async t => {
+      await t.query('DELETE FROM product_suggestions WHERE product_id = $1', [pid]);
+      for (const [i, s] of slugs.entries()) await t.query('INSERT INTO product_suggestions (product_id, suggested_id, position) SELECT $1, id, $3 FROM products WHERE slug = $2 AND id <> $1 ON CONFLICT DO NOTHING', [pid, s, i]);
+    });
+    res.json({ ok: true });
+  }));
+  // Delivery rules: distance bands from the shop's postal code, free-delivery threshold, optional cheaper tiers for bigger orders.
+  r.get('/pos/delivery-rules', manager, wrap(async (_req, res) => res.json(await loadRules(db))));
+  r.put('/pos/delivery-rules', manager, wrap(async (req, res) => {
+    const v = z.object({ enabled: z.boolean(), storePostal: z.string().regex(/^(\d{6})?$/, 'Shop postal code must be 6 digits'), freeOver: paise, maxKm: z.number().min(0).max(500), perKmBeyond: paise,
+      bands: z.array(z.object({ upToKm: z.number().positive().max(500), fee: paise })).min(1).max(12), orderTiers: z.array(z.object({ minOrder: paise, fee: paise })).max(8) }).parse(req.body);
+    await putSetting(db, 'delivery_rules', v); await audit(db, req.user.id, 'pos.delivery_rules', 'pos_settings', 'delivery_rules'); res.json(v);
+  }));
+  // Everything one customer has done: bills, advance orders and stitching lines, newest first.
+  r.get('/pos/customers/:id/history', biller, wrap(async (req, res) => {
+    const c = await one(db, 'SELECT id, name, phone, dob::text AS dob, notes FROM pos_customers WHERE id = $1', [id.parse(req.params.id)]);
+    if (!c) throw new HttpError(404, 'Customer not found');
+    const sales = await rows(db, `SELECT s.invoice_no AS "invoiceNo", s.total_amount AS total, s.payment_mode AS "paymentMode", s.status, s.is_gst AS "isGst", s.created_at AS "createdAt", s.customer_address AS address,
+        (SELECT COALESCE(string_agg(i.name_snapshot || ' ×' || i.quantity, ', '), '') FROM pos_sale_items i WHERE i.sale_id = s.id) AS items,
+        EXISTS (SELECT 1 FROM pos_sale_items i WHERE i.sale_id = s.id AND i.variant_snapshot ? 'measure') AS stitching
+      FROM pos_sales s WHERE ${PHONE_SQL('s.customer_phone')} = $1 ORDER BY s.id DESC LIMIT 500`, [c.phone]);
+    const advances = await rows(db, `SELECT a.code, a.status, a.total_amount AS total, a.deposit, a.delivery_date::text AS "deliveryDate", a.finalized_invoice AS "invoiceNo", a.created_at AS "createdAt"
+      FROM pos_advances a WHERE ${PHONE_SQL('a.customer_phone')} = $1 ORDER BY a.id DESC LIMIT 200`, [c.phone]);
+    const done = sales.filter(x => x.status === 'completed');
+    res.json({ customer: c, address: sales.find(x => x.address)?.address || '', sales, advances, totals: { bills: done.length, spent: done.reduce((t, x) => t + x.total, 0), stitching: done.filter(x => x.stitching).length, openAdvances: advances.filter(a => ['pending', 'ready'].includes(a.status)).length } });
   }));
   const dupCustomer = e => { if (e.code === '23505') throw new HttpError(409, 'A customer with that mobile number already exists'); throw e };
   r.post('/pos/customers', biller, wrap(async (req, res) => {
@@ -315,7 +357,7 @@ export default function pos({ db, auth }) {
     }
     const pid = id.parse(req.params.id);
     if (d.lowAlert !== undefined) await db.query('UPDATE products SET low_stock_alert = $2 WHERE id = $1', [pid, d.lowAlert]);
-    if (d.newArrival !== undefined || d.bestSeller !== undefined) await db.query('UPDATE products SET new_arrival = COALESCE($2, new_arrival), best_seller = COALESCE($3, best_seller) WHERE id = $1', [pid, d.newArrival ?? null, d.bestSeller ?? null]);
+    if (d.newArrival !== undefined || d.bestSeller !== undefined) { await db.query('UPDATE products SET new_arrival = COALESCE($2, new_arrival), best_seller = COALESCE($3, best_seller), updated_at = now() WHERE id = $1', [pid, d.newArrival ?? null, d.bestSeller ?? null]); await capFlags(db) }
     if (d.description !== undefined || d.material !== undefined || d.featured !== undefined)
       await db.query(`UPDATE products SET description = COALESCE($2, description), material = CASE WHEN $3::text IS NULL THEN material ELSE NULLIF($3, '') END, featured = COALESCE($4, featured) WHERE id = $1`,
         [pid, d.description ?? null, d.material ?? null, d.featured ?? null]);

@@ -318,7 +318,8 @@
 .ms-rem small { font: 800 12px 'Poppins', sans-serif; letter-spacing: .1em } .ms-rem ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.7 }
 
 /* ======== Admin scale and proportions (final): the exact type sizes of the reference admin, roomy padding ======== */
-.dpos { --z: 1; zoom: var(--z); min-height: calc(100vh / var(--z)); width: 100%; max-width: 1760px; margin-left: auto; margin-right: auto; grid-template-columns: 262px minmax(0, 1fr); gap: 22px; padding: 18px clamp(10px, 1.4vw, 26px) 16px; font-size: 14.5px; line-height: 1.4 }
+.dpos { --z: 1; zoom: var(--z); min-height: calc(100vh / var(--z)); width: 100%; max-width: 1760px; margin-left: auto; margin-right: auto; gap: 22px; padding: 18px clamp(10px, 1.4vw, 26px) 16px; font-size: 14.5px; line-height: 1.4 }
+@media (min-width: 900px) { .dpos { grid-template-columns: 262px minmax(0, 1fr) } }
 .dpos-side { max-height: calc((100vh - 36px) / var(--z)); padding: 12px; gap: 3px; top: 18px }
 .dpos-main { gap: 18px; min-height: calc(100vh / var(--z) - 36px) }
 .dpos-brand img { max-width: 150px } .dpos-brand { padding: 4px 8px 10px }
@@ -345,7 +346,7 @@
 .dpos-pills button, .dpos-two button, .adv-modes button { font-size: 12px }
 .dpos-ledger, .dpos-lrow { font-size: 14.5px }
 .dpos-cta { font-size: 14.5px; padding: 15px }
-@media (max-width: 859px) { .dpos { zoom: 1; min-height: 100vh; grid-template-columns: 1fr; font-size: 14px } .dpos-side { max-height: none } .dpos-main { min-height: 0 } }
+@media (max-width: 899px) { .dpos { zoom: 1; min-height: 100vh; grid-template-columns: 1fr; font-size: 14px; gap: 12px; padding: 12px 12px 96px } .dpos-side { max-height: none; position: static } .dpos-main { min-height: 0; gap: 14px } .dpos-head h1 { font-size: 22px } .dpos-foot { justify-content: center; text-align: center; margin: 14px 0 0 } }
 .cp, .ms { max-width: none; margin: 0 }
 .cp-l { display: block } .cp-l > input, .cp-l > select { display: block; width: 100%; margin-top: 6px } .cp-l em { margin-left: 4px }
 .inv-filters select { width: auto; min-width: 210px }
@@ -384,3 +385,61 @@
 .dpos-sheet.pe-wide { width: min(1160px, 96vw); max-width: none }
 .dpos-head h1 { font-size: 24px }
 .dpos-btn.sm, .dpos-head .dpos-btn { font-size: 11.5px; padding: 8px 13px; letter-spacing: .05em; white-space: nowrap }
+
+/* Stitching pages */
+.sd { display: grid; gap: 14px; max-width: none }
+.sd-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px } @media (max-width: 899px) { .sd-two { grid-template-columns: 1fr } }
+.sd-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px } .sd-list li button { width: 100%; display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 12px; align-items: center; text-align: left; padding: 11px 14px; border-radius: 14px; background: #faf8f6; border: 1px solid #eee } .sd-list li.late button { background: #fff6f6; border-color: #f3c9c9 }
+.sd-list li button:hover { border-color: var(--d-acc, #1c284f) } .sd-w { display: grid; min-width: 0 } .sd-w b, .sd-w small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .sd-w small { color: #8a867f } .sd-n { font: 700 12px ui-monospace, Consolas, monospace; color: #55524d; text-align: right } .sd-n i { display: block; font-style: normal; color: #b45309; font: 800 10px 'Poppins', sans-serif; letter-spacing: .08em }
+@media (max-width: 640px) { .sd-list li button { grid-template-columns: 1fr; gap: 4px } .sd-n { text-align: left } }
+.sd-due { font-weight: 700 } .sd-due.late { color: #b91c1c } .sd-due.now { color: #b45309 } .sd-adv { margin-left: 8px; padding: 2px 8px; border-radius: 6px; background: #fff3d6; color: #b45309; font: 800 10px 'Poppins', sans-serif; letter-spacing: .08em } .sd-bal { color: #b45309 }
+.sr-rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px } .sr-rank li { display: grid; gap: 6px } .sr-rank li > div { display: flex; justify-content: space-between; gap: 10px } .sr-rank li span { color: #6d6a64 }
+.sr-rank li > i { display: block; height: 8px; border-radius: 999px; background: var(--d-acc, #1c284f); opacity: .85 } .sr-rank.st li.warn > i { background: #f59e0b } .sr-rank.st li.ok > i { background: #16a34a } .sr-rank.st li.bad > i { background: #dc2626 }
+.sr-days { display: flex; align-items: flex-end; gap: 6px; height: 190px; overflow-x: auto; padding-bottom: 4px } .sr-days > div { flex: 1 0 34px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px } .sr-days i { display: block; width: 100%; max-width: 38px; border-radius: 8px 8px 0 0; background: var(--d-acc, #1c284f) } .sr-days span { font-size: 10.5px; color: #8a867f }
+@media (max-width: 899px) {
+  .dpos-foot { position: static; box-shadow: none; margin: 14px 0 0 }
+  .an-head { display: block } .an-period { border-radius: 18px; width: 100%; padding: 4px } .an-period .dpos-pf, .an-period > * { max-width: 100% }
+  .ms-top, .ms-top-a { width: 100% } .ms-top-a { justify-content: flex-start }
+  .oh-chips, .oh-chips > div { width: 100% }
+}
+
+/* Compact filters: tabs + period on one row; channel and payment bars side by side; dates only behind "Custom" */
+.an-top { display: flex; justify-content: space-between; align-items: center; gap: 10px 18px; flex-wrap: wrap; border-bottom: 1px solid var(--d-line, #e5e4e0) } .an-top .dpos-tabs { border-bottom: 0 }
+.an-bars { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch } .an-bars .an-chan { flex: 1 1 520px } .an-bars .an-pay { flex: 1 1 460px }
+.dpos-pg .dates { display: inline-flex; align-items: center; gap: 12px; padding: 0 8px 0 10px; margin-left: 4px; border-left: 1px solid var(--d-line, #e5e4e0) } .dpos-pg .dates label { display: inline-flex; align-items: center } .dpos-pg .dates input { border: 0; padding: 4px 2px; width: auto; font-weight: 700; background: transparent; font-size: 13.5px }
+.an-top .dpos-pg { box-shadow: none }
+.an-bar { gap: 2px; padding: 5px } .an-bar button { padding: 8px 13px } .an-bar > b { padding: 0 10px 0 8px } .an-gst { margin-left: auto }
+.an-bars .an-chan { flex: 1.1 1 560px; flex-wrap: nowrap } .an-bars .an-pay { flex: 1 1 470px; flex-wrap: nowrap }
+.an-gst .dpos-pg { padding: 3px } .an-gst .dpos-pg button { padding: 7px 11px }
+.an-all { display:flex; flex-wrap:wrap; align-items:center; gap:6px 18px } .an-all .an-grp { display:flex; flex-wrap:wrap; align-items:center; gap:2px } .an-all .an-gst { margin-left:0 } .an-all .an-pay { margin-left:auto } .an-all .an-pay > b { padding:0 10px 0 8px }
+@media (max-width:899px){ .an-all .an-pay { margin-left:0 } }
+@media (min-width:900px){ .an-all { gap:4px 12px; flex-wrap:nowrap } .an-all button { padding:8px 9px } .an-all .an-gst .dpos-pg button { padding:7px 9px } .an-all .an-pay > b { padding:0 6px } }
+@media (min-width:900px) and (max-width:1500px){ .an-all { flex-wrap:wrap } }
+
+/* ---- admin content pages: fill the width, shorter inputs, no tall empty boxes ---- */
+.adm { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 14px 16px; align-items: start }
+.adm > p, .adm > .dpos-bar-tools, .adm > .adm-enq, .adm > .err { grid-column: 1 / -1 }
+.adm .adm-block, .adm .adm-card, .adm .adm-panel { margin-top: 0; padding: 18px 22px; border-radius: 18px }
+.adm .adm-block .f, .adm .adm-block .field { display: grid; gap: 6px; margin-top: 10px } .adm .adm-block input, .adm .adm-block textarea { width: 100%; max-width: none; padding: 9px 14px; border-radius: 12px }
+.adm .adm-block textarea { min-height: 84px }
+.adm-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 8px }
+.adm-picks .adm-pick { margin: 0 }
+.adm-enq { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); gap: 12px; list-style: none; padding: 0; margin: 0 }
+.adm-enq > li { padding: 14px 18px; border-radius: 16px; display: grid; gap: 4px; align-content: start } .adm-enq > li p { margin: 0 }
+.adm-enq select { width: auto; max-width: 170px; padding: 7px 12px; margin-top: 6px } .adm-enq .adm-del { justify-self: start }
+.dpos-bar-tools input[type=search] { min-width: 220px }
+
+/* inventory cards: every photo the same size, nothing clipped */
+.inv-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); align-items: stretch }
+.inv-card { min-width: 0; height: 100% } .inv-body { min-width: 0 }
+.inv-photo { aspect-ratio: 3 / 4; height: auto } .inv-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover }
+.inv-photo > span:first-child { position: absolute; inset: 0 }
+.inv-badge, .inv-ic { z-index: 2 } .inv-ic button { width: 36px; height: 36px }
+.inv-pr { display: flex; gap: 16px; margin-top: 6px; font-size: 13px; color: #6d6a64 } .inv-pr span { display: grid } .inv-pr b { color: #1a1a1a; font-size: 15px }
+.inv-nm strong { white-space: nowrap }
+.sg { margin-top: 18px; border-top: 1px solid rgba(0,0,0,.08); padding-top: 14px } .sg > input { width: 100%; max-width: 420px; margin-bottom: 12px }
+.sg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px } @media (max-width: 700px) { .sg-cols { grid-template-columns: 1fr } }
+.sg-cols > div { border: 1px solid rgba(0,0,0,.1); border-radius: 14px; background: #faf9f6; overflow: hidden } .sg-h { margin: 0; padding: 10px 14px; font-size: 11px; font-weight: 800; letter-spacing: .1em; color: #6d6a64; border-bottom: 1px solid rgba(0,0,0,.08) }
+.sg-list { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow: auto } .sg-none { padding: 40px 14px; text-align: center }
+.sg-row { display: flex; align-items: center; gap: 12px; padding: 8px 14px; border-bottom: 1px solid rgba(0,0,0,.06) } .sg-row img, .sg-ph { width: 44px; height: 52px; object-fit: cover; border-radius: 8px; background: #e8e6e0; flex: none }
+.sg-row > span { flex: 1; min-width: 0; display: grid } .sg-row b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .sg-row small { color: #6d6a64 } .sg-row button { width: 32px; height: 32px; border-radius: 8px; font-size: 18px; color: #6d6a64 } .sg-row button:disabled { opacity: .3 }

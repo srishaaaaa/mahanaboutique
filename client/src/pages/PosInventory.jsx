@@ -7,6 +7,7 @@ import Modal from '../components/Modal';
 import { Chips } from '../components/PeriodFilter';
 import { ColourModal, colourGroups } from '../components/ColourOptions';
 import ProductPhotos from '../components/ProductPhotos';
+import SuggestPicker from '../components/SuggestPicker';
 import StockMovements, { downloadCsv } from '../components/StockMovements';
 
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
@@ -81,7 +82,8 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
   const [product, setProduct] = useState(start);
   const [f, setF] = useState({ name: start.name, price: rupees(start.price), cost: start.costPrice ? rupees(start.costPrice) : '', tax: start.taxRate, cat: start.categorySlug || '', status: start.status,
     description: start.description || '', material: start.material || '', featured: !!start.featured, collections: start.collections || [], lowAlert: String(start.lowAlert ?? LOW), newArrival: !!start.newArrival, bestSeller: !!start.bestSeller });
-  const [cols, setCols] = useState([]);
+  const [cols, setCols] = useState([]); const [sug, setSug] = useState([]); const [sug0, setSug0] = useState('');
+  useEffect(() => { api(`/admin/pos/products/${start.id}/suggested`).then(r => { setSug(r); setSug0(r.map(x => x.slug).join()) }).catch(() => {}) }, [start.id]);
   const [nv, setNv] = useState({ size: '', color: '', sku: '', stock: '' });
   const [busy, setBusy] = useState(false); const [err, setErr] = useState();
   useEffect(() => { api('/admin/taxonomy').then(d => setCols(d.collections || [])).catch(() => {}) }, []);
@@ -91,6 +93,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
     try {
       await api(`/admin/pos/products/${product.id}`, { method: 'PATCH', body: { name: f.name.trim(), price: toPaise(f.price), costPrice: toPaise(f.cost), taxRate: +f.tax, categorySlug: f.cat || null, status: f.status,
         description: f.description.trim(), material: f.material.trim(), featured: f.featured, collections: f.collections, lowAlert: Math.max(0, parseInt(f.lowAlert, 10) || 0), newArrival: f.newArrival, bestSeller: f.bestSeller } });
+      if (sug.map(x => x.slug).join() !== sug0) await api(`/admin/pos/products/${product.id}/suggested`, { method: 'PUT', body: { slugs: sug.map(x => x.slug) } });
       onDone(); onClose();
     } catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
   };
@@ -112,6 +115,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
           <label className="pe-l">DESCRIPTION<textarea rows={6} maxLength={4000} value={f.description} onChange={e => setF({ ...f, description: e.target.value })} placeholder="Fabric, work, fit and care. Shown on the product page." /></label>
           <div className="pe-mg"><h3 className="pe-h">Media Gallery</h3></div>
           <ProductPhotos product={product} onChanged={onPhotos} />
+          <SuggestPicker value={sug} onChange={setSug} selfId={product.id} />
         </div>
         <div className="pe-col2">
           <h3 className="pe-h">Organization &amp; Pricing</h3>
@@ -136,7 +140,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
       <section className="pe-vars-sec">
         <div className="pe-vh"><div><h3 className="pe-h">Product Variants</h3><p className="pe-hint">MANAGE SIZES, COLORS, AND SPECIFIC INVENTORY</p></div></div>
         <div className="acc-scroll"><table className="dpos-table pe-vars">
-          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Own price S$</th><th className="r">Stock</th><th /></tr></thead>
+          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Selling price S$</th><th className="r">Stock</th><th /></tr></thead>
           <tbody>{(product.variants || []).map(v => <VariantRow key={`${v.id}-${v.size}-${v.color}-${v.sku}-${v.priceOverride}-${v.active}`} productId={product.id} v={v} basePrice={product.price} onChanged={reload} setErr={setErr} onlyOne={product.variants.length < 2} />)}</tbody>
         </table></div>
         <form onSubmit={addVariant} className="pe-add">
@@ -155,7 +159,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
 const blankVar = () => ({ size: '', color: '', price: '', stock: '' });
 function AddModal({ categories, onClose, onDone }) {
   const [f, setF] = useState({ name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', newArrival: false, bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
-  const [vars, setVars] = useState([blankVar()]); const [files, setFiles] = useState([]); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const pick = useRef();
+  const [sug, setSug] = useState([]); const [vars, setVars] = useState([blankVar()]); const [files, setFiles] = useState([]); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const pick = useRef();
   const setV = (i, p) => setVars(v => v.map((x, n) => n === i ? { ...x, ...p } : x));
   const previews = useMemo(() => files.map(file => URL.createObjectURL(file)), [files]);
   useEffect(() => () => previews.forEach(u => URL.revokeObjectURL(u)), [previews]);
@@ -175,6 +179,7 @@ function AddModal({ categories, onClose, onDone }) {
       try { made = await api('/admin/products', { method: 'POST', body: payload(base) }) }
       catch (x) { if (x.status !== 409) throw x; made = await api('/admin/products', { method: 'POST', body: payload(`${base}-${Math.random().toString(36).slice(2, 6)}`) }) }
       for (const file of files) { const up = await uploadImage(file); await api(`/admin/products/${made.id}/images`, { method: 'POST', body: { url: up.url, alt: f.name.trim() } }) }
+      if (sug.length && made?.id) await api(`/admin/pos/products/${made.id}/suggested`, { method: 'PUT', body: { slugs: sug.map(x => x.slug) } }).catch(() => {});
       onClose(); onDone(made?.id, f.name.trim(), files.length > 0);
     } catch (x) { setErr(x.issues?.[0] ? `${x.issues[0].path}: ${x.issues[0].message}` : x.message) } finally { setBusy(false) }
   };
@@ -192,6 +197,7 @@ function AddModal({ categories, onClose, onDone }) {
             {previews.map((u, i) => <div key={u} className="pe-tile"><img src={u} alt="" />{i === 0 && <span className="pe-primary">PRIMARY</span>}<button type="button" aria-label="Remove photo" onClick={() => setFiles(fs => fs.filter((_, n) => n !== i))}>✕</button></div>)}
             {files.length < 8 && <button type="button" className="pe-tile add" aria-label="Add photos" onClick={() => pick.current?.click()}>＋</button>}
           </div>
+          <SuggestPicker value={sug} onChange={setSug} />
         </div>
         <div className="pe-col2">
           <h3 className="pe-h">Organization &amp; Pricing</h3>
@@ -312,11 +318,12 @@ function ProductsStock({ manager, stocker }) {
                 <span className={`inv-badge ${st[0]}`}>{st[1]}</span>
                 <span className="inv-ic">{manager && <button type="button" aria-label={`Edit ${p.name}`} onClick={() => setModal({ t: 'edit', p })}><Icon n="edit" size={16} /></button>}{manager && <button type="button" className="del" aria-label={`Delete ${p.name}`} onClick={() => del(p)}><Icon n="trash" size={16} /></button>}</span></div>
               <div className="inv-body"><div className="inv-nm"><b title={p.name}>{p.name}</b><strong>{inr(p.price)}</strong></div><small>{p.category || 'Product'}</small>
+                {manager && <div className="inv-pr"><span>Cost<b>{p.costPrice ? inr(p.costPrice) : '—'}</b></span><span>Selling<b>{inr(p.price)}</b></span></div>}
                 <div className="inv-foot"><button type="button" className="inv-units" onClick={() => stocker && setModal({ t: 'stock', p })} disabled={!stocker}><b>{p.stock}</b> Total Units</button><span>{st[0] === 'in' ? 'In stock' : st[0] === 'low' ? `Low · reorder @ ${lowOf(p)}` : 'Sold out'}</span></div></div>
             </li>);
         })}</ul>))}
       <section className="dpos-card" style={{ padding: '8px 16px', display: view === 'list' ? 'block' : 'none' }}>
-        <div className="dpos-ph"><span /><span>Product</span><span>Type</span><span style={{ textAlign: 'right' }}>Stock</span><span style={{ textAlign: 'right' }}>Price</span><span style={{ textAlign: 'right' }}>Actions</span></div>
+        <div className="dpos-ph"><span /><span>Product</span><span>Type</span><span style={{ textAlign: 'right' }}>Stock</span><span style={{ textAlign: 'right' }}>{manager ? 'Cost / Selling' : 'Price'}</span><span style={{ textAlign: 'right' }}>Actions</span></div>
         {!list ? <p className="dpos-empty">Loading…</p> : !shown.length ? <p className="dpos-empty">No products found.</p> : shown.map(p => (
           <div className="dpos-prod" key={p.id}>
             <div className="dpos-prow">
@@ -324,7 +331,7 @@ function ProductsStock({ manager, stocker }) {
               <div className="nm"><b>{p.name}</b><small>{open === p.id ? '▲ Hide details' : '▼ Open in detail'}{p.variants.length > 1 ? ` · ${p.variants.length} sizes` : ''}{p.status !== 'active' ? ` · ${p.status}` : ''}{p.isSample ? ' · sample' : ''}</small></div>
               <span><span className="dpos-pill">Product</span></span>
               <b style={{ textAlign: 'right' }}>{p.stock} {tag(p.stock, lowOf(p))}</b>
-              <b style={{ textAlign: 'right' }}>{inr(p.price)}</b>
+              <b style={{ textAlign: 'right' }}>{manager && <small className="muted" style={{ fontWeight: 600 }}>{p.costPrice ? inr(p.costPrice) : '—'} / </small>}{inr(p.price)}</b>
               <div className="dpos-acts">
                 <button className={`dpos-btn sm ${open === p.id ? '' : 'ghost'}`} onClick={() => setOpen(open === p.id ? null : p.id)}>{open === p.id ? 'Close' : 'Details'}</button>
                 {manager && <button className="dpos-btn ghost sm" onClick={() => setModal({ t: 'edit', p })}><Icon n="edit" size={14} />Edit</button>}

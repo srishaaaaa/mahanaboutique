@@ -84,6 +84,8 @@ export function Checkout() {
     }).catch(() => {});
   }, [user?.id]); // eslint-disable-line
 
+  // Delivery is priced by distance: once the postal code is complete, ask the server for the delivery charge.
+  useEffect(() => { if (/^\d{6}$/.test(f.pin)) loadCart(f.pin) }, [f.pin, cartInfo.subtotal]); // eslint-disable-line
   const [confirm, setConfirm] = useState(false);
   async function pay() {
     setErr(); setBusy(true);

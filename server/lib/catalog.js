@@ -81,7 +81,8 @@ export async function productBySlug(q, slug) {
     rows(q, 'SELECT image_url AS url, alt_text AS alt, variant_id, color, focus_x AS "focusX", focus_y AS "focusY" FROM product_images WHERE product_id = $1 ORDER BY display_order, id', [p.id]),
   ]);
   const related = await rows(q, `${BASE_SELECT} WHERE p.status = 'active' AND p.id <> $1 AND p.category_id IS NOT NULL AND p.category_id = (SELECT category_id FROM products WHERE id = $1) ORDER BY p.featured DESC, p.id DESC LIMIT 8`, [p.id]);
-  return { ...p, material: extra.material, variants, images, related };
+  const suggested = await rows(q, `${BASE_SELECT} JOIN product_suggestions ps ON ps.suggested_id = p.id WHERE ps.product_id = $1 AND p.status = 'active' ORDER BY ps.position`, [p.id]).catch(() => []);
+  return { ...p, material: extra.material, variants, images, related, suggested };
 }
 
 export const listCategories = (q) => rows(q, `
@@ -100,3 +101,9 @@ export const listCollections = (q) => rows(q, `
   ORDER BY col.display_order, col.id`).then(r => r.filter(c => c.product_count > 0));
 
 export const collectionBySlug = (q, slug) => one(q, `SELECT id, name, slug, description, hero_image FROM collections WHERE slug = $1 AND status = 'published'`, [slug]);
+
+// Each home shelf (New Arrivals / Best Sellers) keeps only the 10 newest flagged products; older flags are cleared.
+export async function capFlags(q, max = 10) {
+  for (const col of ['new_arrival', 'best_seller'])
+    await q.query(`UPDATE products SET ${col} = false WHERE ${col} AND id NOT IN (SELECT id FROM products WHERE ${col} ORDER BY updated_at DESC NULLS LAST, id DESC LIMIT ${max})`);
+}

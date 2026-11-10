@@ -15,7 +15,8 @@ export function cartRoutes(ctx) {
   r.use(auth.optional);
   const view = async (res, cart) => res.json(await cartView(db, cart));
 
-  r.get('/', wrap(async (req, res) => view(res, await resolveCart(ctx, req, res))));
+  // ?pin=<postal code> prices delivery by distance from the shop (rules set in the admin).
+  r.get('/', wrap(async (req, res) => { const pin = /^\d{6}$/.test(String(req.query.pin || '')) ? String(req.query.pin) : undefined; res.json(await cartView(db, await resolveCart(ctx, req, res), pin)) }));
   r.post('/items', wrap(async (req, res) => {
     const d = z.object({ variantId, quantity: qty.default(1) }).parse(req.body);
     const cart = await resolveCart(ctx, req, res, { create: true });

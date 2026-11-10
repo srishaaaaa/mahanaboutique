@@ -1,5 +1,6 @@
 import { rows, one } from '../db/index.js';
 import { HttpError } from './http.js';
+import { deliveryFor } from './delivery.js';
 import { CART_COOKIE, cookieOpts, randomToken, sha256 } from './auth.js';
 
 export const MAX_QTY = 10;
@@ -56,10 +57,11 @@ export function cartLines(q, cartId) {
     WHERE ci.cart_id = $1 ORDER BY ci.id`, [cartId]);
 }
 
-export async function shippingFor(q, subtotal) {
-  const m = await one(q, `SELECT id, code, name, base_amount, free_over FROM shipping_methods WHERE active ORDER BY id LIMIT 1`);
-  if (!m) return { id: null, amount: 0, name: 'Shipping' };
-  return { id: m.id, name: m.name, amount: m.free_over != null && subtotal >= m.free_over ? 0 : m.base_amount, freeOver: m.free_over };
+export async function shippingFor(q, subtotal, pin) {
+  const m = await one(q, `SELECT id, code, name FROM shipping_methods WHERE active ORDER BY id LIMIT 1`);
+  const d = await deliveryFor(q, subtotal, pin);
+  if (d.amount == null) throw new HttpError(400, d.reason, 'out_of_range');
+  return { id: m?.id ?? null, name: m?.name ?? 'Delivery', amount: d.amount, freeOver: d.freeOver, km: d.km, note: d.reason };
 }
 
 export function issueFor(l) {
@@ -82,12 +84,12 @@ export function gstSplit(lines) {
   return { byRate, included: byRate.reduce((s, r) => s + r.tax, 0) };
 }
 
-export async function cartView(db, cart) {
+export async function cartView(db, cart, pin) {
   const lines = cart ? await cartLines(db, cart.id) : [];
   const items = lines.map(l => ({ variantId: l.variantId, slug: l.slug, name: l.name, size: l.size, color: l.color, price: l.price, taxRate: l.taxRate, qty: l.qty, stock: l.stock, image: l.image, issue: issueFor(l) }));
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-  const ship = await shippingFor(db, subtotal);
-  const shipping = { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null }, gst = gstSplit(items);
+  const ship = await shippingFor(db, subtotal, pin).catch(e => ({ amount: 0, freeOver: null, note: e.message, blocked: true }));
+  const shipping = { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null, km: ship.km ?? null, note: ship.note ?? null, blocked: !!ship.blocked }, gst = gstSplit(items);
   return { items, count: items.reduce((s, i) => s + i.qty, 0), subtotal, shipping, gst, total: subtotal + shipping.amount, hasIssues: items.some(i => i.issue) };
 }
 

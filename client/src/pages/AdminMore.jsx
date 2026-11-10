@@ -99,6 +99,11 @@ export function AdminCategories() {
       <div className="dpos-tx">
         <div>
           <h2><Icon n="layers" size={20} />Departments <button className="dpos-btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => setModal('collection')}>+ Add collection</button></h2>
+          {d && [['Trending collections', d.shelves?.trending, 'Featured pieces on the home page', '/admin/trending', 'Edit pieces'], ['Best Sellers', d.shelves?.best, 'Products marked Best Seller · up to 10', '/admin/billing/inventory', 'Edit in products'], ['New Arrivals', d.shelves?.new, 'Products marked New Arrival · up to 10', '/admin/billing/inventory', 'Edit in products']].filter(r => match(r[0])).map(([n, c, sub, to, label]) => (
+            <div className="dpos-txc" key={n}>
+              <div><b>{n}</b><small>{c ?? 0} products · {sub} · Live on the site</small></div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}><Link className="dpos-btn ghost sm" to={to}>{label}</Link></div>
+            </div>))}
           {!d ? <p className="dpos-empty">Loading…</p> : !cols.length ? <p className="dpos-empty">No departments found.</p> : cols.map(c => (
             <div className="dpos-txc" key={c.id}>
               <div><b>{c.name}</b><small>{c.products} products · {c.status === 'published' ? 'Live on the site' : 'Hidden'}</small></div>

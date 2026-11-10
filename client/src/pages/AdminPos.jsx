@@ -14,6 +14,7 @@ import PosExpenses from './PosExpenses';
 import PosCoupons from './PosCoupons';
 import CatalogPicker from '../components/CatalogPicker';
 import PosMeasurements from './PosMeasurements';
+import { StitchingDashboard, StitchingOrders, StitchingReports } from './PosStitching';
 import { InvoicePreview } from './InvoicePage';
 import PosBirthdays from './PosBirthdays';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
@@ -30,7 +31,7 @@ const k = p => p >= 100000000 ? `S$${(p / 100000000).toFixed(1).replace(/\.0$/, 
 const MODES = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']];
 const MODE_LABEL = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, inventory: true, customers: false, coupons: true, birthdays: true, expenses: true, settings: true };
+const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, inventory: true, customers: false, coupons: true, birthdays: true, expenses: true, settings: true };
 
 // ---- live preview of the bill (the server recomputes everything on checkout) ----
 function preview(lines, { isGst, gstRate, discountType, discountValue, deliveryFee }) {
@@ -109,7 +110,9 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   const ws = channel === 'wholesale';
   const [q, setQ] = useState(''); const [results, setResults] = useState(null); const [searching, setSearching] = useState(false);
   const [lines, setLines] = useState(ws ? [blankCustom()] : []);
-  const { toast: say } = useApp(); const [catalogOpen, setCatalogOpen] = useState(false); const [flash, setFlash] = useState(null); const flashT = useRef();
+  const { toast: say } = useApp(); const [catalogOpen, setCatalogOpen] = useState(false);
+  useEffect(() => { if (new URLSearchParams(location.search).get('new') === 'stitching') { setLines(ls => ls.some(l => l.service) ? ls : [...ls, blankCustom(true)]); history.replaceState(null, '', location.pathname) } }, []); // eslint-disable-line
+  const [flash, setFlash] = useState(null); const flashT = useRef();
   const [measureFor, setMeasureFor] = useState(null); // key of the service line whose Measurements window is open
   const [wsItems, setWsItems] = useState([]);
   const [cust, setCust] = useState({ name: '', phone: '', dob: '', address: '' }); const [billDate, setBillDate] = useState(todayStr()); const [source, setSource] = useState('offline');
@@ -143,7 +146,17 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   const splitNet = { ...splitAmt, cash: Math.max(0, splitAmt.cash - splitOver) };
   const splitOk = splitSum >= bill.total && (splitOver === 0 || splitAmt.cash >= splitOver);
   const pickedN = Object.values(splitOn).filter(Boolean).length;
-  const toggleSplit = m => { if (splitOn[m] && pickedN <= 2) return; if (splitOn[m]) setSplit(s => ({ ...s, [m]: '' })); setSplitOn(o => ({ ...o, [m]: !o[m] })) };
+  // Amounts the cashier typed are kept; the balance of the bill goes into the first box they have not typed in.
+  const touched = useRef(new Set());
+  const editSplit = (m, v) => {
+    touched.current.add(m); if (!v.trim()) touched.current.delete(m);
+    const next = { ...split, [m]: v }, picked = ['cash', 'upi', 'card'].filter(k => splitOn[k]);
+    const typed = picked.filter(k => touched.current.has(k)), free = picked.filter(k => !touched.current.has(k));
+    const left = Math.max(0, bill.total - typed.reduce((t, k) => t + toPaise(next[k]), 0));
+    free.forEach((k, i) => { next[k] = i === 0 && left > 0 ? rupees(left) : '' });
+    setSplit(next);
+  };
+  const toggleSplit = m => { if (splitOn[m] && pickedN <= 2) return; touched.current.clear(); setSplit({ cash: '', upi: '', card: '' }); setSplitOn(o => ({ ...o, [m]: !o[m] })) };
 
   const body = useMemo(() => ({
     channel, source: ws ? 'offline' : source, billDate,
@@ -158,9 +171,9 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   // A new idempotency key is used whenever the bill changes; an unchanged retry (e.g. after a network drop) reuses it, so it can never double-bill.
   useEffect(() => { key.current = null }, [body]);
 
-  const lookup = async () => {
-    if (cust.phone.replace(/\D/g, '').length < 10) return;
-    try { const c = await api('/admin/pos/customers/lookup?phone=' + encodeURIComponent(cust.phone)); if (c) setCust(x => ({ ...x, name: x.name || c.name, dob: x.dob || c.dob || '' })) } catch { /* optional convenience */ }
+  const lookup = async (phone = cust.phone) => {
+    if (phone.replace(/\D/g, '').length < 8) return;
+    try { const c = await api('/admin/pos/customers/lookup?phone=' + encodeURIComponent(phone)); if (c) setCust(x => ({ ...x, name: x.name || c.name, address: x.address || c.address || '', dob: x.dob || c.dob || '' })) } catch { /* optional convenience */ }
   };
   // Shows that the piece went onto the bill: a toast, a pulse on its row and the item count beside "Current order".
   const add = v => { setFlash(v.variantId); clearTimeout(flashT.current); flashT.current = setTimeout(() => setFlash(null), 1600); say(`${v.name}${v.size && v.size !== 'Default' ? ` (${v.size})` : ''} added to the bill`); addLine(v) };
@@ -193,7 +206,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   };
   const clearOrder = () => {
     setLines(ws ? [blankCustom()] : []); setCust({ name: '', phone: '', dob: '', address: '' }); setBillDate(todayStr()); setSource('offline'); setDisc({ type: 'fixed', value: '' }); setCoupon(null); setCouponIn(''); setCouponMsg();
-    setDelivery(''); setTendered(''); setSplit({ cash: '', upi: '', card: '' }); setRef(''); setNotes(''); key.current = null; setErr();
+    setDelivery(''); setTendered(''); setSplit({ cash: '', upi: '', card: '' }); touched.current.clear(); setRef(''); setNotes(''); key.current = null; setErr();
   };
 
   const problem = !priced.length ? 'Add at least one item.' : mode === 'split' && !splitOk ? (splitSum < bill.total ? `Received ${inr(splitSum)}; the bill is ${inr(bill.total)}.` : 'The extra can only be returned out of the cash amount.')
@@ -253,7 +266,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
         <section className="dpos-card"><h2><Icon n="user" />Customer details</h2>
           <div className="dpos-grid">
             <label className="f">Customer name<input value={cust.name} onChange={e => setCust({ ...cust, name: e.target.value })} placeholder="Walk-in customer" autoComplete="off" /></label>
-            <label className="f">Mobile number (WhatsApp)<input value={cust.phone} inputMode="tel" onChange={e => setCust({ ...cust, phone: e.target.value })} onBlur={lookup} placeholder="Enter 10-digit number" autoComplete="off" /></label>
+            <label className="f">Mobile number (WhatsApp)<input value={cust.phone} inputMode="tel" onChange={e => setCust({ ...cust, phone: e.target.value })} onBlur={() => lookup()} onChange={e => { setCust({ ...cust, phone: e.target.value }); if (e.target.value.replace(/\D/g, '').length >= 10) lookup(e.target.value) }} placeholder="Enter 10-digit number" autoComplete="off" /></label>
             <label className="f">Bill date · custom / past<input type="date" max={todayStr()} value={billDate} onChange={e => setBillDate(e.target.value || todayStr())} /></label>
             {!ws && <label className="f">Date of birth (for birthday offers)<input type="date" max={todayStr()} value={cust.dob} onChange={e => setCust({ ...cust, dob: e.target.value })} />{cust.dob && cust.phone.replace(/\D/g, '').length < 10 && <small className="dpos-warn">Add the 10-digit mobile number too, so the birthday is saved to the Date of Birth panel.</small>}</label>}
           </div>
@@ -331,7 +344,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
             {mode === 'split' && <>
               <p className="dpos-flabel" style={{ marginTop: 0 }}>SPLIT BETWEEN (PICK 2 OR 3)</p>
               <div className="dpos-splitpick" role="group" aria-label="Split between">{['cash', 'upi', 'card'].map(m => <button key={m} type="button" aria-pressed={splitOn[m]} className={splitOn[m] ? 'on' : ''} onClick={() => toggleSplit(m)}>{splitOn[m] ? '✓ ' : ''}{m === 'upi' ? 'QR / PAYNOW' : MODE_LABEL[m].toUpperCase()}</button>)}</div>
-              <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{MODE_LABEL[m]} (S$)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => setSplit({ ...split, [m]: e.target.value })} placeholder="0.00" /></label>)}</div>
+              <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{MODE_LABEL[m]} (S$)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => editSplit(m, e.target.value)} placeholder="0.00" /></label>)}</div>
               <div className="dpos-recv"><span>TOTAL RECEIVED</span><b className={splitSum >= bill.total && bill.total > 0 ? 'ok' : 'short'}>{inr(splitSum)}</b></div>
               <div className="dpos-recv"><span>CHANGE TO RETURN</span><b className="ok">{inr(splitOver)}</b></div></>}
             {mode !== 'cash' && <label className="f" style={{ marginTop: mode === 'split' ? 12 : 0 }}>{mode === 'card' ? 'Slip / approval no.' : 'Transaction ID'} (optional)<input value={ref} onChange={e => setRef(e.target.value)} maxLength={80} /></label>}
@@ -472,14 +485,16 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
   const v = (f, d = '…') => rep ? f(rep) : d;
   return (
     <>
-      {tab !== 'today' && <div className="an-head"><span /><div className="an-period"><PeriodFilter value={per} onChange={setPer} /></div></div>}
+      {tab !== 'today' && <PeriodFilter value={per} onChange={setPer} />}
       <div className="dpos-tabs" role="tablist">{[['revenue', 'Revenue'], ['today', 'Today’s sales'], ['products', 'Products'], ['coupons', 'Coupons']].map(([id, l]) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>{l}</button>)}</div>
-      <div className="an-bar an-chan" role="group" aria-label="Sales channel">
-        {[['all', 'All Channels', null], ['offline', 'Offline (POS)', 'amber'], ['online', 'Online', 'green']].map(([v, l, d]) => <button key={v} type="button" className={src === v ? 'on' : ''} aria-pressed={src === v} onClick={() => setSrc(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+      <div className="an-bar an-all">
+        <div className="an-grp" role="group" aria-label="Sales channel">
+          {[['all', 'All Channels', null], ['offline', 'Offline (POS)', 'amber'], ['online', 'Online', 'green']].map(([v, l, d]) => <button key={v} type="button" className={src === v ? 'on' : ''} aria-pressed={src === v} onClick={() => setSrc(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+        </div>
         <span className="an-gst"><Chips value={gst} onChange={setGst} options={GST_CHIPS} /></span>
-      </div>
-      <div className="an-bar an-pay" role="group" aria-label="Payment method"><b>PAYMENT</b>
-        {[['all', 'All Methods', null], ['cash', 'Cash', 'amber'], ['upi', 'QR / GPay', 'blue'], ['card', 'Card', 'pink'], ['split', 'Split', 'violet']].map(([v, l, d]) => <button key={v} type="button" className={pay === v ? 'on' : ''} aria-pressed={pay === v} onClick={() => setPay(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+        <div className="an-grp an-pay" role="group" aria-label="Payment method"><b>PAYMENT</b>
+          {[['all', 'All', null], ['cash', 'Cash', 'amber'], ['upi', 'QR / PayNow', 'blue'], ['card', 'Card', 'pink'], ['split', 'Split', 'violet']].map(([v, l, d]) => <button key={v} type="button" className={pay === v ? 'on' : ''} aria-pressed={pay === v} onClick={() => setPay(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+        </div>
       </div>
       <Err>{err}</Err>
 
@@ -559,9 +574,42 @@ function CustomerModal({ c, onClose, onDone }) {
     </Modal>
   );
 }
-function Customers({ manager }) {
+// One customer's full history: every bill, advance order and stitching job, newest first.
+function CustomerHistory({ c, onClose, openInvoice, onEdit }) {
+  const [h, setH] = useState(null); const [err, setErr] = useState();
+  useEffect(() => { api(`/admin/pos/customers/${c.id}/history`).then(setH).catch(e => setErr(e.message)) }, [c.id]);
+  const when = t => new Date(t).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
+  return (
+    <Modal title={c.name || c.phone} sub={`${c.phone}${c.dob ? ' · born ' + dmy(c.dob) : ''}`} wide onClose={onClose}
+      footer={<>{onEdit && <button type="button" className="dpos-btn ghost" onClick={onEdit}>Edit details</button>}<button type="button" className="dpos-btn" onClick={onClose}>Close</button></>}>
+      {err ? <p className="dpos-err" role="alert">{err}</p> : !h ? <p className="muted">Loading…</p> : (
+        <div style={{ display: 'grid', gap: 14 }}>
+          <div className="dpos-grid">
+            <div><p className="muted small">Mobile</p><b>{h.customer.phone}</b></div>
+            <div><p className="muted small">Date of birth</p><b>{h.customer.dob ? dmy(h.customer.dob) : '—'}</b></div>
+            <div><p className="muted small">Address</p><b>{h.address || '—'}</b></div>
+            <div><p className="muted small">Notes</p><b>{h.customer.notes || '—'}</b></div>
+          </div>
+          <div className="dpos-grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))' }}>
+            <div className="dpos-card" style={{ padding: 12 }}><p className="muted small">Bills</p><b>{h.totals.bills}</b></div>
+            <div className="dpos-card" style={{ padding: 12 }}><p className="muted small">Total spent</p><b>{inr(h.totals.spent)}</b></div>
+            <div className="dpos-card" style={{ padding: 12 }}><p className="muted small">Stitching bills</p><b>{h.totals.stitching}</b></div>
+            <div className="dpos-card" style={{ padding: 12 }}><p className="muted small">Open advance orders</p><b>{h.totals.openAdvances}</b></div>
+          </div>
+          <p className="muted small" style={{ fontWeight: 800, letterSpacing: '.1em', margin: 0 }}>INVOICES</p>
+          {!h.sales.length ? <p className="muted">No bills yet.</p> : <div className="dpos-tw"><table><thead><tr><th>Invoice</th><th>Date</th><th>Items</th><th>Payment</th><th className="r">Total</th></tr></thead>
+            <tbody>{h.sales.map(x => <tr key={x.invoiceNo} className={`click ${x.status === 'voided' ? 'voided' : ''}`} tabIndex={0} onClick={() => openInvoice?.(x.invoiceNo)} onKeyDown={e => e.key === 'Enter' && openInvoice?.(x.invoiceNo)}>
+              <td><b>{x.invoiceNo}</b>{x.stitching ? <span className="muted small"> · stitching</span> : null}</td><td>{when(x.createdAt)}</td><td className="small">{x.items}</td><td>{x.paymentMode === 'upi' ? 'QR / PayNow' : x.paymentMode}</td><td className="r">{inr(x.total)}{x.status !== 'completed' ? <span className="muted small"> ({x.status})</span> : null}</td></tr>)}</tbody></table></div>}
+          <p className="muted small" style={{ fontWeight: 800, letterSpacing: '.1em', margin: 0 }}>ADVANCE ORDERS</p>
+          {!h.advances.length ? <p className="muted">No advance orders.</p> : <div className="dpos-tw"><table><thead><tr><th>Code</th><th>Date</th><th>Delivery</th><th>Status</th><th className="r">Total</th><th className="r">Balance</th></tr></thead>
+            <tbody>{h.advances.map(a => <tr key={a.code}><td><b>{a.code}</b>{a.invoiceNo ? <span className="muted small"> → {a.invoiceNo}</span> : null}</td><td>{when(a.createdAt)}</td><td>{a.deliveryDate ? dmy(a.deliveryDate) : '—'}</td><td>{a.status}</td><td className="r">{inr(a.total)}</td><td className="r">{['pending', 'ready'].includes(a.status) ? inr(a.total - a.deposit) : '—'}</td></tr>)}</tbody></table></div>}
+        </div>)}
+    </Modal>
+  );
+}
+function Customers({ manager, openInvoice }) {
   const { toast } = useApp();
-  const [q, setQ] = useState(''); const [per, setPer] = usePeriod('all'); const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [modal, setModal] = useState(null);
+  const [q, setQ] = useState(''); const [per, setPer] = usePeriod('all'); const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [modal, setModal] = useState(null); const [view, setView] = useState(null);
   const load = useCallback(() => api('/admin/pos/customers?q=' + encodeURIComponent(q)).then(r => { setRows(r); setErr() }).catch(e => setErr(e.message)), [q]);
   useEffect(() => { const t = setTimeout(load, 200); return () => clearTimeout(t) }, [load]);
   const shown = (rows || []).filter(c => inPeriod(c.createdAt, per));
@@ -574,9 +622,10 @@ function Customers({ manager }) {
       <section className="dpos-card">
         {!rows ? <Empty>Loading…</Empty> : !shown.length ? <Empty>No customers yet. They are added automatically when you bill with a mobile number.</Empty> : (
           <div className="dpos-tw"><table><thead><tr><th>Name</th><th>Mobile</th><th>Date of birth</th><th className="r">Bills</th><th className="r">Spent</th><th /></tr></thead>
-            <tbody>{shown.map(c => <tr key={c.id}><td><b>{c.name || '—'}</b></td><td>{c.phone}</td><td>{c.dob ? dmy(c.dob) : <span className="muted">—</span>}</td><td className="r">{c.bills}</td><td className="r">{inr(c.spent)}</td>
-              <td className="r" style={{ whiteSpace: 'nowrap' }}>{manager && <><button className="dpos-btn ghost sm" onClick={() => setModal(c)}>Edit</button> <button className="dpos-btn danger sm" onClick={() => del(c)}>Delete</button></>}</td></tr>)}</tbody></table></div>)}
+            <tbody>{shown.map(c => <tr key={c.id} className="click" tabIndex={0} onClick={() => setView(c)} onKeyDown={e => e.key === 'Enter' && setView(c)}><td><b>{c.name || '—'}</b></td><td>{c.phone}</td><td>{c.dob ? dmy(c.dob) : <span className="muted">—</span>}</td><td className="r">{c.bills}</td><td className="r">{inr(c.spent)}</td>
+              <td className="r" style={{ whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}><button className="dpos-btn ghost sm" onClick={() => setView(c)}>View</button>{manager && <> <button className="dpos-btn ghost sm" onClick={() => setModal(c)}>Edit</button> <button className="dpos-btn danger sm" onClick={() => del(c)}>Delete</button></>}</td></tr>)}</tbody></table></div>)}
       </section>
+      {view && <CustomerHistory c={view} openInvoice={openInvoice} onClose={() => setView(null)} onEdit={manager ? () => { setModal(view); setView(null) } : null} />}
       {modal && <CustomerModal c={modal.id ? modal : null} onClose={() => setModal(null)} onDone={() => { toast('Customer saved.'); load() }} />}
     </>
   );
@@ -588,6 +637,49 @@ function Customers({ manager }) {
 // ============================ birthdays ============================
 
 // ============================ delivery & GST settings ============================
+// Delivery charge rules for the online store: distance bands from the shop, free-delivery threshold, cheaper tiers for bigger orders.
+function DeliveryRulesCard() {
+  const { toast } = useApp();
+  const [r, setR] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
+  useEffect(() => { api('/admin/pos/delivery-rules').then(x => setR({ ...x, bands: x.bands.map(b => ({ upToKm: String(b.upToKm), fee: rupees(b.fee) })), orderTiers: (x.orderTiers || []).map(t => ({ minOrder: rupees(t.minOrder), fee: rupees(t.fee) })), freeOver: rupees(x.freeOver || 0), perKmBeyond: rupees(x.perKmBeyond || 0), maxKm: String(x.maxKm || 0) })).catch(e => setErr(e.message)) }, []);
+  if (!r) return err ? <p className="dpos-err" role="alert">{err}</p> : null;
+  const band = (i, p) => setR({ ...r, bands: r.bands.map((b, n) => n === i ? { ...b, ...p } : b) });
+  const tier = (i, p) => setR({ ...r, orderTiers: r.orderTiers.map((b, n) => n === i ? { ...b, ...p } : b) });
+  const save = async e => {
+    e.preventDefault(); setBusy(true); setErr();
+    try {
+      const body = { enabled: r.enabled, storePostal: r.storePostal.trim(), freeOver: toPaise(r.freeOver), maxKm: Math.max(0, +r.maxKm || 0), perKmBeyond: toPaise(r.perKmBeyond),
+        bands: r.bands.filter(b => +b.upToKm > 0).map(b => ({ upToKm: +b.upToKm, fee: toPaise(b.fee) })), orderTiers: r.orderTiers.filter(t => toPaise(t.minOrder) > 0).map(t => ({ minOrder: toPaise(t.minOrder), fee: toPaise(t.fee) })) };
+      await api('/admin/pos/delivery-rules', { method: 'PUT', body }); toast('Delivery rules saved.');
+    } catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
+  };
+  return (
+    <form className="dpos-card" onSubmit={save} style={{ marginTop: 16 }}>
+      <h2><Icon n="truck" />Online delivery charge (by distance &amp; order)</h2>
+      <label style={{ display: 'flex', gap: 10, alignItems: 'center', margin: '4px 0 12px' }}><input type="checkbox" checked={r.enabled} onChange={e => setR({ ...r, enabled: e.target.checked })} /><span>Charge for delivery</span></label>
+      <div className="dpos-grid">
+        <label className="f">Shop postal code (distance starts here)<input inputMode="numeric" maxLength={6} value={r.storePostal} onChange={e => setR({ ...r, storePostal: e.target.value.replace(/\D/g, '') })} placeholder="6 digits" /></label>
+        <label className="f">Free delivery when the order is at least (S$, 0 = never)<input inputMode="decimal" value={r.freeOver} onChange={e => setR({ ...r, freeOver: e.target.value })} /></label>
+        <label className="f">Do not deliver beyond (km, 0 = no limit)<input inputMode="decimal" value={r.maxKm} onChange={e => setR({ ...r, maxKm: e.target.value })} /></label>
+        <label className="f">Extra per km beyond the last band (S$)<input inputMode="decimal" value={r.perKmBeyond} onChange={e => setR({ ...r, perKmBeyond: e.target.value })} /></label>
+      </div>
+      <p className="dpos-flabel">DISTANCE BANDS</p>
+      {r.bands.map((b, i) => (
+        <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}><span className="muted small">Up to</span><input aria-label="Up to km" style={{ maxWidth: 110 }} inputMode="decimal" value={b.upToKm} onChange={e => band(i, { upToKm: e.target.value })} /><span className="muted small">km → S$</span><input aria-label="Fee" style={{ maxWidth: 130 }} inputMode="decimal" value={b.fee} onChange={e => band(i, { fee: e.target.value })} />
+          <button type="button" className="dpos-btn ghost sm" aria-label="Remove band" disabled={r.bands.length < 2} onClick={() => setR({ ...r, bands: r.bands.filter((_, n) => n !== i) })}>✕</button></div>))}
+      <button type="button" className="dpos-btn ghost sm" onClick={() => setR({ ...r, bands: [...r.bands, { upToKm: '', fee: '' }] })}>+ Add band</button>
+      <p className="dpos-flabel">ORDER VALUE TIERS (bigger orders pay at most this)</p>
+      {r.orderTiers.map((t, i) => (
+        <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}><span className="muted small">Order of S$</span><input aria-label="Minimum order" style={{ maxWidth: 130 }} inputMode="decimal" value={t.minOrder} onChange={e => tier(i, { minOrder: e.target.value })} /><span className="muted small">or more → delivery at most S$</span><input aria-label="Fee" style={{ maxWidth: 130 }} inputMode="decimal" value={t.fee} onChange={e => tier(i, { fee: e.target.value })} />
+          <button type="button" className="dpos-btn ghost sm" aria-label="Remove tier" onClick={() => setR({ ...r, orderTiers: r.orderTiers.filter((_, n) => n !== i) })}>✕</button></div>))}
+      <button type="button" className="dpos-btn ghost sm" onClick={() => setR({ ...r, orderTiers: [...r.orderTiers, { minOrder: '', fee: '' }] })}>+ Add tier</button>
+      <p className="sub" style={{ marginTop: 10 }}>Distance is the straight line between the shop and the customer’s postal code. If it cannot be worked out, the first band applies.</p>
+      <Err>{err}</Err>
+      <div style={{ marginTop: 12 }}><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save delivery rules'}</button></div>
+    </form>
+  );
+}
+
 function Settings({ onSaved }) {
   const [s, setS] = useState(null); const [err, setErr] = useState(); const [ok, setOk] = useState(false); const [busy, setBusy] = useState(false);
   useEffect(() => { api('/admin/pos/settings').then(setS).catch(e => setErr(e.message)) }, []);
@@ -643,6 +735,7 @@ function Settings({ onSaved }) {
         <div><button className="dpos-btn" disabled={busy} type="submit">{busy ? 'Saving…' : 'Save settings'}</button></div>
         </div>
       </form>
+      <DeliveryRulesCard />
       <LoginPasswordCard />
       <StaffAccessCard />
     </div>
@@ -679,16 +772,20 @@ export default function AdminPos() {
     analytics: <Analytics channel="retail" openInvoice={openInvoice} tick={tick} goExpenses={goExpenses} />,
     advance: <AdvanceOrders manager={manager} tick={tick} onBilled={onBilled} />,
     measurements: <PosMeasurements />,
+    stitching: <StitchingDashboard openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} goBilling={() => nav('/admin/billing?new=stitching')} goTab={t => nav('/admin/billing/' + t)} />,
+    'stitching-orders': <StitchingOrders openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} />,
+    'stitching-reports': <StitchingReports />,
     orders: <OrderHistory manager={manager} tick={tick} openInvoice={openInvoice} onChanged={() => setTick(t => t + 1)} />,
-    inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} />, coupons: <PosCoupons />, birthdays: <PosBirthdays shop={shop} CustomerModal={CustomerModal} />,
+    inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />, birthdays: <PosBirthdays shop={shop} CustomerModal={CustomerModal} />,
     expenses: <PosExpenses />, settings: <Settings onSaved={loadShop} />,
   }[tab];
   const sub = {
+    stitching: 'Stitching work at a glance: what is due, what is late and what it earned', 'stitching-orders': 'Every bill with stitching and every open advance order, with due dates and status', 'stitching-reports': 'Stitching revenue by garment and by day',
     billing: 'Quick invoice generator · stock synced with the online store · for in-store (offline) and online-order billing', analytics: 'Real-time store & channel insights', advance: 'Orders booked with a deposit, billed when the customer collects', orders: 'Manage and track past invoices',
     inventory: 'Manage products and stock — add, edit and adjust', customers: 'Customer details with date of birth', coupons: 'Create discount codes and send them to customers on WhatsApp. Applies to the product subtotal only.', birthdays: 'Customers to wish and reward',
     expenses: 'Record spending by category and see your real net profit', settings: 'POS logo, shop details on bills, GST number and delivery quick picks',
   }[tab];
-  const title = { billing: 'POS Billing Panel', analytics: 'POS Analytics', orders: 'Order History', measurements: 'Measurements', inventory: 'Inventory', advance: 'Advance Orders', customers: 'Customers', coupons: 'Coupon Management', birthdays: 'Date of Birth', expenses: 'Expense Tracker', settings: 'Settings' }[tab];
+  const title = { billing: 'POS Billing Panel', analytics: 'POS Analytics', orders: 'Order History', measurements: 'Measurements', stitching: 'Stitching Dashboard', 'stitching-orders': 'Stitching Orders', 'stitching-reports': 'Stitching Reports', inventory: 'Inventory', advance: 'Advance Orders', customers: 'Customers', coupons: 'Coupon Management', birthdays: 'Date of Birth', expenses: 'Expense Tracker', settings: 'Settings' }[tab];
   return (
     <AdminShell title={title} sub={sub}>
       <Err>{err}</Err>

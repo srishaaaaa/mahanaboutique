@@ -21,12 +21,15 @@ export const inPeriod = (iso, v) => { if (!iso) return false; const d = String(i
 export const usePeriod = (initial = 'all') => useState(() => chipValue(initial));
 
 export function PeriodFilter({ value, onChange }) {
+  const custom = value.p === 'custom';
   return (
     <div className="dpos-pf">
       <div className="dpos-pg" role="radiogroup" aria-label="Period"><span className="lab">Period:</span>
-        {PERIODS.map(([p, l]) => <button key={p} role="radio" aria-checked={value.p === p} className={value.p === p ? 'on' : ''} onClick={() => onChange(chipValue(p))}>{l}</button>)}</div>
-      <div className="dpos-pg dates"><label><span className="lab">From:</span><input type="date" max={todayStr()} value={value.from} onChange={e => onChange({ ...value, p: 'custom', from: e.target.value })} aria-label="From date" /></label>
-        <label><span className="lab">To:</span><input type="date" max={todayStr()} value={value.to} onChange={e => onChange({ ...value, p: 'custom', to: e.target.value })} aria-label="To date" /></label></div>
+        {PERIODS.map(([p, l]) => <button key={p} role="radio" aria-checked={value.p === p} className={value.p === p ? 'on' : ''} onClick={() => onChange(chipValue(p))}>{l}</button>)}
+        <button role="radio" aria-checked={custom} className={custom ? 'on' : ''} onClick={() => onChange({ p: 'custom', from: value.from || todayStr(), to: value.to || todayStr() })}>Custom</button>
+        {custom && <span className="dates"><label><span className="lab">From:</span><input type="date" max={todayStr()} value={value.from} onChange={e => onChange({ ...value, p: 'custom', from: e.target.value })} aria-label="From date" /></label>
+          <label><span className="lab">To:</span><input type="date" max={todayStr()} value={value.to} onChange={e => onChange({ ...value, p: 'custom', to: e.target.value })} aria-label="To date" /></label></span>}
+      </div>
     </div>
   );
 }

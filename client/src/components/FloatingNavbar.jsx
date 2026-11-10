@@ -87,6 +87,8 @@ export default function FloatingNavbar() {
   const [anchor, setAnchor] = useState(null); // x of the link the open dropdown hangs from
   const [mega, setMega] = useState(null); // which dropdown is open: 'collections' | 'categories' | null
   const closeT = useRef();
+  // Logo / Home always land on the top of the home page, even when already on it (e.g. scrolled to Shop Story).
+  const toTop = () => { setMega(null); scrollTo({ top: 0, behavior: 'smooth' }) };
 
   useEffect(() => { const f = () => setScrolled(scrollY > 60); f(); addEventListener('scroll', f, { passive: true }); return () => removeEventListener('scroll', f) }, []);
   useEffect(() => setMega(null), [pathname, hash]);
@@ -100,12 +102,12 @@ export default function FloatingNavbar() {
         onMouseLeave={later} onMouseEnter={() => mega && open(mega)}>
         <div className="hdr">
           <button className="icon-btn burger" onClick={() => setMenuOpen(true)} aria-label="Open menu"><svg width="22" height="22" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.4" fill="none" aria-hidden="true"><path d="M3 8h18M3 16h18" /></svg></button>
-          <Wordmark className="hdr-logo" />
+          <Wordmark className="hdr-logo" onClick={toTop} />
           <nav className="primary" aria-label="Primary">
             {LINKS.map(({ label, to, mega: hasMega, on: isOn }) => {
               const on = isOn(pathname, hash);
               const link = (
-                <Link key={to} to={to} className={on ? 'active' : ''} aria-current={on ? 'page' : undefined} onMouseEnter={hasMega ? e => open(hasMega, e.currentTarget) : later} {...(hasMega ? { 'aria-haspopup': 'true', 'aria-expanded': mega === hasMega } : {})}>
+                <Link key={to} to={to} onClick={to === '/' ? toTop : undefined} className={on ? 'active' : ''} aria-current={on ? 'page' : undefined} onMouseEnter={hasMega ? e => open(hasMega, e.currentTarget) : later} {...(hasMega ? { 'aria-haspopup': 'true', 'aria-expanded': mega === hasMega } : {})}>
                   {on && <motion.i className="nav-pill" layoutId="nav-pill" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
                   <span>{label}</span>
                 </Link>

@@ -153,6 +153,12 @@ export default function Product() {
         </div>
       </div>
 
+      {p?.suggested?.length > 0 && (
+        <section className="related" aria-labelledby="look-h">
+          <Reveal><h2 id="look-h" className="serif">Complete the look</h2></Reveal>
+          <div className="pgrid cols-4">{p.suggested.map(r => <ProductCard key={r.id} p={r} />)}</div>
+        </section>
+      )}
       {related.length > 0 && (
         <section className="related" aria-labelledby="rel-h">
           <Reveal><h2 id="rel-h" className="serif">More from {p.category}</h2></Reveal>

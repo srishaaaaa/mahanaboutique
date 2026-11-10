@@ -32,3 +32,21 @@ test('New Arrival and Best Seller flags: set when adding, shown as home shelves 
   assert.equal((await o('PATCH', `/admin/pos/products/${list.id}`, { name: 'flag-one', price: 12000, taxRate: 9, status: 'active', newArrival: false })).status, 200);
   assert.equal((await pub('new')).total, before.n + 1);
 });
+
+test('a shelf keeps only the 10 newest flagged products', async () => {
+  const o = client(); await o('POST', '/auth/login', { email: 'owner@test.dev', password: 'OwnerPass123!' });
+  for (let i = 0; i < 12; i++) await o('POST', '/admin/products', { slug: `cap-${i}`, name: `cap-${i}`, price: 12000, gst_rate: 9, status: 'active', variants: [{ sku: `CAP${i}`, size: 'M', color: 'Red', stock: 1 }], best_seller: true });
+  const r = await fetch(base + '/products?flag=best&sort=newest&limit=24').then(x => x.json());
+  assert.equal(r.total, 10); assert.ok(r.items.some(p => p.slug === 'cap-11')); assert.ok(!r.items.some(p => p.slug === 'cap-0'));
+});
+
+test('suggested products ("Complete the look"): up to 4, ordered, shown on the product page', async () => {
+  const o = client(); await o('POST', '/auth/login', { email: 'owner@test.dev', password: 'OwnerPass123!' });
+  const mk = s => o('POST', '/admin/products', { slug: s, name: s, price: 12000, gst_rate: 9, status: 'active', variants: [{ sku: s.toUpperCase(), size: 'M', color: 'Red', stock: 2 }] });
+  const a = (await mk('look-main')).body.id; await mk('look-a'); await mk('look-b');
+  assert.equal((await o('PUT', `/admin/pos/products/${a}/suggested`, { slugs: ['look-b', 'look-a'] })).status, 200);
+  assert.deepEqual((await o('GET', `/admin/pos/products/${a}/suggested`)).body.map(x => x.slug), ['look-b', 'look-a']);
+  const page = await fetch(base + '/products/look-main').then(r => r.json());
+  assert.deepEqual(page.suggested.map(x => x.slug), ['look-b', 'look-a']);
+  assert.equal((await o('PUT', `/admin/pos/products/${a}/suggested`, { slugs: ['a', 'b', 'c', 'd', 'e'] })).status, 400);
+});

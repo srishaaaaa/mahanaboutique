@@ -15,7 +15,7 @@ export default function FlagShelf({ flag, id, eyebrow, title, sub }) {
       <div className="nx-in">
         <Reveal className="nx-head split">
           <div><Eyebrow>{eyebrow}</Eyebrow><h2 id={`${id}-h`} className="nx-h">{title}</h2><p className="nx-sub">{sub}</p></div>
-          <Link className="nx-more" to="/shop?sort=newest" data-cursor="VIEW">VIEW ALL <span aria-hidden="true">→</span></Link>
+          <Link className="nx-more" to={`/shop?flag=${flag}`} data-cursor="VIEW">VIEW ALL <span aria-hidden="true">→</span></Link>
         </Reveal>
         <Divider className="wide" />
         <ul className="nt-grid">{items.map((p, i) => <Item key={p.id} p={p} i={i} />)}</ul>

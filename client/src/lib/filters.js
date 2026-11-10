@@ -32,6 +32,7 @@ export function toQuery(f, base = {}, page = 1, limit = 12) {
   const p = new URLSearchParams();
   if (base.collection) p.set('collection', base.collection);
   if (base.q) p.set('q', base.q);
+  if (base.flag) p.set('flag', base.flag);
   if (f.category.length) p.set('category', f.category.join(','));
   if (f.material.length) p.set('material', f.material.join(','));
   if (f.size.length) p.set('size', f.size.join(','));

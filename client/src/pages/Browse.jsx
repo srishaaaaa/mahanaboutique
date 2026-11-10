@@ -8,6 +8,8 @@ import { useApp } from '../context/App';
 const empty = (msg, to = '/collections', label = 'ALL COLLECTIONS') => <div className="empty page-pad"><p className="serif big">{msg}</p><Link className="btn" to={to}>{label}</Link></div>;
 
 export function Shop() {
+  const [sp] = useSearchParams(); const flag = ['new', 'best'].includes(sp.get('flag')) ? sp.get('flag') : null;
+  if (flag) return <Catalog key={flag} base={{ flag }} title={flag === 'new' ? 'New Arrivals' : 'Best Sellers'} eyebrow={flag === 'new' ? 'JUST LANDED' : 'CUSTOMER FAVOURITES'} intro={flag === 'new' ? 'The newest pieces in the boutique.' : 'The pieces our customers love most.'} banner="shop" emptyNote="Nothing is flagged here yet." />;
   return <Catalog title="The Collection" eyebrow="SHOP" intro="Every piece, in one place." banner="shop" emptyNote="The collection is being prepared." />;
 }
 
