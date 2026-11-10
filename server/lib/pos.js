@@ -397,7 +397,7 @@ export const listProducts = async (db, q = '', onlyId = null) => {
   const costSql = (await hasCostColumns(db)) ? 'p.cost_price' : '0';
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   return rows(db, `
-    SELECT p.id, p.slug, p.name, p.status, p.base_price AS price, ${costSql}::int AS "costPrice", p.tax_rate AS "taxRate", p.description, p.material, p.featured, p.is_sample AS "isSample",
+    SELECT p.id, p.slug, p.name, p.status, p.base_price AS price, ${costSql}::int AS "costPrice", p.tax_rate AS "taxRate", p.description, p.material, p.featured, p.is_sample AS "isSample", p.low_stock_alert AS "lowAlert",
            COALESCE((SELECT json_agg(col.slug ORDER BY col.display_order) FROM collection_products cp JOIN collections col ON col.id = cp.collection_id WHERE cp.product_id = p.id), '[]'::json) AS collections,
            c.name AS category, c.slug AS "categorySlug",
            (SELECT image_url FROM product_images i WHERE i.product_id = p.id ORDER BY i.display_order, i.id LIMIT 1) AS image,

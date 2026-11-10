@@ -102,6 +102,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   const ws = channel === 'wholesale';
   const [q, setQ] = useState(''); const [results, setResults] = useState(null); const [searching, setSearching] = useState(false);
   const [lines, setLines] = useState(ws ? [blankCustom()] : []);
+  const { toast: say } = useApp(); const [flash, setFlash] = useState(null); const flashT = useRef();
   const [measureFor, setMeasureFor] = useState(null); // key of the service line whose Measurements window is open
   const [wsItems, setWsItems] = useState([]);
   const [cust, setCust] = useState({ name: '', phone: '', dob: '', address: '' }); const [billDate, setBillDate] = useState(todayStr()); const [source, setSource] = useState('offline');
@@ -154,7 +155,9 @@ function Billing({ channel, shop, onSale, onAdvance }) {
     if (cust.phone.replace(/\D/g, '').length < 10) return;
     try { const c = await api('/admin/pos/customers/lookup?phone=' + encodeURIComponent(cust.phone)); if (c) setCust(x => ({ ...x, name: x.name || c.name, dob: x.dob || c.dob || '' })) } catch { /* optional convenience */ }
   };
-  const add = v => setLines(ls => {
+  // Shows that the piece went onto the bill: a toast, a pulse on its row and the item count beside "Current order".
+  const add = v => { setFlash(v.variantId); clearTimeout(flashT.current); flashT.current = setTimeout(() => setFlash(null), 1600); say(`${v.name}${v.size && v.size !== 'Default' ? ` (${v.size})` : ''} added to the bill`); addLine(v) };
+  const addLine = v => setLines(ls => {
     const i = ls.findIndex(l => l.variantId === v.variantId);
     if (i >= 0) return ls.map((l, n) => n === i ? { ...l, qty: Math.min(l.qty + 1, v.stock) } : l);
     return [...ls, { key: uuid(), variantId: v.variantId, name: v.name, detail: [v.size, v.color !== 'Default' ? v.color : null].filter(Boolean).join(' · '), sku: v.sku, price: v.price, qty: 1, stock: v.stock, taxRate: v.taxRate }];
@@ -207,7 +210,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
 
   const measureLine = lines.find(l => l.key === measureFor);
   const lineEls = lines.map(l => (
-    <div className="dpos-line" key={l.key}>
+    <div className={`dpos-line ${flash && l.variantId === flash ? 'dpos-flash' : ''}`} key={l.key}>
       {l.custom ? (
         <div className="dpos-grid" style={{ gridTemplateColumns: 'minmax(150px,2fr) minmax(90px,1fr) 90px' }}>
           <input aria-label="Item name or description" placeholder={l.service ? 'Service (alteration, stitching…)' : 'Item name / description…'} list={ws ? 'dpos-ws-list' : undefined} value={l.name} onChange={e => patch(l.key, { name: e.target.value })} />
@@ -269,7 +272,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
       </div>
 
       <div className="dpos-col dpos-sticky">
-        <section className="dpos-card"><div className="dpos-head" style={{ marginBottom: 10 }}><h2 style={{ marginBottom: 0 }}><Icon n="orders" />Current order</h2>
+        <section className="dpos-card"><div className="dpos-head" style={{ marginBottom: 10 }}><h2 style={{ marginBottom: 0 }}><Icon n="orders" />Current order{priced.length > 0 && <span className={`dpos-count ${flash ? 'pop' : ''}`} aria-label={`${priced.reduce((t, l) => t + l.qty, 0)} items on the bill`}>{priced.reduce((t, l) => t + l.qty, 0)}</span>}</h2>
           {!ws && <div className="dpos-src" role="radiogroup" aria-label="Order source"><button role="radio" aria-checked={source === 'offline'} className={source === 'offline' ? 'on' : ''} onClick={() => setSource('offline')}>Offline (POS)</button><button role="radio" aria-checked={source === 'online'} className={source === 'online' ? 'on' : ''} onClick={() => setSource('online')}><i />Online order</button></div>}</div>
           <div className="dpos-box dpos-sum" style={{ marginBottom: 14 }}>
             <div><span>SOURCE</span><span className="dpos-pill">{ws ? 'Wholesale' : source === 'online' ? 'Online' : 'Offline'}</span></div>
