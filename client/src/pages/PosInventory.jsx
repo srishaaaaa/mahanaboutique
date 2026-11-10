@@ -129,7 +129,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
           </div>
           <label className="pe-ck"><input type="checkbox" checked={f.bestSeller} onChange={e => setF({ ...f, bestSeller: e.target.checked })} /> Show in “Best Sellers”</label>
           <p className="pe-hint">HOME PAGE SHOWS THE FIRST 4 TICKED, NEWEST FIRST</p>
-          <label className="pe-ck"><input type="checkbox" checked={f.featured} onChange={e => setF({ ...f, featured: e.target.checked })} /> Featured in Trending <span className="muted small">(used when no trending pieces are picked)</span></label>
+          <label className="pe-ck"><input type="checkbox" checked={f.featured} onChange={e => setF({ ...f, featured: e.target.checked })} /> Show in “Trending collections”</label>
           {cols.length > 0 && <div className="pe-cols">{cols.map(c => <label key={c.slug} className={`pe-col ${f.collections.includes(c.slug) ? 'on' : ''}`}><input type="checkbox" checked={f.collections.includes(c.slug)} onChange={() => toggleCol(c.slug)} />{c.name}</label>)}</div>}
           <h3 className="pe-h pe-h2">Inventory Alerts</h3>
           <label className="pe-l pe-narrow">LOW-STOCK ALERT AT<input inputMode="numeric" value={f.lowAlert} onChange={e => setF({ ...f, lowAlert: e.target.value.replace(/\D/g, '') })} /></label>
@@ -158,7 +158,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
 
 const blankVar = () => ({ size: '', color: '', price: '', cost: '', stock: '' });
 function AddModal({ categories, onClose, onDone }) {
-  const [f, setF] = useState({ name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
+  const [f, setF] = useState({ name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', featured: false, bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
   const [sug, setSug] = useState([]); const [vars, setVars] = useState([blankVar()]); const [files, setFiles] = useState([]); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const pick = useRef();
   const setV = (i, p) => setVars(v => v.map((x, n) => n === i ? { ...x, ...p } : x));
   const previews = useMemo(() => files.map(file => URL.createObjectURL(file)), [files]);
@@ -172,7 +172,7 @@ function AddModal({ categories, onClose, onDone }) {
     const rows = vars.filter(v => v.size.trim() || v.color.trim() || v.stock !== '' || v.price !== '');
     const list = rows.length ? rows : [{ size: '', color: '', price: '', stock: '' }];
     const payload = slug => ({ slug, name: f.name.trim(), description: f.description.trim(), category: f.cat || undefined, price: toPaise(f.price), ...(toPaise(f.cost) ? { cost_price: toPaise(f.cost) } : {}), gst_rate: +f.tax, status: f.status,
-      material: f.material.trim() || undefined, best_seller: f.bestSeller, low_stock_alert: Math.max(0, parseInt(f.lowAlert, 10) || 0),
+      material: f.material.trim() || undefined, featured: f.featured, best_seller: f.bestSeller, low_stock_alert: Math.max(0, parseInt(f.lowAlert, 10) || 0),
       variants: list.map(v => ({ size: v.size.trim() || 'Free Size', color: v.color.trim() || 'Default', sku: `${slug}-${slugify(v.size) || 'free'}-${slugify(v.color) || 'default'}`.toUpperCase(), stock: v.stock === '' ? dflt : Math.max(0, parseInt(v.stock, 10) || 0), ...(toPaise(v.price) ? { price: toPaise(v.price) } : {}), ...(toPaise(v.cost) ? { cost: toPaise(v.cost) } : {}) })) });
     try {
       let made;
@@ -208,6 +208,7 @@ function AddModal({ categories, onClose, onDone }) {
             <label className="pe-l">GST %<select value={f.tax} onChange={e => setF({ ...f, tax: e.target.value })}>{[0, 9].map(r => <option key={r} value={r}>{r}%</option>)}</select></label>
             <label className="pe-l">FABRIC / MATERIAL<input value={f.material} maxLength={80} onChange={e => setF({ ...f, material: e.target.value })} placeholder="e.g. Cotton" /></label>
           </div>
+          <label className="pe-ck"><input type="checkbox" checked={f.featured} onChange={e => setF({ ...f, featured: e.target.checked })} /> Show in “Trending collections”</label>
           <label className="pe-ck"><input type="checkbox" checked={f.bestSeller} onChange={e => setF({ ...f, bestSeller: e.target.checked })} /> Show in “Best Sellers”</label>
           <p className="pe-hint">HOME PAGE SHOWS THE FIRST 4 TICKED, NEWEST FIRST</p>
           <h3 className="pe-h pe-h2">Inventory Alerts</h3>
