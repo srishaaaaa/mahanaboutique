@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/App';
 import { Magnetic, Reveal } from '../components/Motion';
 import BoutiqueHero from '../components/hero/BoutiqueHero';
+import FeaturedCollections from '../components/FeaturedCollections';
 import Ticker from '../components/Ticker';
 import EditorialSection from '../components/EditorialSection';
 import CategoryCircles from '../components/CategoryCircles';
@@ -73,6 +74,7 @@ export default function Home() {
       <HomeFx />
       <BoutiqueHero />
       <Ticker />
+      <FeaturedCollections />
       <EditorialSection />
       <CategoryCircles />
       <Details />
