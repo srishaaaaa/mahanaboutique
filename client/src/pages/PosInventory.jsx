@@ -252,7 +252,7 @@ function ProductsStock({ manager, stocker }) {
 
   return (
     <>
-      <div className="inv-head"><div><h2>Inventory</h2><p>{list ? `${list.length} products` : '…'} · same catalog customers see</p></div>
+      <div className="inv-head"><div><p>{list ? `${list.length} products` : '…'} · same catalog customers see</p></div>
         <div className="inv-head-a">
           <button type="button" className={`inv-alerts ${needCount ? 'warn' : ''}`} onClick={() => setAlertOpen(true)}>🔔 Alerts{needCount > 0 && <b>{needCount}</b>}</button>
           {manager && <button type="button" className="inv-add" onClick={() => setModal({ t: 'add' })}><Icon n="plus" size={16} /> Add Product</button>}

@@ -127,7 +127,7 @@ export default function PosCoupons() {
   const shown = useMemo(() => (list || []).filter(c => matches(c, filter) && (!q.trim() || c.code.toLowerCase().includes(q.trim().toLowerCase()))), [list, filter, q]);
   return (
     <div className="cp">
-      <div className="cp-top"><div><h2>Coupon Management</h2><p className="sub">Create discount codes and send them to customers on WhatsApp. Applies to the product subtotal only.</p></div>
+      <div className="cp-top"><span />
         <div className="cp-top-a"><a className="cp-ref" href="/api/admin/pos/coupons/export" download><Icon n="doc" size={16} /> Download Excel</a><button type="button" className="cp-ref" onClick={load}><Icon n="refresh" size={16} /> Refresh</button></div></div>
       <div className="cp-kpis">
         <div className="cp-k"><div><span>TOTAL COUPONS</span><b>{list ? list.length : '…'}</b><small>Configured promotional codes</small></div><i><Icon n="tag" size={18} /></i></div>

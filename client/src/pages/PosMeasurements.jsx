@@ -52,7 +52,7 @@ export default function PosMeasurements() {
   return (
     <div className="ms">
       <div className="ms-top">
-        <div><h2>Measurements</h2><p className="sub">Tailoring measurements for each saved bill</p></div>
+        <span />
         <div className="ms-top-a"><PeriodFilter value={per} onChange={setPer} />
           <ExportCsv name="measurements" header={['Invoice', 'Date', 'Customer', 'Mobile', 'Status', 'Item', 'Price (S$)', 'Measurements']}
             rows={bills.flatMap(b => b.items.map(i => [b.invoiceNo, b.billDate, b.customerName, b.customerPhone, STATUS[b.status], i.name, (i.lineTotal / 100).toFixed(2), measureSummary(i.measure)]))} /></div>
