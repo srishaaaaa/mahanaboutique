@@ -28,10 +28,34 @@ const EyeIcon = () => <Ico><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z
 const TrashIcon = () => <Ico><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6" /></Ico>;
 
 // ============================ order history ============================
+// Quick details for one bill (the eye button): who, when, what and the full split-up. "View invoice" opens the invoice preview.
+function OrderQuick({ r, onClose, openInvoice }) {
+  const [sale, setSale] = useState(null); const [err, setErr] = useState();
+  useEffect(() => { api('/admin/pos/sales/' + encodeURIComponent(r.invoiceNo)).then(x => setSale(x.sale || x)).catch(e => setErr(e.message)) }, [r.invoiceNo]);
+  return (
+    <div className="dpos-modal" role="dialog" aria-modal="true" aria-label={`Order ${r.invoiceNo}`} onMouseDown={e => e.target === e.currentTarget && onClose()}>
+      <div className="dpos-mbox oq">
+        <div className="oq-h"><b>{r.invoiceNo}</b><span className="oq-tag">{r.source === 'online' ? 'ONLINE' : 'IN-STORE'}</span><button type="button" aria-label="Close" onClick={onClose}>✕</button></div>
+        <div className="oq-g">
+          <div><small>CUSTOMER</small><b>{r.customerName || 'Guest'}</b></div><div><small>PHONE</small><b>{r.customerPhone || '—'}</b></div>
+          <div><small>DATE</small><b>{longDate(r.billDate)}</b></div><div><small>STATUS</small><b>{r.status === 'voided' ? 'Void' : 'Completed'}</b></div>
+        </div>
+        {err && <p className="dpos-err" role="alert">{err}</p>}
+        {!sale && !err ? <p className="muted">Loading…</p> : sale && (
+          <div className="oq-box">
+            {sale.items.map((i, n) => <div key={n} className="oq-it"><span>{i.name}{i.variant?.size ? ` (${i.variant.size})` : ''} <small>× {i.quantity}</small></span><b>{money(i.lineTotal)}</b></div>)}
+            <BillSummary bill={sale} />
+          </div>)}
+        <div className="oq-f"><button type="button" className="dpos-btn ghost" onClick={onClose}>Close</button><button type="button" className="dpos-btn" onClick={() => { onClose(); openInvoice(r.invoiceNo, r) }}>View invoice</button></div>
+      </div>
+    </div>
+  );
+}
+
 export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
   const [f, setF] = useState({ q: '', name: '', phone: '', source: 'all' }); const [per, setPer] = usePeriod('all');
   const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [n, setN] = useState(0);
-  const [openNo, setOpenNo] = useState(null); const [detail, setDetail] = useState(null);
+  const [openNo, setOpenNo] = useState(null); const [detail, setDetail] = useState(null); const [quick, setQuick] = useState(null);
   const toggle = no => { if (openNo === no) { setOpenNo(null); return } setOpenNo(no); setDetail(null); api('/admin/pos/sales/' + encodeURIComponent(no)).then(d => setDetail(d.sale || d)).catch(e => setErr(e.message)) };
   const [from, to] = periodRange(per);
   useEffect(() => {
@@ -79,12 +103,13 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                 <td className="r"><div className="dpos-rowact">
                   <span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Void' : 'Completed'}</span>
                   <a className="ra wa" title="Send invoice on WhatsApp" aria-label="Send on WhatsApp" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
-                  <a className="ra doc" title="Open invoice in a new tab" aria-label="Open invoice" href={`/invoice/${r.shareToken}`} target="_blank" rel="noopener noreferrer"><DocIcon /></a>
-                  <button className="ra eye" title="View invoice" aria-label="View invoice" onClick={() => openInvoice(r.invoiceNo, r)}><EyeIcon /></button>
+                  <a className="ra doc" title="Preview the invoice" aria-label="Preview invoice" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}><DocIcon /></a>
+                  <button className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(r)}><EyeIcon /></button>
                   {manager && <button className="ra del" title="Void this invoice" aria-label="Void invoice" disabled={r.status === 'voided'} onClick={() => voidIt(r)}><TrashIcon /></button>}
                 </div></td></tr>
               {openNo === r.invoiceNo && <tr className="dpos-xrow"><td colSpan={7}>{!detail ? <span className="muted">Loading…</span> : <div className="dpos-xsum"><BillSummary bill={detail} /></div>}</td></tr>}</Fragment>) })}</tbody></table></div>)}
       </section>
+      {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={openInvoice} />}
     </>
   );
 }

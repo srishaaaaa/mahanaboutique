@@ -11,6 +11,7 @@ import PosInventory from './PosInventory';
 import { AccentPicker, LoginPasswordCard, StaffAccessCard, StockAlertsCard, LowStockAlert } from '../components/PosSettingsParts';
 import PosExpenses from './PosExpenses';
 import PosCoupons from './PosCoupons';
+import { InvoicePreview } from './InvoicePage';
 import PosBirthdays from './PosBirthdays';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
 import { Chips, PeriodFilter, inPeriod, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
@@ -651,7 +652,8 @@ export default function AdminPos() {
   useEffect(() => { if (allowed) loadShop() }, [allowed, loadShop]);
   useEffect(() => { document.documentElement.style.setProperty('--pos-accent', shop?.accent || ''); return () => document.documentElement.style.removeProperty('--pos-accent') }, [shop?.accent]);
   // The invoice is a page of its own (/invoice/<token>): print it, share it, copy its link.
-  const openInvoice = useCallback((no, row) => row?.shareToken ? nav('/invoice/' + row.shareToken) : api('/admin/pos/sales/' + encodeURIComponent(no)).then(x => nav('/invoice/' + x.shareToken)).catch(e => setErr(e.message)), [nav]);
+  const [pv, setPv] = useState(null); // invoice preview window
+  const openInvoice = useCallback((no, row) => setPv({ invoiceNo: no, token: row?.shareToken || null }), []);
 
   if (!authReady) return <div className="page-pad"><p className="muted">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
@@ -681,6 +683,7 @@ export default function AdminPos() {
       <Err>{err}</Err>
       {body}
       {allowed && <LowStockAlert />}
+      {pv && <InvoicePreview token={pv.token} invoiceNo={pv.invoiceNo} onClose={() => setPv(null)} />}
       {done && <BillDone sale={done} shop={shop} onClose={() => setDone(null)} />}
       {advDone && <AdvanceDone adv={advDone} shop={shop} onClose={() => setAdvDone(null)} onView={() => { setAdvDone(null); nav('/admin/billing/advance') }} />}
     </AdminShell>

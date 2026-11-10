@@ -202,3 +202,29 @@
 .pe-addrow { padding: 13px 22px; border-radius: 12px; background: #111; color: #fff; font-weight: 800 }
 .pe-save { display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px } .pe-cancel { padding: 16px 26px; border-radius: 16px; background: #fff; border: 1px solid rgba(0, 0, 0, .14); font-weight: 800 }
 .pe-savebtn { padding: 18px 34px; border-radius: 16px; background: #141414; color: #fff; font-weight: 800; font-size: 17px; box-shadow: 0 16px 30px -14px rgba(0, 0, 0, .6) } .pe-savebtn:disabled { opacity: .6 }
+
+/* ======== Admin at 80%: the default size for every admin page (same as browser zoom 80%), with compact tiles ======== */
+.dpos { zoom: .8; min-height: calc(100vh / .8) }
+.dpos-side { max-height: calc((100vh - 48px) / .8) }
+.dpos-k4 { gap: 10px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) }
+.dpos .dpos-card2 { padding: 12px 15px; gap: 6px; min-height: 0; border-radius: 16px }
+.dpos .dpos-card2 .t { font-size: 11px } .dpos .dpos-card2 .ic { width: 28px; height: 28px }
+.dpos .dpos-card2 .v { font-size: 22px } .dpos .dpos-card2 .v.txt { font-size: 16px } .dpos .dpos-card2 .s { font-size: 11px } .dpos .dpos-card2 .s.more { margin-top: 2px }
+.dpos .cost-card { padding: 14px 18px; gap: 6px; border-radius: 16px } .dpos .cost-card b { font-size: 24px } .dpos .cc-t i { width: 30px; height: 30px }
+.dpos .dpos-formula { padding: 8px 14px; border-radius: 12px; font-size: 13px }
+.dpos .cp-k, .dpos .cp-kpis > div { padding: 12px 16px }
+.dpos .dpos-card { padding: 16px 18px }
+@media (max-width: 859px) { .dpos { zoom: 1; min-height: 100vh } .dpos-side { max-height: none } }
+
+/* ======== Order History: quick details (eye) and invoice preview ======== */
+.oq { width: min(640px, calc(100% - 24px)); padding: 26px 28px 22px; border-radius: 26px; background: #fff; display: grid; gap: 16px }
+.oq-h { display: flex; align-items: center; gap: 12px } .oq-h b { font-size: 22px; flex: 1 } .oq-h button { width: 34px; height: 34px; border-radius: 50%; font-size: 17px; color: #777 }
+.oq-tag { padding: 5px 12px; border-radius: 999px; border: 1px solid #f4a8b3; background: #fff1f3; color: #d6244a; font: 800 12px var(--d-sans, inherit); letter-spacing: .06em }
+.oq-g { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; padding-top: 14px; border-top: 1px solid #eee } .oq-g small { display: block; font: 800 11px var(--d-sans, inherit); letter-spacing: .14em; color: #9a968f; margin-bottom: 3px } .oq-g b { font-size: 17px }
+.oq-box { border: 1px solid #e7e4de; border-radius: 16px; padding: 6px 16px; max-height: 44vh; overflow: auto } .oq-it { display: flex; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid #eee } .oq-it small { color: #9a968f }
+.oq-f { display: flex; justify-content: flex-end; gap: 10px }
+.inv-pv { position: fixed; inset: 0; z-index: 300; background: rgba(0, 0, 0, .55); display: grid; place-items: center; padding: 22px }
+.inv-pv-box { width: min(1000px, 100%); max-height: 100%; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; background: #f6f6f7; box-shadow: 0 40px 90px -20px rgba(0, 0, 0, .6) }
+.inv-pv-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; background: #141414; color: #fff; font: 800 13px Arial, sans-serif; letter-spacing: .06em } .inv-pv-h > span:first-child { display: inline-flex; align-items: center; gap: 10px }
+.inv-pv-a { display: flex; gap: 8px } .inv-pv-a button { padding: 9px 14px; border-radius: 9px; background: rgba(255, 255, 255, .14); color: #fff; font: 700 13px Arial, sans-serif; cursor: pointer; border: 0 }
+.inv-pv-body { flex: 1; overflow: auto; min-height: 0; padding: 22px 22px 30px !important }

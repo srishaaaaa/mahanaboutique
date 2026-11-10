@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useApp } from '../context/App';
 import PrintSettings, { readPrintPrefs } from '../components/PrintSettings';
@@ -14,7 +14,7 @@ const phoneShown = p => { const d = String(p || '').replace(/\D/g, ''); return d
 const amt = v => v < 0 ? `- ${money(-v)}` : money(v);
 
 // The full A4 / A5 invoice.
-function A4Doc({ sale, shop }) {
+export function A4Doc({ sale, shop }) {
   const showGst = shop.gstin && shop.showGst?.[sale.channel];
   const terms = String(shop.terms || '').split('\n').map(t => t.trim()).filter(Boolean);
   return (
@@ -252,6 +252,25 @@ export default function InvoicePage() {
       {fmt === 'thermal' ? <Thermal sale={sale} shop={shop} paper={paper} /> : <A4Doc sale={sale} shop={shop} />}
       {ps && <PrintSettings onClose={() => setPs(false)} onPrint={printNow} />}
       {retOpen && <ReturnModal sale={sale} onClose={() => setRetOpen(false)} />}
+    </div>
+  );
+}
+
+// Invoice preview inside the admin page: the invoice as it prints, with "Open Full Page" for the page of its own. No page change, no refresh.
+export function InvoicePreview({ token, invoiceNo, onClose }) {
+  const nav = useNavigate();
+  const [tok, setTok] = useState(token || null); const [d, setD] = useState(null); const [err, setErr] = useState();
+  useEffect(() => { if (!tok && invoiceNo) api('/admin/pos/sales/' + encodeURIComponent(invoiceNo)).then(x => setTok((x.sale || x).shareToken)).catch(e => setErr(e.message)) }, [tok, invoiceNo]);
+  useEffect(() => { if (tok) api('/invoice/' + encodeURIComponent(tok)).then(setD).catch(e => setErr(e.message)) }, [tok]);
+  useEffect(() => { const k = e => e.key === 'Escape' && onClose(); document.addEventListener('keydown', k); const o = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.removeEventListener('keydown', k); document.body.style.overflow = o } }, [onClose]);
+  const no = d?.kind === 'return' ? d.ret.returnNo : d?.sale?.invoiceNo || invoiceNo || '';
+  return (
+    <div className="inv-pv" role="dialog" aria-modal="true" aria-label="Invoice preview" onMouseDown={e => e.target === e.currentTarget && onClose()}>
+      <div className="inv-pv-box">
+        <div className="inv-pv-h"><span><PrintIcon size={16} /> INVOICE PREVIEW • #{no}</span>
+          <span className="inv-pv-a">{tok && <button type="button" onClick={() => { onClose(); nav('/invoice/' + tok) }}>Open Full Page ↗</button>}<button type="button" aria-label="Close" onClick={onClose}>✕</button></span></div>
+        <div className="inv-page inv-pv-body">{err ? <p className="inv-err">{err}</p> : !d ? <p className="inv-err">Loading invoice…</p> : d.kind === 'return' ? <ReturnA4 ret={d.ret} shop={d.shop} /> : <A4Doc sale={d.sale} shop={d.shop} />}</div>
+      </div>
     </div>
   );
 }
