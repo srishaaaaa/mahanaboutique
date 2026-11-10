@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ExportCsv from '../components/ExportCsv';
 import { Link, Navigate } from 'react-router-dom';
 import { api, uploadImage } from '../lib/api';
 import { useApp } from '../context/App';
@@ -217,7 +218,7 @@ export function AdminEnquiries() {
         <p className="muted adm-help">Enquiries sent from the website. Call or WhatsApp the customer, then mark the enquiry as contacted or closed.</p>
         {err && <p role="alert" className="err">{err}</p>}
         {!rows && !err && <p className="muted">Loading…</p>}
-        <div className="dpos-bar-tools"><Chips label="Status" value={st} onChange={setSt} options={[['all', 'All'], ['new', 'New'], ['contacted', 'Contacted'], ['closed', 'Closed']]} /><PeriodFilter value={per} onChange={setPer} /></div>
+        <div className="dpos-bar-tools"><Chips label="Status" value={st} onChange={setSt} options={[['all', 'All'], ['new', 'New'], ['contacted', 'Contacted'], ['closed', 'Closed']]} /><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="enquiries" header={['Name', 'Type', 'Status', 'Phone', 'Email', 'Message', 'Date']} rows={(rows || []).filter(e => inPeriod(e.created_at, per) && (st === 'all' || e.status === st)).map(e => [e.name, e.kind, e.status, e.phone || '', e.email || '', e.message || '', String(e.created_at).slice(0, 10)])} /></div>
         {rows && !rows.some(e => inPeriod(e.created_at, per) && (st === 'all' || e.status === st)) && <p className="muted">No enquiries here.</p>}
         <ul className="adm-enq">{rows?.filter(e => inPeriod(e.created_at, per) && (st === 'all' || e.status === st)).map(e => (
           <li key={e.id} className={e.status}>

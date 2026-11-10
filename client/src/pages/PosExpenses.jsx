@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import ExportCsv from '../components/ExportCsv';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import { useApp } from '../context/App';
@@ -37,7 +38,8 @@ export default function PosExpenses() {
 
   return (
     <div className="ex">
-      <div className="ex-top"><span /><PeriodFilter value={per} onChange={setPer} /></div>
+      <div className="ex-top"><span className="ex-top-a"><button type="button" className="dpos-btn outline" onClick={() => setManage(true)}>⚙ Manage categories</button>
+        <ExportCsv name="expenses" header={['Date', 'Expense', 'Category', 'Amount (S$)', 'Paid by', 'Notes']} rows={shown.map(x => [x.date, x.title, x.category, (x.amount / 100).toFixed(2), x.paymentMode, x.notes || ''])} /></span><PeriodFilter value={per} onChange={setPer} /></div>
       {err && <p className="dpos-err" role="alert">{err}</p>}
       <div className="ex-kpis">
         <div className="ex-k big"><span>TOTAL EXPENSES</span><b>{inr(total)}</b><small>{per.p === 'all' ? 'ALL TIME' : String(per.p || 'PERIOD').toUpperCase()}</small></div>

@@ -255,3 +255,13 @@
 .dpos .f, .dpos .field { gap: 8px }
 .dpos label.f, .dpos .cp-l, .dpos .pe-l { font-size: 12px; letter-spacing: .1em }
 .dpos-btn { font-weight: 600; font-size: 14px; padding: 12px 20px }
+
+/* Order History: GST and payment filters */
+.oh-chips { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center } .oh-chips > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.oh-chips b { font-size: 11px; letter-spacing: .14em; color: #b4730a; margin-right: 4px }
+.oh-chips button { padding: 9px 16px; border-radius: 999px; background: #fff; border: 1px solid var(--d-line, #e5e4e0); font-weight: 700; font-size: 13px } .oh-chips button.on { background: #111; color: #fff; border-color: #111 }
+
+/* Admin footer on every admin page */
+.dpos-foot { margin: 20px -8px -4px; padding: 16px 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; border-top: 1px solid var(--d-line, #e5e4e0); background: #f1efea; color: #8d8a84; font: 600 12.5px 'Poppins', system-ui, sans-serif; letter-spacing: .06em }
+.dpos-foot b { color: #3c3a37; font-weight: 700 } .dpos-foot em { font-style: italic; font-weight: 700; color: #6d6a64; letter-spacing: 0; font-size: 13.5px }
+@media (max-width: 700px) { .dpos-foot { justify-content: center; text-align: center } }

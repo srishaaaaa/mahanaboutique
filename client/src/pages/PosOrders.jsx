@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import ExportCsv from '../components/ExportCsv';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
@@ -53,14 +54,14 @@ function OrderQuick({ r, onClose, openInvoice }) {
 }
 
 export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
-  const [f, setF] = useState({ q: '', name: '', phone: '', source: 'all' }); const [per, setPer] = usePeriod('all');
+  const [f, setF] = useState({ q: '', name: '', phone: '', source: 'all', gst: 'all', payment: 'all' }); const [per, setPer] = usePeriod('all');
   const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [n, setN] = useState(0);
   const [openNo, setOpenNo] = useState(null); const [detail, setDetail] = useState(null); const [quick, setQuick] = useState(null);
   const toggle = no => { if (openNo === no) { setOpenNo(null); return } setOpenNo(no); setDetail(null); api('/admin/pos/sales/' + encodeURIComponent(no)).then(d => setDetail(d.sale || d)).catch(e => setErr(e.message)) };
   const [from, to] = periodRange(per);
   useEffect(() => {
     const t = setTimeout(() => {
-      const p = new URLSearchParams({ q: f.q, name: f.name, phone: f.phone, source: f.source, channel: 'retail' }); if (manager) { p.set('from', from); p.set('to', to) }
+      const p = new URLSearchParams({ q: f.q, name: f.name, phone: f.phone, source: f.source, gst: f.gst, payment: f.payment, channel: 'retail' }); if (manager) { p.set('from', from); p.set('to', to) }
       api('/admin/pos/sales?' + p).then(r => { setRows(r); setErr() }).catch(e => setErr(e.message));
     }, 220);
     return () => clearTimeout(t);
@@ -88,6 +89,10 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
         <label className="f">Customer phone<input value={f.phone} inputMode="tel" onChange={set('phone')} placeholder="Search phone…" /></label>
         <label className="f">Order source<select value={f.source} onChange={set('source')}><option value="all">All Sources</option><option value="offline">Offline</option><option value="online">Online</option></select></label>
       </section>
+      <div className="oh-chips">
+        <div role="group" aria-label="GST filter">{[['all', 'All bills'], ['gst', 'GST invoices'], ['nongst', 'Non-GST bills']].map(([v, l]) => <button key={v} type="button" className={f.gst === v ? 'on' : ''} aria-pressed={f.gst === v} onClick={() => setF({ ...f, gst: v })}>{l}</button>)}</div>
+        <div role="group" aria-label="Payment filter"><b>PAYMENT</b>{[['all', 'All methods'], ['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']].map(([v, l]) => <button key={v} type="button" className={f.payment === v ? 'on' : ''} aria-pressed={f.payment === v} onClick={() => setF({ ...f, payment: v })}>{l}</button>)}</div>
+      </div>
       <Err>{err}</Err>
       <section className="dpos-card dpos-ordcard">
         {!rows ? <Empty>Loading…</Empty> : !rows.length ? <Empty>No orders match.</Empty> : (
@@ -241,7 +246,7 @@ export function AdvanceOrders({ manager, tick, onBilled, initialCode }) {
         <label className="adv-search"><Ico size={17}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></Ico><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search by ID, customer, phone, product or status" aria-label="Search advance orders" /></label>
         <div className="adv-chips" role="group" aria-label="Status">{[['all', 'ALL'], ['pending', 'PENDING'], ['ready', 'READY'], ['completed', 'COMPLETED'], ['cancelled', 'CANCELLED']].map(([v, l]) => <button key={v} type="button" className={st === v ? 'on' : ''} aria-pressed={st === v} onClick={() => setSt(v)}>{l}</button>)}</div>
       </div>
-      <div className="dpos-bar-tools"><PeriodFilter value={per} onChange={setPer} /></div>
+      <div className="dpos-bar-tools"><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="advance-orders" header={['Order', 'Customer', 'Mobile', 'Status', 'Delivery date', 'Total (S$)', 'Advance paid (S$)', 'Balance due (S$)']} rows={(rows || []).map(a => [a.code, a.customerName, a.customerPhone, a.status, a.deliveryDate || '', (a.total / 100).toFixed(2), (a.deposit / 100).toFixed(2), (a.balance / 100).toFixed(2)])} /></div>
       <Err>{err}</Err>
       <section className="dpos-card">
         {!rows ? <Empty>Loading…</Empty> : !shown.length ? <Empty>No advance orders here. Add items in Billing and press “Save as advance order”.</Empty> : (

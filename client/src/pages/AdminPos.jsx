@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ExportCsv from '../components/ExportCsv';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
@@ -410,6 +411,7 @@ function ProductsBoard({ rep }) {
   return (
     <section className="dpos-card">
       <div className="an-head"><h2>Product Sales Leaderboard</h2>
+        <ExportCsv name="product-sales" header={['Rank', 'Product', 'Qty sold', 'Revenue (S$)', 'Market share %']} rows={rows.map(p => [p.rank, p.name, p.qty, (p.revenue / 100).toFixed(2), (p.revenue / total * 100).toFixed(1)])} />
         <label className="an-search"><SearchGlyph /><span className="sr">Search product</span><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search product…" /></label></div>
       {!rep ? <Empty>Loading…</Empty> : !all.length ? <Empty>No sales in this period.</Empty> : !rows.length ? <Empty>No product matches.</Empty> : (
         <div className="dpos-tw"><table><thead><tr><th>Rank</th><th>Product name</th><th className="r">Qty sold</th><th className="r">Revenue</th><th>Market share</th></tr></thead>
@@ -559,7 +561,7 @@ function Customers({ manager }) {
   return (
     <>
       <div className="dpos-bar-tools"><input type="search" style={{ maxWidth: 320 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search name or mobile…" aria-label="Search customers" />
-        {manager && <PeriodFilter value={per} onChange={setPer} />}<button className="dpos-btn" onClick={() => setModal({})}><Icon n="plus" size={16} />Add customer</button></div>
+        {manager && <PeriodFilter value={per} onChange={setPer} />}<ExportCsv name="customers" header={['Name', 'Mobile', 'Date of birth', 'Loyalty member', 'Bills', 'Spent (S$)', 'Notes']} rows={shown.map(c => [c.name, c.phone, c.dob || '', c.loyalty ? 'Yes' : 'No', c.bills, (c.spent / 100).toFixed(2), c.notes || ''])} /><button className="dpos-btn" onClick={() => setModal({})}><Icon n="plus" size={16} />Add customer</button></div>
       <Err>{err}</Err>
       <section className="dpos-card">
         {!rows ? <Empty>Loading…</Empty> : !shown.length ? <Empty>No customers yet. They are added automatically when you bill with a mobile number.</Empty> : (

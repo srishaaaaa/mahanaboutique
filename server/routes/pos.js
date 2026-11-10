@@ -122,7 +122,7 @@ export default function pos({ db, auth }) {
     res.status(sale.duplicate ? 200 : 201).json(sale);
   }));
   r.get('/pos/sales', biller, wrap(async (req, res) => {
-    const f = z.object({ q: text(80).default(''), name: text(80).default(''), phone: text(20).default(''), source: z.enum(['all', 'offline', 'online']).default('all'), from: date.optional(), to: date.optional(), channel, gst: gstFilter }).parse(req.query);
+    const f = z.object({ q: text(80).default(''), name: text(80).default(''), phone: text(20).default(''), source: z.enum(['all', 'offline', 'online']).default('all'), from: date.optional(), to: date.optional(), channel, gst: gstFilter, payment: z.enum(['all', 'cash', 'upi', 'card', 'split']).default('all') }).parse(req.query);
     // Cashiers only see today's bills; owner/admin can search the full history.
     if (req.user.role === 'cashier') f.from = f.to = today();
     res.json(await listSales(db, f));

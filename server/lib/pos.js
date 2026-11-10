@@ -247,7 +247,7 @@ export async function voidSale(db, user, invoice, reason) {
 
 const dayExpr = 's.bill_date';
 
-export function listSales(db, { q = '', name = '', phone = '', source = 'all', from, to, channel = 'retail', gst = 'all', limit = 100 }) {
+export function listSales(db, { q = '', name = '', phone = '', source = 'all', from, to, channel = 'retail', gst = 'all', payment = 'all', limit = 100 }) {
   const w = [], a = [];
   const add = v => { a.push(v); return '$' + a.length };
   w.push(`s.channel = ${add(channel)}`);
@@ -256,6 +256,7 @@ export function listSales(db, { q = '', name = '', phone = '', source = 'all', f
   if (phone.trim()) w.push(`regexp_replace(s.customer_phone, '\\D', '', 'g') LIKE ${add(`%${phone.replace(/\D/g, '')}%`)}`);
   if (source === 'offline' || source === 'online') w.push(`s.source = ${add(source)}`);
   if (gst === 'gst') w.push('s.is_gst'); else if (gst === 'nongst') w.push('NOT s.is_gst');
+  if (['cash', 'upi', 'card', 'split'].includes(payment)) w.push(`s.payment_mode = ${add(payment)}`);
   if (from) w.push(`${dayExpr} >= ${add(from)}::date`);
   if (to) w.push(`${dayExpr} <= ${add(to)}::date`);
   return rows(db, `
