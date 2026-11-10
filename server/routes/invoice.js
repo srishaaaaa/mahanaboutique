@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { HttpError, wrap } from '../lib/http.js';
+import { one } from '../db/index.js';
 import { getSaleByToken, shopInfo } from '../lib/pos.js';
 
 // The shareable invoice link (WhatsApp / copy link). Anyone holding the unguessable token can read that one invoice, nothing else:
@@ -19,6 +20,14 @@ export default function invoicePublic({ db }) {
         couponCode: s.couponCode, tax: s.tax, deliveryFee: s.deliveryFee, total: s.total, paymentMode: s.paymentMode, payCash: s.payCash, payUpi: s.payUpi, payCard: s.payCard,
         cashTendered: s.cashTendered, change: s.change, notes: s.notes, items: s.items, ...(s.advance ? { advance: s.advance } : {}) },
     });
+  }));
+  // The coupon card a customer opens from WhatsApp: only what is printed on the coupon, never usage counts or who it was sent to.
+  r.get('/coupon/:code', limiter, wrap(async (req, res) => {
+    const c = await one(db, 'SELECT code, discount_type, discount_value, min_order, expires_on::text AS expires_on, active, sent_only, audience FROM pos_coupons WHERE upper(code) = upper($1)', [String(req.params.code).slice(0, 40)]);
+    if (!c) throw new HttpError(404, 'This coupon link is not valid');
+    res.set('Cache-Control', 'no-store');
+    const shop = await shopInfo(db);
+    res.json({ shop: { name: shop.name, phone: shop.phone }, coupon: { code: c.code, discountType: c.discount_type, discountValue: c.discount_value, minOrder: c.min_order, expiresOn: c.expires_on, active: c.active && !(c.expires_on && c.expires_on < new Date().toISOString().slice(0, 10)), sentOnly: c.sent_only, audience: c.audience } });
   }));
   return r;
 }

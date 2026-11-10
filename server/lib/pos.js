@@ -51,6 +51,21 @@ export function couponProblem(c, subtotal) {
   return null;
 }
 
+// Who may use a coupon: everyone, loyalty members only, non-members only, and optionally only the phones the coupon was sent to.
+export async function couponAccessProblem(q, c, phone) {
+  if (!c || (c.audience === 'everyone' && !c.sent_only)) return null;
+  const p = normPhone(phone);
+  if (c.sent_only) {
+    if (!p || !(await one(q, 'SELECT 1 AS x FROM pos_coupon_sends WHERE coupon_id = $1 AND phone = $2', [c.id, p]))) return 'This coupon is only for the customers it was sent to';
+  }
+  if (c.audience !== 'everyone') {
+    const cust = p ? await one(q, 'SELECT loyalty FROM pos_customers WHERE phone = $1', [p]) : null, member = !!cust?.loyalty;
+    if (c.audience === 'loyalty' && !member) return 'This coupon is for loyalty members only';
+    if (c.audience === 'non_loyalty' && member) return 'This coupon is not available to loyalty members';
+  }
+  return null;
+}
+
 // Short, easy-to-read references: INV-2026-G3AKL for bills, DEP-20261026-8207 for advance orders. Look-alike characters (0/O, 1/I) are left out.
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const randCode = n => Array.from(crypto.randomBytes(n), b => CODE_CHARS[b % CODE_CHARS.length]).join('');
@@ -163,7 +178,7 @@ export async function createSale(db, user, d) {
       let { discountType, discountValue } = d, couponCode = null;
       if (d.couponCode) {
         const c = await one(t, 'SELECT * FROM pos_coupons WHERE upper(code) = upper($1) FOR UPDATE', [d.couponCode]);
-        const problem = couponProblem(c, lines.reduce((s, l) => s + l.price * l.qty, 0));
+        const problem = couponProblem(c, lines.reduce((s, l) => s + l.price * l.qty, 0)) ?? await couponAccessProblem(t, c, d.customerPhone);
         if (problem) throw new HttpError(400, problem, 'bad_coupon');
         ({ discount_type: discountType, discount_value: discountValue, code: couponCode } = c);
         await t.query('UPDATE pos_coupons SET used_count = used_count + 1 WHERE id = $1', [c.id]);
@@ -326,7 +341,7 @@ export function birthdays(db, days = 30) {
 export const listCustomers = (db, q = '') => {
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   return rows(db, `
-    SELECT c.id, c.name, c.phone, c.dob::text AS dob, c.notes, c.created_at AS "createdAt",
+    SELECT c.id, c.name, c.phone, c.dob::text AS dob, c.notes, c.loyalty, c.created_at AS "createdAt",
            COALESCE(st.bills, 0)::int AS bills, COALESCE(st.spent, 0)::int AS spent
     FROM pos_customers c
     LEFT JOIN LATERAL (SELECT COUNT(*) AS bills, SUM(s.total_amount) AS spent FROM pos_sales s WHERE s.status = 'completed' AND ${PHONE_SQL('s.customer_phone')} = c.phone) st ON true

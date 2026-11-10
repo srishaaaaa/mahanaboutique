@@ -116,3 +116,41 @@
   .inv-ps-row { grid-template-columns: 1fr 1fr } .inv-ps-foot { gap: 14px }
 }
 .adm-alt { width: 100%; padding: 7px 10px; border: 1px solid #e3e1e6; border-radius: 10px; font: inherit; font-size: 12px }
+
+/* ---- Coupon management ---- */
+.cp { max-width: 1280px; margin: 0 auto }
+.cp-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap } .cp-top h2 { margin: 0; font-size: clamp(28px, 3vw, 40px); font-weight: 800 }
+.cp-top-a { display: flex; gap: 10px; flex-wrap: wrap } .cp-ref { text-decoration: none; color: inherit }
+.cp-note { display: flex; gap: 10px; align-items: center; padding: 14px 18px; border-radius: 14px; background: #eaf4fd; border: 1px solid #cfe4f7; color: #0d5a99; font-weight: 600; font-size: 14px }
+.cp-two { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start } @media (max-width: 1000px) { .cp-two { grid-template-columns: 1fr } }
+.cp-card { padding: clamp(20px, 2.4vw, 32px); border-radius: 26px; background: #fffdf8; border: 1px solid rgba(0, 0, 0, .08); display: grid; gap: 14px; align-content: start }
+.cp-card h3 { margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px } .cp-plus { font-size: 26px; font-weight: 400 }
+.cp-l { display: grid; gap: 8px; font: 800 12px var(--d-sans, inherit); letter-spacing: .14em; color: #2a2723 } .cp-l em { color: #b4730a; font-style: normal }
+.cp-l input, .cp-code input { padding: 15px 18px; border-radius: 14px; border: 0; background: #f3efe4; font: 500 16px inherit; width: 100% }
+.cp-code { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 14px; background: #f3efe4 } .cp-code input { background: transparent; padding: 10px 12px }
+.cp-code button { padding: 11px 20px; border-radius: 10px; background: #9a7120; color: #fff; font-weight: 800 }
+.cp-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px } @media (max-width: 560px) { .cp-g2 { grid-template-columns: 1fr } }
+.cp-type { display: inline-flex; gap: 6px; padding: 4px; border-radius: 12px; background: #f3efe4; justify-self: start } .cp-type button { padding: 8px 16px; border-radius: 9px; font-weight: 800; font-size: 13px } .cp-type button.on { background: #111; color: #fff }
+.cp-aud { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px } @media (max-width: 700px) { .cp-aud { grid-template-columns: 1fr } }
+.cp-aud button { text-align: left; padding: 16px 16px; border-radius: 14px; background: #fff; border: 1px solid rgba(0, 0, 0, .12); display: grid; gap: 4px; align-content: start } .cp-aud b { font-size: 16px } .cp-aud small { color: #6d6a64; font-size: 13px; line-height: 1.35 }
+.cp-aud button.on { background: #fff6dd; border-color: #e0a52b; box-shadow: 0 0 0 2px rgba(224, 165, 43, .35) }
+.cp-sw { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 14px; background: #f6f2e8 } .cp-sw b { display: block } .cp-sw small { display: block; color: #6d6a64; margin-top: 3px }
+.cp-go { padding: 18px; border-radius: 14px; background: #9a7120; color: #fff; font-weight: 800; font-size: 16px; box-shadow: 0 14px 26px -14px rgba(154, 113, 32, .8) } .cp-go:disabled { opacity: .6 }
+.cp-lh { display: flex; align-items: center; justify-content: space-between } .cp-n { display: inline-grid; place-items: center; min-width: 28px; height: 28px; border-radius: 999px; background: #111; color: #fff; font-size: 14px; padding: 0 8px }
+.cp-filters { display: flex; flex-wrap: wrap; gap: 8px } .cp-filters button { padding: 9px 16px; border-radius: 999px; background: #fff; border: 1px solid rgba(0, 0, 0, .12); font-weight: 700; font-size: 14px } .cp-filters small { opacity: .6; margin-left: 2px } .cp-filters button.on { background: #111; color: #fff; border-color: #111 }
+.cp-search { display: flex; align-items: center; gap: 10px; padding: 0 16px; border-radius: 14px; background: #f3efe4 } .cp-search input { flex: 1; border: 0; background: transparent; padding: 15px 0; font: 500 16px inherit; outline: 0 }
+.cp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px } .cp-list li { padding: 20px; border-radius: 18px; background: #fff; border: 1px solid rgba(0, 0, 0, .08); display: grid; gap: 6px } .cp-list li.off { opacity: .7 }
+.cp-r1 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap } .cp-mono { font-family: ui-monospace, 'SF Mono', Consolas, monospace; letter-spacing: .04em } .cp-c { font-size: 20px }
+.cp-st { padding: 4px 10px; border-radius: 6px; background: #eee; color: #666; font: 800 11px var(--d-sans, inherit); letter-spacing: .08em } .cp-st.on { background: #e3f4e8; color: #1f7a45 } .cp-st.only { background: #fdf0d8; color: #8a5a0a }
+.cp-d { margin: 0; font-size: 22px; font-weight: 800; color: #9a7120 } .cp-d small { font-size: 15px; font-weight: 600; color: #4a4742 } .cp-u { margin: 0; color: #6d6a64; font-size: 14px }
+.cp-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center }
+.cp-b { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 10px; font: 800 14px var(--d-sans, inherit); letter-spacing: .03em } .cp-b.outline { border: 1px solid #1fa463; color: #12834c; background: #fff } .cp-b.wa { background: #22c55e; color: #fff } .cp-b.dark { background: #0b0b0e; color: #fff } .cp-b.light { background: #eee; color: #444 }
+.cp-i { width: 44px; height: 44px; border-radius: 10px; border: 1px solid rgba(0, 0, 0, .14); background: #fff; display: grid; place-items: center }
+.cp-send { display: grid; gap: 14px } .cp-help { margin: 0; color: #5d5a54; line-height: 1.5 }
+.cp-warn { margin: 0; padding: 14px 16px; border-radius: 12px; background: #fff6dd; border: 1px solid #f1dd9c; color: #8a4a10; font-size: 14px; line-height: 1.45 }
+.cp-send-act { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 10px } @media (max-width: 560px) { .cp-send-act { grid-template-columns: 1fr } }
+.cp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, .15); background: #fff; font-weight: 800; text-align: center } .cp-btn.wa { background: #22c55e; color: #fff; border-color: #22c55e } .cp-btn.pdf { color: #12834c; border-color: #1fa463 } .cp-btn.solid { background: #111; color: #fff } .cp-btn:disabled { opacity: .5 }
+.cp-rec { list-style: none; margin: 0; padding: 0; border: 1px solid rgba(0, 0, 0, .1); border-radius: 14px; overflow: hidden } .cp-rec li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid rgba(0, 0, 0, .08) } .cp-rec li:last-child { border: 0 } .cp-rec b { display: block; font-size: 17px } .cp-rec small { color: #6d6a64 }
+.cp-send-b { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; background: #22c55e; color: #fff; font-weight: 800 } .cp-send-b.again { background: #e3f4e8; color: #1f7a45; border: 1px solid #b6e1c3 }
+.cp-rec-foot { display: flex; justify-content: flex-end; margin-top: 14px }
+

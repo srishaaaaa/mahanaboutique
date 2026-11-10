@@ -169,7 +169,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   };
   const applyCoupon = async () => {
     setCouponMsg();
-    try { const c = await api(`/admin/pos/coupons/check?code=${encodeURIComponent(couponIn.trim())}&subtotal=${bill.subtotal}`); setCoupon(c); setCouponMsg({ ok: true, t: `Coupon ${c.code} applied` }) }
+    try { const c = await api(`/admin/pos/coupons/check?code=${encodeURIComponent(couponIn.trim())}&subtotal=${bill.subtotal}&phone=${encodeURIComponent(cust.phone || '')}`); setCoupon(c); setCouponMsg({ ok: true, t: `Coupon ${c.code} applied` }) }
     catch (e) { setCoupon(null); setCouponMsg({ ok: false, t: e.message }) }
   };
   const clearOrder = () => {
@@ -525,10 +525,10 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
 
 // ============================ customers (name, mobile, date of birth) ============================
 function CustomerModal({ c, onClose, onDone }) {
-  const [f, setF] = useState({ name: c?.name || '', phone: c?.phone || '', dob: c?.dob || '', notes: c?.notes || '' }); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
+  const [f, setF] = useState({ name: c?.name || '', phone: c?.phone || '', dob: c?.dob || '', notes: c?.notes || '', loyalty: !!c?.loyalty }); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
   const submit = async e => {
     e.preventDefault(); setBusy(true); setErr();
-    try { await api(c ? `/admin/pos/customers/${c.id}` : '/admin/pos/customers', { method: c ? 'PATCH' : 'POST', body: { name: f.name.trim(), phone: f.phone.trim(), dob: f.dob || null, notes: f.notes.trim() || null } }); onDone(); onClose() }
+    try { await api(c ? `/admin/pos/customers/${c.id}` : '/admin/pos/customers', { method: c ? 'PATCH' : 'POST', body: { name: f.name.trim(), phone: f.phone.trim(), dob: f.dob || null, notes: f.notes.trim() || null, loyalty: f.loyalty } }); onDone(); onClose() }
     catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
   };
   return (
@@ -537,6 +537,7 @@ function CustomerModal({ c, onClose, onDone }) {
         <label className="f">Customer name<input autoFocus value={f.name} onChange={e => setF({ ...f, name: e.target.value })} maxLength={120} /></label>
         <label className="f">Mobile number<input required inputMode="tel" value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} placeholder="10-digit number" /></label>
         <label className="f">Date of birth<input type="date" max={todayStr()} value={f.dob} onChange={e => setF({ ...f, dob: e.target.value })} /></label>
+        <label className="acc-check"><input type="checkbox" checked={f.loyalty} onChange={e => setF({ ...f, loyalty: e.target.checked })} /> Loyalty member (agreed to receive WhatsApp offers)</label>
         <label className="f">Notes (optional)<input value={f.notes} maxLength={300} onChange={e => setF({ ...f, notes: e.target.value })} /></label>
         <Err>{err}</Err>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}><button type="button" className="dpos-btn ghost" onClick={onClose}>Cancel</button><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save customer'}</button></div>

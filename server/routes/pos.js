@@ -4,7 +4,7 @@ import { one, rows } from '../db/index.js';
 import { HttpError, wrap } from '../lib/http.js';
 import { audit } from '../lib/orders.js';
 import { hasCostColumns } from '../lib/cost.js';
-import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
+import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, couponAccessProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
 const paise = z.number().int().min(0).max(100_000_000);
@@ -63,9 +63,10 @@ const couponBody = z.object({
   code: text(40).regex(/^[A-Za-z0-9_-]{3,40}$/, 'Use 3-40 letters, digits, - or _'),
   discountType: z.enum(['percent', 'fixed']), discountValue: z.number().int().min(1).max(100_000_000),
   minOrder: paise.default(0), expiresOn: date.nullable().default(null), usageLimit: z.number().int().min(1).nullable().default(null),
+  audience: z.enum(['everyone', 'non_loyalty', 'loyalty']).default('everyone'), sentOnly: z.boolean().default(false),
 }).refine(c => c.discountType !== 'percent' || c.discountValue <= 100, { message: 'Percent discount cannot exceed 100', path: ['discountValue'] });
 const wsItem = z.object({ code: text(60).min(1), company: text(120).default(''), colour: text(60).default('') });
-const customerBody = z.object({ name: text(120).default(''), phone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits'), dob: date.nullable().default(null), notes: text(300).nullable().default(null) });
+const customerBody = z.object({ loyalty: z.boolean().default(false), name: text(120).default(''), phone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits'), dob: date.nullable().default(null), notes: text(300).nullable().default(null) });
 const expenseBody = z.object({ title: text(120).min(1), category: text(60).default('General'), amount: z.number().int().min(1).max(100_000_000), paymentMode: z.enum(['cash', 'upi', 'card']).default('cash'), notes: text(300).nullable().default(null), date: date.optional() });
 const productPatch = z.object({ name: text(160).min(1), price: paise, costPrice: paise.optional(), taxRate: z.number().int().min(0).max(28), categorySlug: text(80).nullable().default(null), status: z.enum(['draft', 'active', 'archived']),
   description: text(4000).optional(), material: text(80).optional(), featured: z.boolean().optional(), collections: z.array(text(120).min(1)).max(50).optional() });
@@ -161,25 +162,60 @@ export default function pos({ db, auth }) {
   // ---- coupons ----
   r.get('/pos/coupons', manager, wrap(async (_req, res) => res.json(await rows(db, `
     SELECT id, code, discount_type AS "discountType", discount_value AS "discountValue", min_order AS "minOrder", expires_on::text AS "expiresOn",
-           usage_limit AS "usageLimit", used_count AS "usedCount", active FROM pos_coupons ORDER BY id DESC`))));
+           usage_limit AS "usageLimit", used_count AS "usedCount", active, audience, sent_only AS "sentOnly",
+           (SELECT COUNT(*) FROM pos_coupon_sends x WHERE x.coupon_id = pos_coupons.id)::int AS "sentCount" FROM pos_coupons ORDER BY id DESC`))));
+  // Spreadsheet export (CSV opens in Excel).
+  r.get('/pos/coupons/export', manager, wrap(async (_req, res) => {
+    const list = await rows(db, `SELECT code, discount_type, discount_value, min_order, expires_on::text AS expires, usage_limit, used_count, active, audience, sent_only FROM pos_coupons ORDER BY id DESC`);
+    const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = ['Code,Discount,Minimum order,Expires,Usage limit,Used,Status,Audience,Only sent customers',
+      ...list.map(c => [c.code, c.discount_type === 'percent' ? `${c.discount_value}%` : (c.discount_value / 100).toFixed(2), (c.min_order / 100).toFixed(2), c.expires || 'No expiry', c.usage_limit ?? 'Unlimited', c.used_count, c.active ? 'Active' : 'Inactive', c.audience, c.sent_only ? 'Yes' : 'No'].map(q).join(','))].join('\r\n');
+    res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="coupons.csv"' }).send('\ufeff' + csv);
+  }));
+  // Customers a coupon can be sent to (filtered by who the coupon is for) and whether it was already sent to each.
+  r.get('/pos/coupons/:id/recipients', manager, wrap(async (req, res) => {
+    const c = await one(db, 'SELECT id, audience FROM pos_coupons WHERE id = $1', [id.parse(req.params.id)]);
+    if (!c) throw new HttpError(404, 'Coupon not found');
+    res.json(await rows(db, `SELECT cu.id, cu.name, cu.phone, cu.loyalty, EXISTS (SELECT 1 FROM pos_coupon_sends s WHERE s.coupon_id = $1 AND s.phone = cu.phone) AS sent
+      FROM pos_customers cu WHERE cu.phone <> '' AND ($2 = 'everyone' OR ($2 = 'loyalty' AND cu.loyalty) OR ($2 = 'non_loyalty' AND NOT cu.loyalty)) ORDER BY cu.loyalty DESC, cu.name`, [c.id, c.audience]));
+  }));
+  // Record that a coupon was sent (or shared) to a customer. "Only for this customer" limits the coupon to the phones it was sent to.
+  r.post('/pos/coupons/:id/sends', manager, wrap(async (req, res) => {
+    const b = z.object({ phone: text(20).regex(/^[0-9+\-\s]+$/, 'Enter a valid phone number'), name: text(120).default(''), onlyThis: z.boolean().default(false) }).parse(req.body);
+    const p = normPhone(b.phone); if (!p) throw new HttpError(400, 'Enter a valid phone number');
+    const cid = id.parse(req.params.id);
+    if (!(await one(db, 'SELECT 1 AS x FROM pos_coupons WHERE id = $1', [cid]))) throw new HttpError(404, 'Coupon not found');
+    await db.query('INSERT INTO pos_coupon_sends (coupon_id, phone, name) VALUES ($1,$2,$3) ON CONFLICT (coupon_id, phone) DO UPDATE SET sent_at = now(), name = COALESCE(NULLIF(EXCLUDED.name, \'\'), pos_coupon_sends.name)', [cid, p, b.name]);
+    if (b.onlyThis) await db.query('UPDATE pos_coupons SET sent_only = true WHERE id = $1', [cid]);
+    await audit(db, req.user.id, 'pos.coupon.send', 'pos_coupon', cid, { phone: p });
+    res.json({ ok: true });
+  }));
   // Cashiers can validate a code at the till; the final check is repeated inside the sale transaction.
   r.get('/pos/coupons/check', biller, wrap(async (req, res) => {
-    const q = z.object({ code: text(40).min(1), subtotal: z.coerce.number().int().min(0) }).parse(req.query);
+    const q = z.object({ code: text(40).min(1), subtotal: z.coerce.number().int().min(0), phone: text(20).default('') }).parse(req.query);
     const c = await one(db, 'SELECT * FROM pos_coupons WHERE upper(code) = upper($1)', [q.code]);
-    const problem = couponProblem(c, q.subtotal);
+    const problem = couponProblem(c, q.subtotal) ?? await couponAccessProblem(db, c, q.phone);
     if (problem) throw new HttpError(400, problem, 'bad_coupon');
     res.json({ code: c.code, discountType: c.discount_type, discountValue: c.discount_value });
   }));
   r.post('/pos/coupons', manager, wrap(async (req, res) => {
     const c = couponBody.parse(req.body);
-    const row = await one(db, `INSERT INTO pos_coupons (code, discount_type, discount_value, min_order, expires_on, usage_limit) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
-      [c.code, c.discountType, c.discountValue, c.minOrder, c.expiresOn, c.usageLimit]).catch(e => { if (e.code === '23505') throw new HttpError(409, 'That coupon code already exists'); throw e });
+    const row = await one(db, `INSERT INTO pos_coupons (code, discount_type, discount_value, min_order, expires_on, usage_limit, audience, sent_only) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+      [c.code, c.discountType, c.discountValue, c.minOrder, c.expiresOn, c.usageLimit, c.audience, c.sentOnly]).catch(e => { if (e.code === '23505') throw new HttpError(409, 'That coupon code already exists'); throw e });
     await audit(db, req.user.id, 'pos.coupon.create', 'pos_coupon', row.id, { code: c.code });
     res.status(201).json({ id: row.id });
   }));
   r.patch('/pos/coupons/:id', manager, wrap(async (req, res) => {
+    const cid = id.parse(req.params.id);
+    if ('discountType' in req.body) { // full edit (the code itself never changes)
+      const c = couponBody.parse({ ...req.body, code: req.body.code ?? 'KEEP-IT' });
+      const u = await db.query('UPDATE pos_coupons SET discount_type = $2, discount_value = $3, min_order = $4, expires_on = $5, usage_limit = $6, audience = $7, sent_only = $8 WHERE id = $1 RETURNING id',
+        [cid, c.discountType, c.discountValue, c.minOrder, c.expiresOn, c.usageLimit, c.audience, c.sentOnly]);
+      if (!u.rows.length) throw new HttpError(404, 'Coupon not found');
+      return res.json({ ok: true });
+    }
     const { active } = z.object({ active: z.boolean() }).parse(req.body);
-    const u = await db.query('UPDATE pos_coupons SET active = $2 WHERE id = $1 RETURNING id', [id.parse(req.params.id), active]);
+    const u = await db.query('UPDATE pos_coupons SET active = $2 WHERE id = $1 RETURNING id', [cid, active]);
     if (!u.rows.length) throw new HttpError(404, 'Coupon not found');
     res.json({ ok: true });
   }));
@@ -201,13 +237,13 @@ export default function pos({ db, auth }) {
   r.post('/pos/customers', biller, wrap(async (req, res) => {
     const c = customerBody.parse(req.body); const p = normPhone(c.phone);
     if (!p) throw new HttpError(400, 'Enter a valid mobile number');
-    const row = await one(db, 'INSERT INTO pos_customers (name, phone, dob, notes) VALUES ($1,$2,$3,$4) RETURNING id', [c.name, p, c.dob, c.notes]).catch(dupCustomer);
+    const row = await one(db, 'INSERT INTO pos_customers (name, phone, dob, notes, loyalty) VALUES ($1,$2,$3,$4,$5) RETURNING id', [c.name, p, c.dob, c.notes, c.loyalty]).catch(dupCustomer);
     res.status(201).json({ id: row.id });
   }));
   r.patch('/pos/customers/:id', manager, wrap(async (req, res) => {
     const c = customerBody.parse(req.body); const p = normPhone(c.phone);
     if (!p) throw new HttpError(400, 'Enter a valid mobile number');
-    const row = await one(db, 'UPDATE pos_customers SET name = $2, phone = $3, dob = $4, notes = $5, updated_at = now() WHERE id = $1 RETURNING id', [id.parse(req.params.id), c.name, p, c.dob, c.notes]).catch(dupCustomer);
+    const row = await one(db, 'UPDATE pos_customers SET name = $2, phone = $3, dob = $4, notes = $5, loyalty = $6, updated_at = now() WHERE id = $1 RETURNING id', [id.parse(req.params.id), c.name, p, c.dob, c.notes, c.loyalty]).catch(dupCustomer);
     if (!row) throw new HttpError(404, 'Customer not found');
     res.json({ ok: true });
   }));
