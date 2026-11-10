@@ -110,7 +110,7 @@ test('payments: totals computed server-side; only a valid signature marks an ord
   const c = client(); const v = await variantOf('banarasi-silk-saree', 'M');
   await c('POST', '/cart/items', { variantId: v });
   const co = await c('POST', '/checkout', { email: 'buyer@test.dev', address, total: 1, items: [{ price: 1 }] }); // tampered fields ignored
-  assert.equal(co.status, 200); assert.equal(co.body.total, 1850000 + Math.round(1850000 * 0.05)); // free shipping above threshold
+  assert.equal(co.status, 200); assert.equal(co.body.total, 1850000); // free shipping above threshold
   const bad = await c('POST', '/payments/verify', { session_id: co.body.providerOrderId, payment_id: 'pay_1', signature: 'forged' });
   assert.equal(bad.status, 400);
   assert.equal((await db.query('SELECT payment_status p FROM orders WHERE order_number=$1', [co.body.orderNumber])).rows[0].p, 'pending');

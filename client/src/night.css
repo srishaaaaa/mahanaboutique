@@ -1425,3 +1425,20 @@
 .cat-tabs button { padding: 10px 20px; border-radius: 999px; border: 1px solid rgba(201, 137, 122, .5); background: #fff; color: #141c38; font: 700 12px var(--n-sans, inherit); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .25s, color .25s }
 .cat-tabs button:hover { background: #fbeee9 }
 .cat-tabs button.on { background: #2d1a3a; color: #fff; border-color: #2d1a3a }
+
+/* Checkout: bag on the left, details and payment on the right */
+.checkout { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 26px clamp(28px, 4vw, 64px); max-width: 1280px; margin: 0 auto }
+.checkout .co-head { grid-column: 1 / -1; display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap }
+.checkout .co-head h1 { margin: 0 }
+.co-steps { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; font: 700 11px var(--n-sans, inherit); letter-spacing: .16em; text-transform: uppercase }
+.co-steps li { padding: 8px 16px; border-radius: 999px; background: #f1ecf4; color: #7a6a86 } .co-steps li.done { background: #f6e3dc; color: #a65f4e } .co-steps li.on { background: #2d1a3a; color: #fff }
+.co-bag { background: #fff; border: 1px solid rgba(201, 137, 122, .35); border-radius: 22px; padding: clamp(20px, 2.4vw, 32px); display: grid; gap: 16px; box-shadow: 0 22px 50px -30px rgba(45, 26, 58, .35) }
+.co-form { max-width: none !important; background: #fff; border: 1px solid rgba(201, 137, 122, .35); border-radius: 22px; padding: clamp(20px, 2.4vw, 32px); display: grid; gap: 14px; position: sticky; top: 100px; box-shadow: 0 22px 50px -30px rgba(45, 26, 58, .35) }
+.co-form .field input { background: #fbf8f6 }
+.bag-totals { margin: 0; display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(45, 26, 58, .12) }
+.bag-totals > div { display: flex; justify-content: space-between; gap: 12px; align-items: baseline } .bag-totals dt { margin: 0 } .bag-totals dd { margin: 0; font-weight: 700 } .bag-totals small { font-weight: 400; opacity: .65 }
+.bag-totals .grand { padding-top: 10px; border-top: 1px dashed rgba(45, 26, 58, .2); font-size: 20px } .bag-totals .grand dd { font-size: 24px }
+.bag-totals .gst-split { display: grid; gap: 6px; padding: 12px 14px; border-radius: 12px; background: #fbf3ef; font-size: 13px } .bag-totals .gst-split > p { margin: 0 0 2px; font: 700 10.5px var(--n-sans, inherit); letter-spacing: .16em; text-transform: uppercase; color: #a65f4e }
+.bag-totals .gst-split > div { display: flex; justify-content: space-between } .bag-totals .gst-split .sum { padding-top: 6px; border-top: 1px solid rgba(166, 95, 78, .25); font-weight: 700 }
+.co-trust { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 0; padding: 0; font-size: 12px; opacity: .75 } .co-trust li::before { content: '✓ '; color: #a65f4e; font-weight: 700 }
+@media (max-width: 859px) { .checkout { grid-template-columns: 1fr } .co-form { position: static } }

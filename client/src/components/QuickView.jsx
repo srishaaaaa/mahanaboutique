@@ -41,7 +41,7 @@ export default function QuickView() {
             <div className="quick-body">
               <p className="eyebrow">{quick.category}</p>
               <h2 className="serif">{quick.name}</h2>
-              <p className="price">{inr(quick.price)} <small>+ {quick.gst_rate}% GST</small></p>
+              <p className="price">{inr(quick.price)} <small>{quick.gst_rate > 0 ? `incl. ${quick.gst_rate}% GST` : 'GST-free'}</small></p>
               {quick.description && <p className="muted clamp">{quick.description}</p>}
               {state === 'loading' && <p className="muted">Checking availability…</p>}
               {state === 'error' && <p role="alert" className="err">Availability could not be loaded. Please try again.</p>}

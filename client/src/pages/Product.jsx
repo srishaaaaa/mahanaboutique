@@ -118,7 +118,7 @@ export default function Product() {
         <div className="pdp-info">
           <p className="eyebrow">{p.category}</p>
           <h1 className="serif">{p.name}</h1>
-          <p className="price big">{inr(variant?.price ?? (sizes.length && sizes.every(v => v.price === sizes[0].price) ? sizes[0].price : p.price))} <small>+ {p.gst_rate}% GST</small></p>
+          <p className="price big">{inr(variant?.price ?? (sizes.length && sizes.every(v => v.price === sizes[0].price) ? sizes[0].price : p.price))} <small>{p.gst_rate > 0 ? `incl. ${p.gst_rate}% GST` : 'GST-free'}</small></p>
 
           {colors.length > 1 && (
             <fieldset><legend className="eyebrow">Colour — {color}</legend>
@@ -137,8 +137,8 @@ export default function Product() {
           </div>
           {total < 1 && <p className="err small">This piece is currently sold out.</p>}
 
-          <Accordion title="Description" open><p>{p.description || 'Details for this piece will be added soon.'}</p></Accordion>
-          <Accordion title="Shipping"><p>Shipping is {inr(SHIPPING_FLAT)}, complimentary on bag totals above {inr(FREE_SHIPPING_AT)}. {p.gst_rate > 0 ? `GST at ${p.gst_rate}% is added at checkout, and the` : 'The'} final total is always calculated securely on our server.</p></Accordion>
+          <Accordion title="Description" open><p>{p.description || `${p.name}${p.category ? ` from our ${p.category} collection` : ''}. Full details for this piece will be added soon. Message us on WhatsApp for fabric, fit or styling questions.`}</p></Accordion>
+          <Accordion title="Shipping"><p>Shipping is {inr(SHIPPING_FLAT)}, and complimentary on bag totals above {inr(FREE_SHIPPING_AT)}. Orders are packed within 1–2 working days and delivered across Singapore. {p.gst_rate > 0 ? `The price shown includes ${p.gst_rate}% GST` : 'This piece carries no GST'}; the GST is itemised at checkout and on your bill. The final total is always calculated securely on our server.</p></Accordion>
         </div>
       </div>
 

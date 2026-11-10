@@ -69,12 +69,26 @@ export function issueFor(l) {
   return null;
 }
 
+// Shop prices include GST. The GST inside a price is price x rate / (100 + rate), worked out per line and grouped by rate
+// so the bill can show "GST 18%: x" with the taxable value alongside it.
+export function gstSplit(lines) {
+  const by = new Map();
+  for (const l of lines) {
+    const rate = Number(l.taxRate) || 0; if (!rate) continue;
+    const gross = l.price * l.qty, tax = Math.round(gross * rate / (100 + rate));
+    const r = by.get(rate) ?? { rate, gross: 0, base: 0, tax: 0 }; r.gross += gross; r.tax += tax; r.base += gross - tax; by.set(rate, r);
+  }
+  const byRate = [...by.values()].sort((a, b) => a.rate - b.rate);
+  return { byRate, included: byRate.reduce((s, r) => s + r.tax, 0) };
+}
+
 export async function cartView(db, cart) {
   const lines = cart ? await cartLines(db, cart.id) : [];
-  const items = lines.map(l => ({ variantId: l.variantId, slug: l.slug, name: l.name, size: l.size, color: l.color, price: l.price, qty: l.qty, stock: l.stock, image: l.image, issue: issueFor(l) }));
+  const items = lines.map(l => ({ variantId: l.variantId, slug: l.slug, name: l.name, size: l.size, color: l.color, price: l.price, taxRate: l.taxRate, qty: l.qty, stock: l.stock, image: l.image, issue: issueFor(l) }));
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
   const ship = await shippingFor(db, subtotal);
-  return { items, count: items.reduce((s, i) => s + i.qty, 0), subtotal, shipping: { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null }, hasIssues: items.some(i => i.issue) };
+  const shipping = { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null }, gst = gstSplit(items);
+  return { items, count: items.reduce((s, i) => s + i.qty, 0), subtotal, shipping, gst, total: subtotal + shipping.amount, hasIssues: items.some(i => i.issue) };
 }
 
 export async function setQuantity(db, cartId, variantId, quantity, { add = false } = {}) {

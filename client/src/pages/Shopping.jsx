@@ -4,7 +4,7 @@ import { useApp } from '../context/App';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import ProductCard from '../components/ProductCard3D';
-import { BagLines, ShippingNote } from '../components/CartDrawer';
+import { BagLines, BagTotals, ShippingNote } from '../components/CartDrawer';
 import GoogleSignIn from '../components/GoogleSignIn';
 
 export function Wishlist() {
@@ -98,15 +98,22 @@ export function Checkout() {
   if (!cart.length) return <Navigate to="/shop" replace />;
   return (
     <div className="checkout">
-      <form onSubmit={pay}>
-        <h1 className="serif">Checkout</h1>
+      <header className="co-head"><h1 className="serif">Checkout</h1>
+        <ol className="co-steps" aria-label="Checkout steps"><li className="done">Bag</li><li className="on">Details</li><li>Payment</li></ol></header>
+      <section className="co-bag" aria-label="Your bag">
+        <h2 className="eyebrow">Your bag · {cartInfo.count} {cartInfo.count === 1 ? 'item' : 'items'}</h2>
+        <BagLines compact />
+        <BagTotals />
+        <ul className="co-trust"><li>Prices include GST</li><li>Secure payment by Stripe</li><li>Totals calculated on our server</li></ul>
+      </section>
+      <form onSubmit={pay} className="co-form">
+        <h2 className="eyebrow">Delivery details</h2>
         {FIELDS.map(([k, l, ac]) => <label key={k} className="field"><span>{l}</span><input required autoComplete={ac} type={k === 'email' ? 'email' : 'text'} value={f[k]} onChange={set(k)} /></label>)}
         {cartInfo.hasIssues && <p role="alert" className="err">Some items in your bag are no longer available in the requested quantity. Please review your bag.</p>}
         {err && <p role="alert" className="err">{err}</p>}
-        <button className="btn solid wide" disabled={busy || cartInfo.hasIssues}>{busy ? 'OPENING SECURE PAYMENT…' : 'CONTINUE TO PAYMENT'}</button>
+        <button className="btn solid wide" disabled={busy || cartInfo.hasIssues}>{busy ? 'OPENING SECURE PAYMENT…' : `PAY ${inr(cartInfo.total ?? bagSubtotal)}`}</button>
         <p className="muted small">You will pay on Stripe's secure page by PayNow, card, GrabPay, Apple Pay or Google Pay. Totals and delivery are calculated on our server, and an order is confirmed only after Stripe confirms the payment.</p>
       </form>
-      <aside className="summary"><h2 className="eyebrow">Your bag</h2><BagLines compact /><div className="row between"><span>Subtotal</span><strong>{inr(bagSubtotal)}</strong></div><ShippingNote subtotal={bagSubtotal} /></aside>
     </div>
   );
 }

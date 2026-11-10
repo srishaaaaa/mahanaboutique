@@ -11,7 +11,26 @@ export function ShippingNote({ subtotal }) {
   const { cartInfo } = useApp();
   if (!subtotal) return null;
   const { amount, freeOver } = cartInfo.shipping;
-  return <p className="muted small">{amount === 0 ? 'Complimentary shipping applies.' : `Shipping ${inr(amount)}${freeOver != null ? ` — complimentary above ${inr(freeOver)}` : ''}.`} GST is calculated at checkout.</p>;
+  return <p className="muted small">{amount === 0 ? 'Complimentary shipping applies.' : `Shipping ${inr(amount)}${freeOver != null ? ` — complimentary above ${inr(freeOver)}` : ''}.`} Prices include GST.</p>;
+}
+
+// Subtotal, shipping, total and the GST contained in the total, split by rate. All figures come from the server's cart response.
+export function BagTotals() {
+  const { cartInfo } = useApp();
+  const { subtotal = 0, shipping = { amount: 0 }, gst = { byRate: [], included: 0 }, total = subtotal } = cartInfo;
+  if (!subtotal) return null;
+  return (
+    <dl className="bag-totals">
+      <div><dt>Subtotal <small>(incl. GST)</small></dt><dd>{inr(subtotal)}</dd></div>
+      <div><dt>Shipping</dt><dd>{shipping.amount === 0 ? 'Free' : inr(shipping.amount)}</dd></div>
+      <div className="grand"><dt>Total</dt><dd>{inr(total)}</dd></div>
+      {gst.byRate.length > 0 && <div className="gst-split" role="group" aria-label="GST included in the total">
+        <p>GST included in your total</p>
+        {gst.byRate.map(r => <div key={r.rate}><dt>GST {r.rate}% <small>on {inr(r.base)}</small></dt><dd>{inr(r.tax)}</dd></div>)}
+        {gst.byRate.length > 1 && <div className="sum"><dt>Total GST</dt><dd>{inr(gst.included)}</dd></div>}
+      </div>}
+    </dl>
+  );
 }
 
 export function BagLines({ compact = false }) {
