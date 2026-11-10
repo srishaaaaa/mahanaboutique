@@ -52,18 +52,11 @@ export function couponProblem(c, subtotal) {
   return null;
 }
 
-// Who may use a coupon: everyone, loyalty members only, non-members only, and optionally only the phones the coupon was sent to.
+// A coupon sent "only to the customers it was sent to" works only for those phones.
 export async function couponAccessProblem(q, c, phone) {
-  if (!c || (c.audience === 'everyone' && !c.sent_only)) return null;
+  if (!c || !c.sent_only) return null;
   const p = normPhone(phone);
-  if (c.sent_only) {
-    if (!p || !(await one(q, 'SELECT 1 AS x FROM pos_coupon_sends WHERE coupon_id = $1 AND phone = $2', [c.id, p]))) return 'This coupon is only for the customers it was sent to';
-  }
-  if (c.audience !== 'everyone') {
-    const cust = p ? await one(q, 'SELECT loyalty FROM pos_customers WHERE phone = $1', [p]) : null, member = !!cust?.loyalty;
-    if (c.audience === 'loyalty' && !member) return 'This coupon is for loyalty members only';
-    if (c.audience === 'non_loyalty' && member) return 'This coupon is not available to loyalty members';
-  }
+  if (!p || !(await one(q, 'SELECT 1 AS x FROM pos_coupon_sends WHERE coupon_id = $1 AND phone = $2', [c.id, p]))) return 'This coupon is only for the customers it was sent to';
   return null;
 }
 
@@ -348,7 +341,7 @@ export function birthdays(db, days = 30) {
 export const listCustomers = (db, q = '') => {
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   return rows(db, `
-    SELECT c.id, c.name, c.phone, c.dob::text AS dob, c.notes, c.loyalty, c.created_at AS "createdAt",
+    SELECT c.id, c.name, c.phone, c.dob::text AS dob, c.notes, c.created_at AS "createdAt",
            COALESCE(st.bills, 0)::int AS bills, COALESCE(st.spent, 0)::int AS spent
     FROM pos_customers c
     LEFT JOIN LATERAL (SELECT COUNT(*) AS bills, SUM(s.total_amount) AS spent FROM pos_sales s WHERE s.status = 'completed' AND ${PHONE_SQL('s.customer_phone')} = c.phone) st ON true

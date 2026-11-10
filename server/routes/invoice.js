@@ -32,11 +32,11 @@ export default function invoicePublic({ db }) {
   }));
   // The coupon card a customer opens from WhatsApp: only what is printed on the coupon, never usage counts or who it was sent to.
   r.get('/coupon/:code', limiter, wrap(async (req, res) => {
-    const c = await one(db, 'SELECT code, discount_type, discount_value, min_order, expires_on::text AS expires_on, active, sent_only, audience FROM pos_coupons WHERE upper(code) = upper($1)', [String(req.params.code).slice(0, 40)]);
+    const c = await one(db, 'SELECT code, discount_type, discount_value, min_order, expires_on::text AS expires_on, active, sent_only FROM pos_coupons WHERE upper(code) = upper($1)', [String(req.params.code).slice(0, 40)]);
     if (!c) throw new HttpError(404, 'This coupon link is not valid');
     res.set('Cache-Control', 'no-store');
     const shop = await shopInfo(db);
-    res.json({ shop: { name: shop.name, phone: shop.phone }, coupon: { code: c.code, discountType: c.discount_type, discountValue: c.discount_value, minOrder: c.min_order, expiresOn: c.expires_on, active: c.active && !(c.expires_on && c.expires_on < new Date().toISOString().slice(0, 10)), sentOnly: c.sent_only, audience: c.audience } });
+    res.json({ shop: { name: shop.name, phone: shop.phone }, coupon: { code: c.code, discountType: c.discount_type, discountValue: c.discount_value, minOrder: c.min_order, expiresOn: c.expires_on, active: c.active && !(c.expires_on && c.expires_on < new Date().toISOString().slice(0, 10)), sentOnly: c.sent_only } });
   }));
   return r;
 }

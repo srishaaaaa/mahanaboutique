@@ -6,9 +6,7 @@ import Modal from '../components/Modal';
 
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
 const dmy = d => d ? String(d).slice(0, 10).split('-').reverse().join('-') : '';
-const BLANK = { code: '', type: 'percent', value: '', min: '', expires: '', limit: '', audience: 'everyone', sentOnly: false };
-const AUD = [['everyone', 'Everyone', 'Any customer, member or not'], ['non_loyalty', 'Non-loyalty', 'Customers who are not loyalty members'], ['loyalty', 'Loyalty members', 'Active loyalty members only']];
-const AUD_LABEL = { everyone: 'Everyone', non_loyalty: 'Non-loyalty', loyalty: 'Loyalty members' };
+const BLANK = { code: '', type: 'percent', value: '', min: '', expires: '', limit: '', sentOnly: false };
 const generate = () => { const w = ['MAHANA', 'SAREE', 'FESTIVE', 'WELCOME', 'SILK']; const r = Math.random().toString(36).slice(2, 5).toUpperCase(); return `${w[Math.floor(Math.random() * w.length)]}${[5, 10, 15, 20][Math.floor(Math.random() * 4)]}${r}` };
 const offer = c => c.discountType === 'percent' ? `${c.discountValue}% OFF` : `${inr(c.discountValue)} OFF`;
 const WaIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.2 18.7L4 20Z" /></svg>;
@@ -68,14 +66,12 @@ function Recipients({ c, shop, onClose, onSent }) {
       setSent(n => n + 1); load(); onSent();
     } catch (x) { tab?.close(); setErr(x.message) }
   };
-  const nonMembers = rows?.some(r => !r.loyalty);
   return (
     <Modal title={<>Send <span className="cp-mono">{c.code}</span> to customers</>} onClose={onClose} wide>
       {err && <p className="dpos-err" role="alert">{err}</p>}
-      {nonMembers && <p className="cp-warn">Customers who are not loyalty members haven’t been asked about WhatsApp offers — send only to people who are happy to get them.</p>}
-      {!rows ? <p className="dpos-empty">Loading…</p> : !rows.length ? <p className="dpos-empty">No customers with a phone number match this coupon’s audience.</p> : (
+      {!rows ? <p className="dpos-empty">Loading…</p> : !rows.length ? <p className="dpos-empty">No customers with a phone number yet.</p> : (
         <ul className="cp-rec">{rows.map(r => (
-          <li key={r.id}><div><b>{r.name || 'Customer'}</b><small>{r.phone} · {r.loyalty ? 'Loyalty customer' : 'Not a loyalty member'}</small></div>
+          <li key={r.id}><div><b>{r.name || 'Customer'}</b><small>{r.phone}</small></div>
             <button type="button" className={`cp-send-b ${r.sent ? 'again' : ''}`} onClick={() => send(r)}><WaIcon /> {r.sent ? 'SENT ✓ · AGAIN' : 'SEND'}</button></li>))}</ul>)}
       <div className="cp-rec-foot"><button type="button" className="cp-btn" onClick={onClose}>Done{sent ? ` · ${sent} sent` : ''}</button></div>
     </Modal>
@@ -83,11 +79,11 @@ function Recipients({ c, shop, onClose, onSent }) {
 }
 
 function EditModal({ c, onClose, onDone }) {
-  const [f, setF] = useState({ type: c.discountType, value: c.discountType === 'percent' ? String(c.discountValue) : String(c.discountValue / 100), min: c.minOrder ? String(c.minOrder / 100) : '', expires: c.expiresOn ? String(c.expiresOn).slice(0, 10) : '', limit: c.usageLimit ? String(c.usageLimit) : '', audience: c.audience, sentOnly: c.sentOnly });
+  const [f, setF] = useState({ type: c.discountType, value: c.discountType === 'percent' ? String(c.discountValue) : String(c.discountValue / 100), min: c.minOrder ? String(c.minOrder / 100) : '', expires: c.expiresOn ? String(c.expiresOn).slice(0, 10) : '', limit: c.usageLimit ? String(c.usageLimit) : '', sentOnly: c.sentOnly });
   const [err, setErr] = useState(); const [busy, setBusy] = useState(false);
   const save = async e => {
     e.preventDefault(); setErr(); setBusy(true);
-    try { await api(`/admin/pos/coupons/${c.id}`, { method: 'PATCH', body: { discountType: f.type, discountValue: f.type === 'percent' ? Math.round(+f.value) : toPaise(f.value), minOrder: toPaise(f.min), expiresOn: f.expires || null, usageLimit: f.limit ? Math.round(+f.limit) : null, audience: f.audience, sentOnly: f.sentOnly } }); onDone(); onClose() }
+    try { await api(`/admin/pos/coupons/${c.id}`, { method: 'PATCH', body: { discountType: f.type, discountValue: f.type === 'percent' ? Math.round(+f.value) : toPaise(f.value), minOrder: toPaise(f.min), expiresOn: f.expires || null, usageLimit: f.limit ? Math.round(+f.limit) : null, sentOnly: f.sentOnly } }); onDone(); onClose() }
     catch (x) { setErr(x.issues?.[0]?.message || x.message); setBusy(false) }
   };
   return (
@@ -99,19 +95,11 @@ function EditModal({ c, onClose, onDone }) {
           <label className="cp-l">EXPIRY DATE<input type="date" value={f.expires} onChange={e => setF({ ...f, expires: e.target.value })} /></label>
           <label className="cp-l">USAGE LIMIT<input inputMode="numeric" value={f.limit} onChange={e => setF({ ...f, limit: e.target.value.replace(/\D/g, '') })} placeholder="Unlimited" /></label>
         </div>
-        <Audience value={f.audience} onChange={a => setF({ ...f, audience: a })} />
         <div className="cp-sw"><b>ONLY FOR CUSTOMERS IT’S SENT TO</b><button type="button" role="switch" aria-checked={f.sentOnly} className={`dpos-switch ${f.sentOnly ? 'on' : ''}`} onClick={() => setF({ ...f, sentOnly: !f.sentOnly })} /></div>
         {err && <p className="dpos-err" role="alert">{err}</p>}
         <div className="cp-send-act"><button type="button" className="cp-btn" onClick={onClose}>Cancel</button><button className="cp-btn solid" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></div>
       </form>
     </Modal>
-  );
-}
-
-function Audience({ value, onChange }) {
-  return (
-    <div><p className="cp-l">WHO CAN USE IT <em>*</em></p>
-      <div className="cp-aud" role="radiogroup" aria-label="Who can use it">{AUD.map(([v, l, d]) => <button key={v} type="button" role="radio" aria-checked={value === v} className={value === v ? 'on' : ''} onClick={() => onChange(v)}><b>{l}</b><small>{d}</small></button>)}</div></div>
   );
 }
 
@@ -125,7 +113,7 @@ export default function PosCoupons() {
   const create = async e => {
     e.preventDefault(); setErr(); setBusy(true);
     try {
-      await api('/admin/pos/coupons', { method: 'POST', body: { code: f.code.trim(), discountType: f.type, discountValue: f.type === 'percent' ? Math.round(+f.value) : toPaise(f.value), minOrder: toPaise(f.min), expiresOn: f.expires || null, usageLimit: f.limit ? Math.round(+f.limit) : null, audience: f.audience, sentOnly: f.sentOnly } });
+      await api('/admin/pos/coupons', { method: 'POST', body: { code: f.code.trim(), discountType: f.type, discountValue: f.type === 'percent' ? Math.round(+f.value) : toPaise(f.value), minOrder: toPaise(f.min), expiresOn: f.expires || null, usageLimit: f.limit ? Math.round(+f.limit) : null, sentOnly: f.sentOnly } });
       setF(BLANK); load();
     } catch (x) { setErr(x.issues?.[0]?.message || (x.message === 'Validation failed' ? 'Check the code (3–40 letters or digits) and the discount.' : x.message)) } finally { setBusy(false) }
   };
@@ -134,8 +122,9 @@ export default function PosCoupons() {
   const today = new Date().toISOString().slice(0, 10);
   const active = (list || []).filter(c => c.active && !(c.expiresOn && String(c.expiresOn).slice(0, 10) < today)).length;
   const uses = (list || []).reduce((s, c) => s + c.usedCount, 0);
-  const count = a => (list || []).filter(c => a === 'all' || c.audience === a).length;
-  const shown = useMemo(() => (list || []).filter(c => (filter === 'all' || c.audience === filter) && (!q.trim() || c.code.toLowerCase().includes(q.trim().toLowerCase()))), [list, filter, q]);
+  const matches = (c, a) => a === 'all' || (a === 'active' ? c.active : a === 'inactive' ? !c.active : c.sentOnly);
+  const count = a => (list || []).filter(c => matches(c, a)).length;
+  const shown = useMemo(() => (list || []).filter(c => matches(c, filter) && (!q.trim() || c.code.toLowerCase().includes(q.trim().toLowerCase()))), [list, filter, q]);
   return (
     <div className="cp">
       <div className="cp-top"><div><h2>Coupon Management</h2><p className="sub">Create discount codes and send them to customers on WhatsApp. Applies to the product subtotal only.</p></div>
@@ -161,13 +150,12 @@ export default function PosCoupons() {
             <label className="cp-l">EXPIRY DATE<input type="date" value={f.expires} onChange={e => setF({ ...f, expires: e.target.value })} /></label>
             <label className="cp-l">USAGE LIMIT<input inputMode="numeric" value={f.limit} onChange={e => setF({ ...f, limit: e.target.value.replace(/\D/g, '') })} placeholder="e.g. 50" /></label>
           </div>
-          <Audience value={f.audience} onChange={a => setF({ ...f, audience: a })} />
-          <div className="cp-sw"><div><b>Only for customers it’s sent to</b><small>Works only for the mobile numbers you send it to from this page.</small></div><button type="button" role="switch" aria-checked={f.sentOnly} aria-label="Only for customers it is sent to" className={`dpos-switch ${f.sentOnly ? 'on' : ''}`} onClick={() => setF({ ...f, sentOnly: !f.sentOnly })} /></div>
+            <div className="cp-sw"><div><b>Only for customers it’s sent to</b><small>Works only for the mobile numbers you send it to from this page.</small></div><button type="button" role="switch" aria-checked={f.sentOnly} aria-label="Only for customers it is sent to" className={`dpos-switch ${f.sentOnly ? 'on' : ''}`} onClick={() => setF({ ...f, sentOnly: !f.sentOnly })} /></div>
           <button className="cp-go" disabled={busy}>CREATE COUPON</button>
         </form>
         <section className="cp-card">
           <div className="cp-lh"><h3>All Coupons <span className="cp-n">{list ? list.length : 0}</span></h3></div>
-          <div className="cp-filters" role="group" aria-label="Filter by audience">{[['all', 'All'], ['everyone', 'Everyone'], ['non_loyalty', 'Non-loyalty'], ['loyalty', 'Loyalty members']].map(([v, l]) => <button key={v} type="button" className={filter === v ? 'on' : ''} aria-pressed={filter === v} onClick={() => setFilter(v)}>{l} <small>{count(v)}</small></button>)}</div>
+          <div className="cp-filters" role="group" aria-label="Filter coupons">{[['all', 'All'], ['active', 'Active'], ['inactive', 'Inactive'], ['sent', 'Sent only']].map(([v, l]) => <button key={v} type="button" className={filter === v ? 'on' : ''} aria-pressed={filter === v} onClick={() => setFilter(v)}>{l} <small>{count(v)}</small></button>)}</div>
           <label className="cp-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search coupons by code…" aria-label="Search coupons" /></label>
           {!list ? <p className="dpos-empty">Loading…</p> : !shown.length ? <div className="cp-empty">{list.length ? 'No coupons match.' : 'No coupons yet. Create your first coupon!'}</div> : (
             <ul className="cp-list">{shown.map(c => (
@@ -176,7 +164,7 @@ export default function PosCoupons() {
                 <p className="cp-d">{offer(c)} <small>· {c.minOrder ? `min ${inr(c.minOrder)}` : 'no minimum'}</small></p>
                 <p className="cp-u">Used {c.usedCount} {c.usedCount === 1 ? 'time' : 'times'}{c.usageLimit ? ` of ${c.usageLimit}` : ''} · {c.expiresOn ? `expires ${dmy(c.expiresOn)}` : 'no expiry'}{c.sentCount ? ` · sent to ${c.sentCount}` : ''}</p>
                 <div className="cp-act">
-                  <button type="button" className="cp-b outline" onClick={() => setEveryone(c)}><WaIcon /> {AUD_LABEL[c.audience].toUpperCase()}</button>
+                  <button type="button" className="cp-b outline" onClick={() => setEveryone(c)}><WaIcon /> EVERYONE</button>
                   <button type="button" className="cp-b wa" onClick={() => setSendTo(c)}><WaIcon /> SEND</button>
                   <button type="button" className={`cp-b ${c.active ? 'dark' : 'light'}`} onClick={() => toggle(c)}>{c.active ? 'ACTIVE' : 'INACTIVE'}</button>
                   <button type="button" className="cp-i" aria-label={`Edit ${c.code}`} onClick={() => setEdit(c)}><Icon n="edit" size={15} /></button>

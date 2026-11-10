@@ -53,17 +53,14 @@ export const Icon = ({ n, size = 18 }) => <svg width={size} height={size} viewBo
 // [path, label, icon, managerOnly]
 export const NAV = [
   { group: 'Retail billing', items: [
-    ['/admin/billing', 'Billing', 'billing'], ['/admin/billing/analytics', 'POS Analytics', 'chart', true], ['/admin/billing/advance', 'Advance Orders', 'clock'], ['/admin/billing/orders', 'Order History', 'orders'],
+    ['/admin/billing', 'Billing', 'billing'], ['/admin/billing/analytics', 'POS Analytics', 'chart', true], ['/admin/billing/advance', 'Advance Orders', 'clock'], ['/admin/billing/orders', 'Order History', 'orders'], ['/admin/billing/measurements', 'Measurements', 'ruler'],
     ['/admin/billing/inventory', 'Inventory', 'box', true], ['/admin/billing/customers', 'Customers', 'user'], ['/admin/billing/coupons', 'Coupons', 'tag', true],
-    ['/admin/billing/birthdays', 'Date of Birth', 'cake', true], ['/admin/billing/expenses', 'Expenses', 'wallet', true], ['/admin/billing/settings', 'Settings', 'gear', true]] },
-  { group: 'Stitching Studio', roles: ['owner', 'admin', 'cashier'], items: [
-    ['/admin/stitching', 'Dashboard', 'scissors', false], ['/admin/stitching/orders', 'Stitching Orders', 'orders', false], ['/admin/stitching/measurements', 'Measurements', 'ruler', false],
-    ['/admin/stitching/designs', 'Design Library', 'image', false], ['/admin/stitching/tailors', 'Tailors', 'users', false],
-    ['/admin/stitching/reports', 'Stitching Reports', 'chart', true], ['/admin/stitching/garments', 'Garment Types', 'tag', true]] },
+    ['/admin/billing/birthdays', 'Date of Birth', 'cake', true], ['/admin/billing/expenses', 'Expenses', 'wallet', true]] },
   { group: 'Online store', items: [
     ['/admin/orders', 'Online orders', 'orders', true], ['/admin/reviews', 'Reviews', 'star', true], ['/admin/categories', 'Categories', 'tag', true], ['/admin/trending', 'Trending', 'star', true], ['/admin/site-text', 'Site text', 'edit', true],
     ['/admin/storefront', 'Storefront images', 'image', true], ['/admin/reels', 'Reels & Gallery', 'film', true], ['/admin/enquiries', 'Enquiries', 'mail', true],
-    ['/admin/users', 'Users', 'users', true], ['/admin/settings', 'Store settings', 'gear', true], ['/admin/sample', 'Sample data', 'flask', true]] },
+    ['/admin/users', 'Users', 'users', true], ['/admin/sample', 'Sample data', 'flask', true]] },
+  { group: 'Settings', items: [['/admin/billing/settings', 'POS Settings', 'gear', true], ['/admin/settings', 'Store Settings', 'gear', true]] },
 ];
 
 // Every admin page draws its own sidebar, so its scroll position is kept here: opening a panel near the bottom
@@ -88,7 +85,7 @@ export default function AdminShell({ title, sub, actions, children }) {
   return (
     <div className="dpos">
       <nav className="dpos-side" aria-label="Admin sections" ref={side} onScroll={e => { sideScroll.top = e.currentTarget.scrollTop; sideScroll.left = e.currentTarget.scrollLeft }}>
-        <div className="dpos-brand"><div><b>Mahana</b><br /><i>{manager ? 'ADMIN' : 'CASHIER'}</i></div></div>
+        <div className="dpos-brand"><img src="/logo.png" alt="Mahana Boutique & Tailors" /><i>{manager ? 'ADMIN' : 'CASHIER'}</i></div>
         {NAV.map(g => {
           const items = g.roles && !g.roles.includes(user?.role) ? [] : g.items.filter(i => !i[3] || manager);
           return items.length ? (

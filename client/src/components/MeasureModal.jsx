@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Modal from './Modal';
-import { BACK_NECKS, FRONT_NECKS, Sheet } from '../pages/stitching/NeckPicker';
+import { BACK_NECKS, FRONT_NECKS, Sheet } from './NeckPicker';
 
 // Measurements for a stitching service line in Billing: neck types, sleeve, due date, sizes in cm and remarks.
 export const SLEEVE_TYPES = ['Sleeveless', 'Short', '3/4', 'Full', 'Puff', 'Bell'];
