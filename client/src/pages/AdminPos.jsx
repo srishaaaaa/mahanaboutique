@@ -238,11 +238,17 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   };
 
   const measureLine = lines.find(l => l.key === measureFor);
+  // A service / custom line that was opened but never filled in disappears when the cashier moves away from it.
+  const measureOpen = useRef(null); measureOpen.current = measureFor;
+  const pruneBlank = (e, l) => {
+    if (ws || !l.custom || e.currentTarget.contains(e.relatedTarget)) return;
+    setTimeout(() => setLines(ls => ls.filter(x => x.key !== l.key || x.name.trim() || x.priceStr || x.measure || measureOpen.current === l.key)), 200);
+  };
   const lineEls = lines.map(l => (
-    <div className={`dpos-line ${flash && l.variantId === flash ? 'dpos-flash' : ''}`} key={l.key}>
+    <div className={`dpos-line ${flash && l.variantId === flash ? 'dpos-flash' : ''}`} key={l.key} onBlur={e => pruneBlank(e, l)}>
       {l.custom ? (
         <div className="dpos-grid" style={{ gridTemplateColumns: 'minmax(150px,2fr) minmax(90px,1fr) 130px' }}>
-          <input aria-label="Item name or description" placeholder={l.service ? 'Service (alteration, stitching…)' : 'Item name / description…'} list={ws ? 'dpos-ws-list' : undefined} value={l.name} onChange={e => patch(l.key, { name: e.target.value })} />
+          <input aria-label="Item name or description" autoFocus={!ws && !l.name} placeholder={l.service ? 'Service (alteration, stitching…)' : 'Item name / description…'} list={ws ? 'dpos-ws-list' : undefined} value={l.name} onChange={e => patch(l.key, { name: e.target.value })} />
           <input aria-label="Price in dollars" inputMode="decimal" placeholder="Price S$" value={l.priceStr} onChange={e => patch(l.key, { priceStr: e.target.value })} />
           <select aria-label="GST rate" value={l.taxRate} onChange={e => patch(l.key, { taxRate: +e.target.value })}>{GST_RATES.map(r => <option key={r} value={r}>{r}% GST</option>)}</select>
           {l.service && <div className="msr-line">
@@ -279,7 +285,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button className="dpos-btn ghost sm" onClick={clearOrder}><Icon n="trash" size={14} />Clear order</button>
               {!ws && <button className="dpos-btn sm" onClick={() => setCatalogOpen(true)}>☰ Catalog</button>}
-              {!ws && <button className="dpos-btn ghost sm" onClick={() => setLines(ls => [...ls, blankCustom(true)])}>✂ Add service</button>}
+              {!ws && <button className="dpos-btn ghost sm" onClick={() => setLines(ls => ls.some(x => x.service && !x.name.trim() && !x.priceStr && !x.measure) ? ls : [...ls, blankCustom(true)])}>✂ Add service</button>}
               <button className="dpos-btn ghost sm" onClick={() => setLines(ls => [...ls, blankCustom()])}>+ Add {ws ? 'item' : 'custom item'}</button></div></div>
           {ws && <datalist id="dpos-ws-list">{wsItems.map(i => <option key={i.id} value={[i.code, i.company, i.colour].filter(Boolean).join(' · ')} />)}</datalist>}
           {lines.length ? lineEls : <Empty>No items yet. Press Catalog to pick products, or add a service or custom item.</Empty>}
