@@ -210,7 +210,7 @@ function PayModal({ order, refund, onClose, onDone }) {
       footer={<><button className="dpos-btn ghost" onClick={onClose}>Back</button><button className="dpos-btn" disabled={busy || !toPaise(amount) || (refund && note.trim().length < 3)} onClick={go}>{busy ? 'SAVING…' : refund ? 'RECORD REFUND' : 'RECORD PAYMENT'}</button></>}>
       <div className="stc-stack"><Err>{err}</Err>
         <div className="stc-grid"><Field label="Amount (S$)"><input type="number" min="0" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} autoFocus /></Field>
-          <Field label="Paid by"><select value={mode} onChange={e => setMode(e.target.value)}><option value="cash">Cash</option><option value="upi">PayNow</option><option value="card">Card</option></select></Field></div>
+          <Field label="Paid by"><select value={mode} onChange={e => setMode(e.target.value)}><option value="cash">Cash</option><option value="upi">QR / PayNow</option><option value="card">Card</option></select></Field></div>
         <Field label="Reference"><input value={ref} onChange={e => setRef(e.target.value)} placeholder="PayNow / card reference (optional)" /></Field>
         {refund && <Field label="Reason (required)"><input value={note} maxLength={200} onChange={e => setNote(e.target.value)} /></Field>}
         <p className="muted small" style={{ margin: 0 }}>Submitting twice records the payment once. No money is charged automatically: this only records what you received.</p></div>
@@ -225,7 +225,7 @@ function InvoiceModal({ order, onClose, onDone }) {
       footer={<><button className="dpos-btn ghost" onClick={onClose}>Back</button><button className="dpos-btn" disabled={busy} onClick={go}>{busy ? 'CREATING…' : order.balance > 0 ? `COLLECT ${inr(order.balance)} AND INVOICE` : 'CREATE INVOICE'}</button></>}>
       <div className="stc-stack"><Err>{err}</Err>
         <p style={{ margin: 0 }}>This creates one invoice in Billing (Order History) for the full order. Payments already recorded here are counted in it, so nothing is billed twice. Charges lock once the invoice exists.</p>
-        {order.balance > 0 && <div className="stc-grid"><Field label={`Balance ${inr(order.balance)} paid by`}><select value={mode} onChange={e => setMode(e.target.value)}><option value="cash">Cash</option><option value="upi">PayNow</option><option value="card">Card</option></select></Field><Field label="Reference"><input value={ref} onChange={e => setRef(e.target.value)} /></Field></div>}
+        {order.balance > 0 && <div className="stc-grid"><Field label={`Balance ${inr(order.balance)} paid by`}><select value={mode} onChange={e => setMode(e.target.value)}><option value="cash">Cash</option><option value="upi">QR / PayNow</option><option value="card">Card</option></select></Field><Field label="Reference"><input value={ref} onChange={e => setRef(e.target.value)} /></Field></div>}
         {order.balance > 0 && <p className="stc-warn" style={{ margin: 0 }}>The balance is recorded as received now. Only continue if you have collected it.</p>}</div>
     </Modal>);
 }

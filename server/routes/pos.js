@@ -4,6 +4,7 @@ import { one, rows } from '../db/index.js';
 import { HttpError, wrap } from '../lib/http.js';
 import { audit } from '../lib/orders.js';
 import { hasCostColumns } from '../lib/cost.js';
+import { createReturn, getReturn } from '../lib/returns.js';
 import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, couponAccessProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
@@ -131,6 +132,12 @@ export default function pos({ db, auth }) {
     if (!sale) throw new HttpError(404, 'Invoice not found');
     res.json(sale);
   }));
+  // Return invoice (credit note): items brought back against a completed bill. Owner/admin only; stock goes back and the refund is recorded.
+  r.post('/pos/sales/:invoice/returns', manager, wrap(async (req, res) => {
+    const b = z.object({ items: z.array(z.object({ itemId: id, qty: z.number().int().min(1).max(10000) })).min(1).max(100), reason: text(300).default(''), refundMode: z.enum(['cash', 'upi', 'card']) }).parse(req.body);
+    res.status(201).json(await createReturn(db, req.user, String(req.params.invoice), b));
+  }));
+  r.get('/pos/returns/:no', biller, wrap(async (req, res) => { const x = await getReturn(db, String(req.params.no)); if (!x) throw new HttpError(404, 'Return not found'); res.json(x) }));
   r.post('/pos/sales/:invoice/void', manager, wrap(async (req, res) => {
     const { reason } = z.object({ reason: text(200).min(3, 'Give a reason') }).parse(req.body);
     res.json(await voidSale(db, req.user, req.params.invoice, reason));

@@ -1,7 +1,7 @@
 import { inr } from '../lib/format';
 
 // How one payment was received: Cash, PayNow, Card, or Split across them (amounts must add up exactly).
-const MODES = [['cash', 'CASH'], ['upi', 'QR / GPAY'], ['card', 'CARD'], ['split', 'SPLIT']];
+const MODES = [['cash', 'CASH'], ['upi', 'QR / PAYNOW'], ['card', 'CARD'], ['split', 'SPLIT']];
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
 
 export const blankPay = () => ({ mode: 'cash', cash: '', upi: '', card: '' });
@@ -23,7 +23,7 @@ export default function PayPicker({ value, onChange, amount, label }) {
       </div>
       {value.mode === 'split' && (
         <div className="payp-split">
-          {[['cash', 'Cash'], ['upi', 'PayNow'], ['card', 'Card']].map(([k, l]) => (
+          {[['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card']].map(([k, l]) => (
             <label key={k}>{l} S$<input inputMode="decimal" placeholder="0" value={value[k]} onChange={e => onChange({ ...value, [k]: e.target.value })} /></label>))}
           <p className={parts.problem ? 'payp-bad' : 'payp-ok'}>{parts.problem || `Adds up to ${inr(amount)} ✓`}</p>
         </div>)}

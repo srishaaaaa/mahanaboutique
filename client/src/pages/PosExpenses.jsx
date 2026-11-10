@@ -6,7 +6,7 @@ import { Icon } from '../components/AdminShell';
 import { PeriodFilter, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
 
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
-const MODES = [['cash', 'CASH'], ['upi', 'QR / GPAY'], ['card', 'CARD']];
+const MODES = [['cash', 'CASH'], ['upi', 'QR / PAYNOW'], ['card', 'CARD']];
 const dmy = d => d ? String(d).split('-').reverse().join('-') : '';
 
 // Expense Tracker: record what the shop spends. Expenses are taken off sales to give the real net profit on the analytics dashboard.

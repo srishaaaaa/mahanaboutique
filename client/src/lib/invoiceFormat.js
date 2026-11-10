@@ -26,7 +26,7 @@ export function taxLines(items) {
   return [...byRate].sort((a, b) => a[0] - b[0]).map(([rate, tax]) => ({ label: `GST @ ${rate}%`, amount: tax }));
 }
 
-export const MODE = { cash: 'Cash', upi: 'PayNow', card: 'Card', split: 'Split' };
+export const MODE = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 export const CHANNEL = (s) => s.channel === 'wholesale' ? 'WHOLESALE' : s.source === 'online' ? 'ONLINE' : 'OFFLINE';
 export const STATES = ['Andhra Pradesh (37)', 'Arunachal Pradesh (12)', 'Assam (18)', 'Bihar (10)', 'Chhattisgarh (22)', 'Goa (30)', 'Gujarat (24)', 'Haryana (06)', 'Himachal Pradesh (02)', 'Jharkhand (20)', 'Karnataka (29)',
   'Kerala (32)', 'Madhya Pradesh (23)', 'Maharashtra (27)', 'Manipur (14)', 'Meghalaya (17)', 'Mizoram (15)', 'Nagaland (13)', 'Odisha (21)', 'Punjab (03)', 'Rajasthan (08)', 'Sikkim (11)',

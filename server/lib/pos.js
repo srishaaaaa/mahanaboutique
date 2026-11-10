@@ -3,6 +3,7 @@ import { rows, one } from '../db/index.js';
 import { HttpError } from './http.js';
 import { hasCostColumns, hasDepositSplit } from './cost.js';
 import { audit } from './orders.js';
+import { returnedByItem, returnsForSale } from './returns.js';
 
 const TZ = 'Asia/Singapore';
 const istDate = () => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date());
@@ -126,9 +127,13 @@ export async function getSale(q, invoice) {
     FROM pos_sales s LEFT JOIN profiles pr ON pr.id = s.cashier_id WHERE s.invoice_no = $1`, [invoice]);
   if (!sale) return null;
   sale.items = await rows(q, `
-    SELECT name_snapshot AS name, sku_snapshot AS sku, variant_snapshot AS variant, unit_price AS "unitPrice", quantity,
+    SELECT id, name_snapshot AS name, sku_snapshot AS sku, variant_snapshot AS variant, unit_price AS "unitPrice", quantity,
            line_total AS "lineTotal", discount_alloc AS discount, tax_rate AS "taxRate", tax_amount AS tax
     FROM pos_sale_items WHERE sale_id = $1 ORDER BY id`, [sale.id]);
+  // Returns against this bill: how much of each line came back, and the return invoices.
+  const back = await returnedByItem(q, sale.id);
+  for (const i of sale.items) i.returnedQty = back[i.id]?.qty ?? 0;
+  sale.returns = await returnsForSale(q, sale.id);
   // A bill made by completing an advance order: show what was paid as deposit and what was paid at collection.
   const adv = await one(q, `SELECT code, deposit, deposit_mode, to_jsonb(a) -> 'deposit_split' AS dsplit FROM pos_advances a WHERE a.finalized_invoice = $1`, [invoice]);
   if (adv) {
@@ -228,6 +233,7 @@ export async function voidSale(db, user, invoice, reason) {
     const s = await one(t, 'SELECT id, status, coupon_code FROM pos_sales WHERE invoice_no = $1 FOR UPDATE', [invoice]);
     if (!s) throw new HttpError(404, 'Invoice not found');
     if (s.status === 'voided') throw new HttpError(409, 'This invoice is already voided', 'already_voided');
+    if (await one(t, 'SELECT 1 AS x FROM pos_returns WHERE sale_id = $1 LIMIT 1', [s.id])) throw new HttpError(409, 'This invoice already has returns, so it cannot be voided', 'has_returns');
     for (const i of await rows(t, 'SELECT variant_id, quantity FROM pos_sale_items WHERE sale_id = $1 AND variant_id IS NOT NULL ORDER BY variant_id', [s.id])) {
       await t.query('UPDATE product_variants SET stock_quantity = stock_quantity + $1 WHERE id = $2', [i.quantity, i.variant_id]);
       await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason, reference_id) VALUES ($1,$2,$3,$4)', [i.variant_id, i.quantity, 'pos_void', invoice]);

@@ -11,7 +11,7 @@ import PayPicker, { blankPay, payParts } from '../components/PayPicker';
 import BillSummary from '../components/BillSummary';
 
 // "Cash S$500 · PayNow S$500" for a {cash, upi, card} split.
-const SPLIT_L = [['cash', 'Cash'], ['upi', 'PayNow'], ['card', 'Card']];
+const SPLIT_L = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card']];
 export const splitText = s => SPLIT_L.filter(([k]) => s?.[k] > 0).map(([k, l]) => `${l} ${money(s[k])}`).join(' · ');
 const depSplit = a => a.depositSplit || { [a.depositMode]: a.deposit };
 

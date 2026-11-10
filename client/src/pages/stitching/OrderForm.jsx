@@ -114,16 +114,16 @@ export default function OrderForm() {
             <button type="button" role="radio" aria-checked={!f.isGst} className={!f.isGst ? 'on' : ''} onClick={() => setF({ ...f, isGst: false })}>Non-GST bill</button>
             <button type="button" role="radio" aria-checked={f.isGst} className={f.isGst ? 'on' : ''} onClick={() => setF({ ...f, isGst: true, gstRate: Number(f.gstRate) || 9 })}>GST invoice</button></div>
           <p className="dpos-flabel">FINANCIAL OPTION</p>
-          <div className="dpos-pills" role="radiogroup" aria-label="Payment method">{[['cash', 'Cash'], ['upi', 'QR / GPay'], ['card', 'Card'], ['split', 'Split']].map(([v, l]) => <button type="button" key={v} role="radio" aria-checked={f.advMode === v} className={f.advMode === v ? 'on' : ''} onClick={() => setF({ ...f, advMode: v })}>{l}</button>)}</div>
+          <div className="dpos-pills" role="radiogroup" aria-label="Payment method">{[['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']].map(([v, l]) => <button type="button" key={v} role="radio" aria-checked={f.advMode === v} className={f.advMode === v ? 'on' : ''} onClick={() => setF({ ...f, advMode: v })}>{l}</button>)}</div>
           <hr className="dpos-hr" />
           <div className="dpos-grand"><span>GRAND TOTAL</span><b>{inr(tot.total)}</b></div>
           <div className="dpos-paybox">
-            <p className="dpos-pl">{f.advMode === 'upi' ? 'GPAY' : f.advMode.toUpperCase()} PAYMENT</p>
+            <p className="dpos-pl">{f.advMode === 'upi' ? 'QR / PAYNOW' : f.advMode.toUpperCase()} PAYMENT</p>
             {f.advMode !== 'split' && <label className="f">{f.advMode === 'cash' ? 'Amount Received (S$)' : 'Advance Received (S$)'}<input className="bigin" inputMode="decimal" value={f.advance} onChange={set('advance')} placeholder="0.00" /></label>}
             {f.advMode === 'split' && <>
               <p className="dpos-flabel" style={{ marginTop: 0 }}>SPLIT BETWEEN (PICK 2 OR 3)</p>
-              <div className="dpos-splitpick" role="group" aria-label="Split between">{['cash', 'upi', 'card'].map(m => <button key={m} type="button" aria-pressed={splitOn[m]} className={splitOn[m] ? 'on' : ''} onClick={() => toggleSplit(m)}>{splitOn[m] ? '✓ ' : ''}{m === 'upi' ? 'QR / GPAY' : m.toUpperCase()}</button>)}</div>
-              <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{{ cash: 'Cash', upi: 'PayNow', card: 'Card' }[m]} (S$)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => setSplit({ ...split, [m]: e.target.value })} placeholder="0.00" /></label>)}</div>
+              <div className="dpos-splitpick" role="group" aria-label="Split between">{['cash', 'upi', 'card'].map(m => <button key={m} type="button" aria-pressed={splitOn[m]} className={splitOn[m] ? 'on' : ''} onClick={() => toggleSplit(m)}>{splitOn[m] ? '✓ ' : ''}{m === 'upi' ? 'QR / PAYNOW' : m.toUpperCase()}</button>)}</div>
+              <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{{ cash: 'Cash', upi: 'QR / PayNow', card: 'Card' }[m]} (S$)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => setSplit({ ...split, [m]: e.target.value })} placeholder="0.00" /></label>)}</div>
               <div className="dpos-recv"><span>TOTAL RECEIVED</span><b className="ok">{inr(advance)}</b></div></>}
             {f.advMode !== 'cash' && <label className="f" style={{ marginTop: 12 }}>{f.advMode === 'card' ? 'Slip / approval no.' : 'Transaction ID'} (optional)<input value={f.advRef} onChange={set('advRef')} maxLength={80} /></label>}
             <p className="sub" style={{ marginTop: 8 }}>Balance after this payment: {inr(Math.max(tot.total - advance, 0))}</p>

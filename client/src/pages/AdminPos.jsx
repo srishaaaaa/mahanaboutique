@@ -23,8 +23,8 @@ const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/
 const rupees = p => (p / 100).toFixed(2).replace(/\.00$/, '');
 const dmy = d => d ? d.split('-').reverse().join('-') : '';
 const k = p => p >= 100000000 ? `S$${(p / 100000000).toFixed(1).replace(/\.0$/, '')}M` : p >= 100000 ? `S$${(p / 100000).toFixed(1).replace(/\.0$/, '')}k` : `S$${Math.round(p / 100)}`;
-const MODES = [['cash', 'Cash'], ['upi', 'PayNow'], ['card', 'Card'], ['split', 'Split']];
-const MODE_LABEL = { cash: 'Cash', upi: 'PayNow', card: 'Card', split: 'Split' };
+const MODES = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']];
+const MODE_LABEL = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const TABS = { billing: false, analytics: true, advance: false, orders: false, inventory: true, customers: false, coupons: true, birthdays: true, expenses: true, settings: true };
 
@@ -311,18 +311,18 @@ function Billing({ channel, shop, onSale, onAdvance }) {
           <hr className="dpos-hr" />
           <div className="dpos-grand"><span>GRAND TOTAL</span><b>{inr(bill.total)}</b></div>
           <div className="dpos-paybox" id="dpos-pay">
-            <p className="dpos-pl">{mode === 'upi' ? 'GPAY' : mode.toUpperCase()} PAYMENT</p>
+            <p className="dpos-pl">{mode === 'upi' ? 'QR / PAYNOW' : mode.toUpperCase()} PAYMENT</p>
             {mode === 'cash' && <><label className="f">Amount Received (S$)<input className="bigin" inputMode="decimal" value={tendered} onChange={e => setTendered(e.target.value)} placeholder={bill.total ? rupees(bill.total) : '0.00'} /></label>
               <p className="sub" style={{ marginTop: 8 }}>{tenderedP >= bill.total ? `Change to return: ${inr(tenderedP - bill.total)}` : `Short by ${inr(bill.total - tenderedP)}`}</p></>}
             {mode === 'split' && <>
               <p className="dpos-flabel" style={{ marginTop: 0 }}>SPLIT BETWEEN (PICK 2 OR 3)</p>
-              <div className="dpos-splitpick" role="group" aria-label="Split between">{['cash', 'upi', 'card'].map(m => <button key={m} type="button" aria-pressed={splitOn[m]} className={splitOn[m] ? 'on' : ''} onClick={() => toggleSplit(m)}>{splitOn[m] ? '✓ ' : ''}{m === 'upi' ? 'QR / GPAY' : MODE_LABEL[m].toUpperCase()}</button>)}</div>
+              <div className="dpos-splitpick" role="group" aria-label="Split between">{['cash', 'upi', 'card'].map(m => <button key={m} type="button" aria-pressed={splitOn[m]} className={splitOn[m] ? 'on' : ''} onClick={() => toggleSplit(m)}>{splitOn[m] ? '✓ ' : ''}{m === 'upi' ? 'QR / PAYNOW' : MODE_LABEL[m].toUpperCase()}</button>)}</div>
               <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{MODE_LABEL[m]} (S$)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => setSplit({ ...split, [m]: e.target.value })} placeholder="0.00" /></label>)}</div>
               <div className="dpos-recv"><span>TOTAL RECEIVED</span><b className={splitSum >= bill.total && bill.total > 0 ? 'ok' : 'short'}>{inr(splitSum)}</b></div>
               <div className="dpos-recv"><span>CHANGE TO RETURN</span><b className="ok">{inr(splitOver)}</b></div></>}
             {mode !== 'cash' && <label className="f" style={{ marginTop: mode === 'split' ? 12 : 0 }}>{mode === 'card' ? 'Slip / approval no.' : 'Transaction ID'} (optional)<input value={ref} onChange={e => setRef(e.target.value)} maxLength={80} /></label>}
           </div>
-          <p className="sub" style={{ margin: '8px 2px 14px' }}>PayNow and card are confirmed by the cashier at the counter; no payment gateway is attached.</p>
+          <p className="sub" style={{ margin: '8px 2px 14px' }}>QR / PayNow and card are confirmed by the cashier at the counter; no payment gateway is attached.</p>
           <Err>{err}</Err>
           {problem && priced.length > 0 && <p className="sub" role="status" style={{ marginBottom: 10 }}>{problem}</p>}
           <button className="dpos-cta wa" disabled={!!problem || busy} onClick={() => submit('wa')}><WaI /> {busy ? 'SAVING…' : 'COMPLETE SALE & WHATSAPP'}</button>
