@@ -84,8 +84,9 @@ export function Checkout() {
     }).catch(() => {});
   }, [user?.id]); // eslint-disable-line
 
-  async function pay(e) {
-    e.preventDefault(); setErr(); setBusy(true);
+  const [confirm, setConfirm] = useState(false);
+  async function pay() {
+    setErr(); setBusy(true);
     try {
       const { email, ...address } = f;
       const o = await api('/checkout', { method: 'POST', body: { email, address } });
@@ -106,14 +107,26 @@ export function Checkout() {
         <BagTotals />
         <ul className="co-trust"><li>Prices include GST</li><li>Secure payment by Stripe</li><li>Totals calculated on our server</li></ul>
       </section>
-      <form onSubmit={pay} className="co-form">
+      <form onSubmit={e => { e.preventDefault(); setErr(); setConfirm(true) }} className="co-form">
         <h2 className="eyebrow">Delivery details</h2>
         {FIELDS.map(([k, l, ac]) => <label key={k} className="field"><span>{l}</span><input required autoComplete={ac} type={k === 'email' ? 'email' : 'text'} value={f[k]} onChange={set(k)} /></label>)}
         {cartInfo.hasIssues && <p role="alert" className="err">Some items in your bag are no longer available in the requested quantity. Please review your bag.</p>}
         {err && <p role="alert" className="err">{err}</p>}
-        <button className="btn solid wide" disabled={busy || cartInfo.hasIssues}>{busy ? 'OPENING SECURE PAYMENT…' : `PAY ${inr(cartInfo.total ?? bagSubtotal)}`}</button>
+        <button className="btn solid wide" disabled={busy || cartInfo.hasIssues}>{`PAY ${inr(cartInfo.total ?? bagSubtotal)}`}</button>
         <p className="muted small">You will pay on Stripe's secure page by PayNow, card, GrabPay, Apple Pay or Google Pay. Totals and delivery are calculated on our server, and an order is confirmed only after Stripe confirms the payment.</p>
       </form>
+      {confirm && (
+        <div className="co-modal" role="dialog" aria-modal="true" aria-labelledby="co-m-h" onClick={e => { if (e.target === e.currentTarget && !busy) setConfirm(false) }}>
+          <div className="co-modal-card">
+            <button type="button" className="co-x" aria-label="Close" onClick={() => !busy && setConfirm(false)}>✕</button>
+            <h2 id="co-m-h">SECURE CHECKOUT</h2>
+            <p>You will be securely redirected to Stripe to complete your payment.</p>
+            <div className="co-method"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5" /><path d="M3 10.5h18" /></svg>
+              <div><strong>PayNow, Cards, GrabPay, Apple Pay &amp; Google Pay</strong><small>100% secure payments powered by Stripe</small></div></div>
+            {err && <p role="alert" className="err">{err}</p>}
+            <button type="button" className="co-confirm" disabled={busy || cartInfo.hasIssues} onClick={pay}>{busy ? 'OPENING SECURE PAYMENT…' : `CONFIRM ORDER ${inr(cartInfo.total ?? bagSubtotal)}`}</button>
+          </div>
+        </div>)}
     </div>
   );
 }

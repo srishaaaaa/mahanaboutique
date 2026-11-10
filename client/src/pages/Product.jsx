@@ -68,6 +68,9 @@ function Gallery({ p, color }) {
   );
 }
 
+// Product descriptions may use **bold**: show it as bold instead of literal asterisks.
+const boldParts = text => String(text).split(/(\*\*[^*]+\*\*)/g).map((t, i) => /^\*\*[^*]+\*\*$/.test(t) ? <strong key={i}>{t.slice(2, -2)}</strong> : t);
+
 function Accordion({ title, children, open = false }) {
   return <details className="acc" open={open}><summary>{title}</summary><div>{children}</div></details>;
 }
@@ -137,8 +140,16 @@ export default function Product() {
           </div>
           {total < 1 && <p className="err small">This piece is currently sold out.</p>}
 
-          <Accordion title="Description" open><p>{p.description || `${p.name}${p.category ? ` from our ${p.category} collection` : ''}. Full details for this piece will be added soon. Message us on WhatsApp for fabric, fit or styling questions.`}</p></Accordion>
-          <Accordion title="Shipping"><p>Shipping is {inr(SHIPPING_FLAT)}, and complimentary on bag totals above {inr(FREE_SHIPPING_AT)}. Orders are packed within 1–2 working days and delivered across Singapore. {p.gst_rate > 0 ? `The price shown includes ${p.gst_rate}% GST` : 'This piece carries no GST'}; the GST is itemised at checkout and on your bill. The final total is always calculated securely on our server.</p></Accordion>
+          <section className="pdp-delivery" aria-labelledby="dr-h">
+            <h3 id="dr-h">DELIVERY &amp; RETURNS</h3>
+            <ul>
+              <li>Delivery across Singapore: {inr(SHIPPING_FLAT)}, free on bag totals above {inr(FREE_SHIPPING_AT)}</li>
+              <li>{p.gst_rate > 0 ? `Price includes ${p.gst_rate}% GST, itemised at checkout and on your bill` : 'This piece carries no GST'}</li>
+              <li>Made-to-measure and altered garments are non-returnable</li>
+              <li>Questions about fit or fabric? Message us on WhatsApp before you order</li>
+            </ul>
+          </section>
+          <Accordion title="Product details" open><div className="pdp-details">{(p.description || `${p.name}${p.category ? ` from our ${p.category} collection` : ''}. Full details for this piece will be added soon.`).split(/\n{2,}/).map((para, n) => <p key={n}>{boldParts(para)}</p>)}</div></Accordion>
         </div>
       </div>
 

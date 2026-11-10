@@ -40,6 +40,7 @@ function preview(lines, { isGst, gstRate, discountType, discountValue, deliveryF
 const Err = ({ children }) => children ? <p className="dpos-err" role="alert">{children}</p> : null;
 const Empty = ({ children }) => <p className="dpos-empty">{children}</p>;
 
+const WaI = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.2 18.7L4 20Z" /></svg>;
 const CheckI = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>;
 const ClockI = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></svg>;
 
@@ -179,14 +180,21 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   const problem = !priced.length ? 'Add at least one item.' : mode === 'split' && !splitOk ? (splitSum < bill.total ? `Received ${inr(splitSum)}; the bill is ${inr(bill.total)}.` : 'The extra can only be returned out of the cash amount.')
     : mode === 'cash' && tenderedP < bill.total ? 'Cash received is less than the total.' : lines.some(l => l.custom && (l.name.trim() || l.priceStr) && !(l.name.trim() && toPaise(l.priceStr) > 0)) ? 'Finish or remove the incomplete item.' : null;
 
-  const submit = async () => {
+  // after: undefined = just save; 'wa' = also open WhatsApp with the invoice link; 'print' = also open the invoice ready to print.
+  // The new tab is opened straight away (inside the click) so the browser does not block it, then pointed at the invoice.
+  const submit = async after => {
     if (problem || busy) return;
+    const tab = after ? window.open('', '_blank') : null;
     setBusy(true); setErr();
     try {
       const sale = await api('/admin/pos/sales', { method: 'POST', body: { ...body, idempotencyKey: (key.current ??= uuid()) } });
+      if (tab) {
+        const link = `${location.origin}/invoice/${sale.shareToken}`, d = String(cust.phone || '').replace(/\D/g, '');
+        tab.location.href = after === 'print' ? `${link}?print=1` : `https://wa.me/${d ? (d.length === 8 ? '65' + d : d) : ''}?text=${encodeURIComponent(`Hello${cust.name ? ' ' + cust.name : ''}, here is your invoice ${sale.invoiceNo} for ${inr(sale.total)}: ${link}`)}`;
+      }
       onSale(sale); clearOrder();
       if (!ws) { setQ(''); api('/admin/pos/catalog').then(setResults).catch(() => {}) }
-    } catch (e) { setErr(e.message) } finally { setBusy(false) }
+    } catch (e) { tab?.close(); setErr(e.message) } finally { setBusy(false) }
   };
 
   // Save as advance order: books the items at today's prices with a deposit; stock is taken and the bill is made when the customer collects.
@@ -314,7 +322,8 @@ function Billing({ channel, shop, onSale, onAdvance }) {
           <p className="sub" style={{ margin: '8px 2px 14px' }}>PayNow and card are confirmed by the cashier at the counter; no payment gateway is attached.</p>
           <Err>{err}</Err>
           {problem && priced.length > 0 && <p className="sub" role="status" style={{ marginBottom: 10 }}>{problem}</p>}
-          <button className="dpos-cta" disabled={!!problem || busy} onClick={submit}><CheckI /> {busy ? 'SAVING…' : 'COMPLETE SALE'}</button>
+          <button className="dpos-cta wa" disabled={!!problem || busy} onClick={() => submit('wa')}><WaI /> {busy ? 'SAVING…' : 'COMPLETE SALE & WHATSAPP'}</button>
+          <div className="dpos-cta2"><button className="dpos-btn outline" disabled={!!problem || busy} onClick={() => submit('print')}>PRINT</button><button className="dpos-btn outline" disabled={!!problem || busy} onClick={() => submit()}>SAVE ONLY</button></div>
           {!ws && <button className="dpos-cta amber" disabled={!priced.length || busy} onClick={() => setAdvOpen(true)}><ClockI /> SAVE AS ADVANCE ORDER</button>}
         </section>
       </div>

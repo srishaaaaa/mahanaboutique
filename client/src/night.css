@@ -1510,3 +1510,25 @@
 .an-bar button:hover { background: rgba(0, 0, 0, .05) } .an-bar button.on { background: #111; color: #fff }
 .an-bar .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block } .dot.amber { background: #f59e0b } .dot.green { background: #10b981 } .dot.blue { background: #0ea5e9 } .dot.pink { background: #ec4899 } .dot.violet { background: #8b5cf6 }
 .an-gst { margin-left: auto }
+
+/* Product page: delivery & returns box and product details */
+.pdp-delivery { margin: 22px 0 6px; padding: 22px 24px; border-radius: 16px; background: #f3eeea; border: 1px solid rgba(201, 137, 122, .3) }
+.pdp-delivery h3 { margin: 0 0 12px; font: 800 12px var(--n-sans, inherit); letter-spacing: .18em; color: #1a123c }
+.pdp-delivery ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 15px; color: #4a4258 }
+.pdp-delivery li { padding-left: 16px; position: relative } .pdp-delivery li::before { content: ''; position: absolute; left: 2px; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: #a65f4e }
+.pdp-details p { margin: 0 0 14px; line-height: 1.7; color: #5b536a } .pdp-details strong { color: #1a123c }
+
+/* Checkout: secure payment confirmation */
+.co-modal { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 20px; background: rgba(15, 10, 38, .6) }
+.co-modal-card { position: relative; width: min(520px, 100%); padding: clamp(26px, 4vw, 40px); border-radius: 22px; background: #f6f1ec; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6); display: grid; gap: 18px }
+.co-modal-card h2 { margin: 0; font: 800 clamp(26px, 3.4vw, 34px) var(--serif); letter-spacing: -.01em; color: #1a123c } .co-modal-card > p { margin: 0; color: #6b6378; font-size: 16px; line-height: 1.5; max-width: 34ch }
+.co-x { position: absolute; top: 18px; right: 20px; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; color: #8a8294; background: transparent } .co-x:hover { background: rgba(0, 0, 0, .06) }
+.co-method { display: flex; align-items: center; gap: 16px; padding: 22px; border-radius: 16px; background: #fff; box-shadow: 0 6px 18px -10px rgba(0, 0, 0, .25); color: #1a123c }
+.co-method strong { display: block; font-size: 16px } .co-method small { color: #6b6378; font-size: 13px }
+.co-confirm { width: 100%; padding: 20px; border-radius: 999px; background: #0b0b0e; color: #fff; font: 800 13px var(--n-sans, inherit); letter-spacing: .2em; box-shadow: 0 16px 30px -14px rgba(0, 0, 0, .6); transition: transform .2s, background .2s } .co-confirm:hover:not(:disabled) { background: #a65f4e; transform: translateY(-1px) } .co-confirm:disabled { opacity: .6 }
+
+/* POS billing: Complete sale & WhatsApp, Print, Save only */
+.dpos-cta.wa { background: linear-gradient(135deg, #12a063, #0b8a54); color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px }
+.dpos-cta.wa:hover:not(:disabled) { background: linear-gradient(135deg, #0f9159, #087a49) }
+.dpos-cta2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 }
+.dpos-cta2 .dpos-btn { justify-content: center; padding: 14px; font-weight: 800; letter-spacing: .1em }
