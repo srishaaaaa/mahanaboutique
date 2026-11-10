@@ -228,3 +228,30 @@
 .inv-pv-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; background: #141414; color: #fff; font: 800 13px Arial, sans-serif; letter-spacing: .06em } .inv-pv-h > span:first-child { display: inline-flex; align-items: center; gap: 10px }
 .inv-pv-a { display: flex; gap: 8px } .inv-pv-a button { padding: 9px 14px; border-radius: 9px; background: rgba(255, 255, 255, .14); color: #fff; font: 700 13px Arial, sans-serif; cursor: pointer; border: 0 }
 .inv-pv-body { flex: 1; overflow: auto; min-height: 0; padding: 22px 22px 30px !important }
+
+/* ======== Admin typeface and spacing: Poppins everywhere, one rhythm ======== */
+.dpos, .dpos-modal { font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 15px; letter-spacing: 0 }
+.dpos :is(h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea, label, td, th, li, small, b, strong, em, dt, dd, summary, legend, option),
+.dpos-modal :is(h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea, label, td, th, li, small, b, strong, em, dt, dd) { font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif }
+.dpos .mono, .dpos .cp-mono, .dpos code, .dpos pre, .dpos .oid { font-family: ui-monospace, 'SF Mono', Consolas, monospace }
+.dpos h1, .dpos h2, .dpos h3 { letter-spacing: -.015em; font-weight: 700 }
+.dpos-top-t { font-size: 19px; font-weight: 700 }
+/* sidebar: roomy rows, 16px text */
+.dpos-side { padding: 16px; gap: 6px }
+.dpos-nav { gap: 14px; padding: 15px 16px; border-radius: 16px; font-size: 16px; font-weight: 600 }
+/* page rhythm: 24px between blocks, 24px inside cards */
+.dpos-main { gap: 24px }
+.dpos .dpos-card { padding: 22px 24px; border-radius: 22px }
+.dpos-head { gap: 16px; margin-bottom: 4px }
+.dpos .dpos-head h2, .dpos-main > .dpos-card > h2 { font-size: 22px; margin: 0 0 14px }
+/* tables: 16px type, tall rows, small uppercase column heads */
+.dpos table { font-size: 15px }
+.dpos th { font-size: 11px; letter-spacing: .14em; font-weight: 700; padding: 16px 20px }
+.dpos td { padding: 18px 20px }
+.dpos td input, .dpos td select { padding: 10px 12px }
+/* tabs and pills */
+.dpos-tabs { gap: 28px } .dpos-tabs button { font-size: 14px; font-weight: 700; padding: 14px 4px }
+.dpos input:not([type=checkbox]):not([type=radio]), .dpos select, .dpos textarea { font-size: 15px }
+.dpos .f, .dpos .field { gap: 8px }
+.dpos label.f, .dpos .cp-l, .dpos .pe-l { font-size: 12px; letter-spacing: .1em }
+.dpos-btn { font-weight: 600; font-size: 14px; padding: 12px 20px }
