@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { one, rows } from '../db/index.js';
 import { HttpError, wrap } from '../lib/http.js';
 import { audit } from '../lib/orders.js';
-import { hasCostColumns } from '../lib/cost.js';
+import { hasCostColumns, hasVariantCost } from '../lib/cost.js';
 import { createReturn, getReturn } from '../lib/returns.js';
 import { editSale, PHONE_SQL } from '../lib/pos.js';
 import { capFlags } from '../lib/catalog.js';
@@ -75,7 +75,7 @@ const customerBody = z.object({ name: text(120).default(''), phone: text(20).reg
 const expenseBody = z.object({ title: text(120).min(1), category: text(60).default('General'), amount: z.number().int().min(1).max(100_000_000), paymentMode: z.enum(['cash', 'upi', 'card']).default('cash'), notes: text(300).nullable().default(null), date: date.optional() });
 const productPatch = z.object({ name: text(160).min(1), price: paise, costPrice: paise.optional(), taxRate: z.number().int().min(0).max(28), categorySlug: text(80).nullable().default(null), status: z.enum(['draft', 'active', 'archived']),
   description: text(4000).optional(), material: text(80).optional(), featured: z.boolean().optional(), collections: z.array(text(120).min(1)).max(50).optional(), lowAlert: z.number().int().min(0).max(100000).optional(), newArrival: z.boolean().optional(), bestSeller: z.boolean().optional() });
-const variantPatch = z.object({ size: text(40).min(1), color: text(40).min(1), sku: text(80).min(1), price: paise.nullable(), active: z.boolean() }).partial();
+const variantPatch = z.object({ size: text(40).min(1), color: text(40).min(1), sku: text(80).min(1), price: paise.nullable(), cost: paise.nullable(), active: z.boolean() }).partial();
 const variantBody = z.object({ size: text(40).min(1), color: text(40).default('Default'), sku: text(80).min(1), stock: z.number().int().min(0).max(1_000_000).default(0) });
 const colourBody = z.object({ color: text(40).min(1), price: paise.nullable().default(null),
   sizes: z.array(z.object({ size: text(40).min(1), stock: z.number().int().min(0).max(1_000_000).default(0), sku: text(80).optional() })).min(1).max(30) });
@@ -378,6 +378,7 @@ export default function pos({ db, auth }) {
         price_override = CASE WHEN $6 THEN $7::int ELSE price_override END, active = COALESCE($8, active) WHERE id = $2 AND product_id = $1 RETURNING id`,
       [pid, vid, d.size ?? null, d.color ?? null, d.sku ?? null, d.price !== undefined, d.price ?? null, d.active ?? null])
       .catch(e => { if (e.code === '23505') throw new HttpError(409, 'That SKU or size/colour already exists for this product'); throw e });
+    if (d.cost !== undefined && u.rows?.length !== 0 && await hasVariantCost(db)) await db.query('UPDATE product_variants SET cost_override = $3 WHERE id = $2 AND product_id = $1', [pid, vid, d.cost]);
     if (!u.rows.length) throw new HttpError(404, 'Size not found');
     await audit(db, req.user.id, 'pos.variant.edit', 'product', pid, { variant: vid, ...d });
     res.json({ ok: true });

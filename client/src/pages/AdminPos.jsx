@@ -455,7 +455,8 @@ function MoneyDetail({ kind, rep, from, to, onClose, goExpenses }) {
   return (
     <Modal wide className="money" title={kind === 'net' ? 'Net profit, step by step' : 'Where the money went'} sub={`${dmy(from)} to ${dmy(to)}`} onClose={onClose}>
       <div className="money-sum">
-        <div><span>Sales (revenue)</span><b>{inr(rep.revenue)}</b></div>
+        <div><span>Sales (revenue, after returns)</span><b>{inr(rep.revenue)}</b></div>
+        {rep.returned?.count > 0 && <div><span className="muted">of which returns refunded ({rep.returned.count}): {inr(rep.grossRevenue)} sold − {inr(rep.returned.total)}</span><b className="muted">—</b></div>}
         {rep.costs?.enabled && <div><span>− Cost of goods sold</span><b className="neg">{inr(rep.cogs)}</b></div>}
         <div><span>− Expenses</span><b className="neg">{inr(rep.expenses)}</b></div>
         <div className="tot"><span>= Net profit</span><b className={rep.net < 0 ? 'neg' : 'pos'}>{inr(rep.net)}</b></div>

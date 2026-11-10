@@ -238,7 +238,11 @@ Rendering:
 - Admin content pages (Trending, Site text, Enquiries, Storefront images) use a responsive grid (`.adm`) so blocks fill the width; enquiries are a card grid with a compact status select.
 
 **Still not done (do not assume these exist)**
-- Reports do not subtract returns from revenue; extra-fee row on bills; Department / MRP / base weight / age range product fields; Split option for old stitching payments; per-variant cost price (cost is per product).
+- Extra-fee row on bills; Department / MRP / base weight / age range product fields; Split option for old stitching payments.
 - A sidebar close (✕) button: the user later said to keep it in the quick view, which already has it.
 
-Migrations to run on the live database: 023–029 (`npm run migrate`; Vercel does not migrate automatically).
+Migrations to run on the live database: 023–030 (`npm run migrate`; Vercel does not migrate automatically).
+
+**Added later (also built)**
+- **Cost price per size**: migration `030_variant_cost.sql` adds `product_variants.cost_override` (null = the product's cost). Guarded by `hasVariantCost()` so the code works before the migration runs. A sale line snapshots `COALESCE(size cost, product cost)`; stock value in reports uses the same; `listProducts` variants carry `costOverride` and effective `cost`. `PATCH /admin/pos/products/:id/variants/:vid` accepts `cost`; product create accepts `variants[].cost`. UI: a Cost price column in Edit Product variants and a COST (S$) column in Add Product rows (placeholder = product cost).
+- **Reports subtract returns** (`report()` in `lib/pos.js`): returns made in the period (by return date, same channel/GST/source filters) reduce `revenue`, GST (`tax`), cash/upi/card by refund mode, GST/non-GST and offline/online sales, units, cost of goods sold (returned pieces at their cost snapshot), margin, daily/monthly/weekly charts and the product ranking. The response also has `grossRevenue` and `returned: { count, total, tax }`. The "Where the money went" panel says "after returns". Test: `test/reportreturns.test.js`.
