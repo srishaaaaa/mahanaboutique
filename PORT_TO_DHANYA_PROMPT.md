@@ -252,3 +252,10 @@ Migrations to run on the live database: 023–030 (`npm run migrate`; Vercel doe
 - Admin **Trending** page = *Trending collections* picker + **Best Sellers** (`FlagPicks`: current list with Remove, then category chips + product cards with "+ Add"; backed by `PUT /admin/pos/products/:id/flags`).
 - Suggested Products now sit **below the variants / Save** area of Add and Edit Product; inventory card names wrap fully (no "…").
 - Migrations to run: 023–031.
+
+**Collections removed; stale-tab reload; ticks (latest)**
+- **All named collections are gone** (Curated Edit, Festive Edit, Evening Edit, Trending Sarees, Bridal Silk Sarees, ...). Migration `032_remove_collections.sql` runs `DELETE FROM collections` (products are kept). Taxonomy → Departments lists only the two built-in rows *Trending collections* and *Best Sellers*; the "+ Add collection" button, the collection rows and the "Choose your world" homepage picker / site-text group are removed, and the unused `CollectionsFlow` component is deleted. `/collections/*` already redirects to `/shop`. The seed can still recreate sample collections if Sample data is re-seeded; strip that if you want it permanent.
+- **Add / Edit Product ticks:** both forms have "Show in Trending collections" (`featured`) and "Show in Best Sellers" (`best_seller`); Add sends `featured`. There is no New Arrival tick any more.
+- **Out-of-date tabs:** `ErrorBoundary` exports `reloadOnce()` and `main.jsx` listens for `vite:preloadError`; a missing lazy chunk after a release reloads the page once automatically (guarded by `sessionStorage` for 60 s so it cannot loop), otherwise the "This page is out of date — Reload" card shows.
+- **Inventory cards:** product names wrap in full (no "…"), 3:4 photo box, Cost and Selling shown for managers.
+- Migrations to run: 023–032.
