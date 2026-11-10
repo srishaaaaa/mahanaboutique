@@ -1484,3 +1484,29 @@
 .acc-pill.ok { background: #e2f1e6; color: #1f6b3a } .acc-pill.warn { background: #fdf0d8; color: #8a5a0a } .acc-pill.bad { background: #fbe3e1; color: #a02a22 } .acc-pill.info { background: #e4e8f7; color: #2d3e76 }
 .acc-empty { display: grid; gap: 10px; justify-items: start; padding: 10px 0 }
 @media (max-width: 859px) { .acc-layout { grid-template-columns: 1fr } .acc-side { position: static; display: flex; overflow-x: auto; gap: 6px } .acc-side button { flex: none } .acc-side .acc-signout { margin: 0; border: 0 } .acc-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) } .acc-order { grid-template-columns: 1fr; gap: 10px } .acc-order-tot { text-align: left } }
+
+/* Bag drawer */
+.drawer.refine .drawer-head { padding-bottom: 14px; border-bottom: 1px solid rgba(201, 137, 122, .3) }
+.drawer.refine .drawer-head h2 { color: #1a123c } .drawer.refine .drawer-head .muted { color: #a65f4e }
+.bag-ship { margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: #fbf3ef; border: 1px solid rgba(201, 137, 122, .3); font-size: 13px; color: #3a2354 }
+.bag-ship p { margin: 0 0 8px } .bag-ship b { color: #a65f4e }
+.bag-ship .bar { display: block; height: 6px; border-radius: 999px; background: rgba(166, 95, 78, .18); overflow: hidden } .bag-ship .bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #c9897a, #efc3b3); transition: width .5s var(--n-ease, ease) }
+.drawer.refine .bag-lines li { padding: 16px 0 } .drawer.refine .bag-thumb { border-radius: 14px; box-shadow: 0 10px 24px -14px rgba(45, 26, 58, .5) }
+.drawer.refine .qty { border-color: rgba(201, 137, 122, .6); border-radius: 999px }
+.drawer.refine .drawer-foot { display: grid; gap: 12px; padding-top: 16px; background: linear-gradient(180deg, #fff, #fbf8f6); box-shadow: 0 -18px 30px -24px rgba(45, 26, 58, .35) }
+.drawer.refine .drawer-foot .bag-totals { padding-top: 0; border-top: 0 }
+.drawer.refine .drawer-foot .btn.solid { background: linear-gradient(135deg, #3a2354, #1a123c); color: #fff; border: 0; border-radius: 999px; padding: 16px } .drawer.refine .drawer-foot .btn.solid:hover { background: linear-gradient(135deg, #a65f4e, #c9897a) }
+.bag-trust { margin: 0; text-align: center; font-size: 11px; letter-spacing: .08em; opacity: .6 }
+
+/* POS analytics: header, period pills and the channel / payment filter bars */
+.an-head { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 14px }
+.an-title { margin: 0; font-size: clamp(26px, 3vw, 36px); font-weight: 800; letter-spacing: -.01em } .an-sub { margin: 4px 0 0; color: #6d6a64; font-size: 15px }
+.an-period { display: flex; align-items: center; gap: 12px; padding: 6px 8px 6px 18px; border-radius: 999px; background: #fff; border: 1px solid var(--d-line, #e5e4e0); box-shadow: 0 8px 22px -16px rgba(0, 0, 0, .25) }
+.an-period > span { font: 800 11px var(--d-sans, inherit); letter-spacing: .18em; color: #8a867f }
+.an-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px; border-radius: 14px; margin: 14px 0 }
+.an-chan { background: #ebe9e4 } .an-pay { background: #fdf6e3; border: 1px solid #f3e2b0 }
+.an-bar > b { padding: 0 12px 0 10px; font: 800 11px var(--d-sans, inherit); letter-spacing: .16em; color: #b4730a }
+.an-bar button { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-weight: 800; font-size: 14px; color: #4a4742; transition: background .2s, color .2s }
+.an-bar button:hover { background: rgba(0, 0, 0, .05) } .an-bar button.on { background: #111; color: #fff }
+.an-bar .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block } .dot.amber { background: #f59e0b } .dot.green { background: #10b981 } .dot.blue { background: #0ea5e9 } .dot.pink { background: #ec4899 } .dot.violet { background: #8b5cf6 }
+.an-gst { margin-left: auto }

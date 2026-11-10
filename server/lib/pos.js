@@ -245,8 +245,11 @@ export function listSales(db, { q = '', name = '', phone = '', source = 'all', f
 
 // Sales report for an inclusive date range, one channel, optionally GST-only / non-GST-only. Voided bills are excluded from revenue and counted
 // separately. Expenses (retail) are subtracted for net earnings. The monthly and weekly charts always show the current year / week.
-export async function report(db, from, to, channel = 'retail', gst = 'all') {
-  const g = gst === 'gst' ? ' AND s.is_gst' : gst === 'nongst' ? ' AND NOT s.is_gst' : '';
+export async function report(db, from, to, channel = 'retail', gst = 'all', source = 'all', payment = 'all') {
+  // Optional filters: sales channel (offline POS / online) and how the bill was paid (cash, PayNow/QR, card or a split of them).
+  const g = (gst === 'gst' ? ' AND s.is_gst' : gst === 'nongst' ? ' AND NOT s.is_gst' : '')
+    + (source === 'offline' || source === 'online' ? ` AND s.source = '${source}'` : '')
+    + (['cash', 'upi', 'card', 'split'].includes(payment) ? ` AND s.payment_mode = '${payment}'` : '');
   const range = `s.channel = $3 AND ${dayExpr} BETWEEN $1::date AND $2::date${g}`, p = [from, to, channel];
   const done = "s.status = 'completed'";
   const totals = await one(db, `
@@ -293,7 +296,7 @@ export async function report(db, from, to, channel = 'retail', gst = 'all') {
   const wk = await rows(db, `SELECT ${dayExpr}::text AS day, SUM(s.total_amount)::int AS revenue FROM pos_sales s WHERE ${done} AND s.channel = $1 AND ${dayExpr} BETWEEN $2::date AND $3::date${g} GROUP BY 1`, [channel, iso(mon), iso(sun)]);
   const week = Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + i); return wk.find(r => r.day === iso(d))?.revenue ?? 0 });
   const jan1 = new Date(Date.UTC(year, 0, 1)), weekNo = Math.ceil(((t - jan1) / 86400000 + ((jan1.getUTCDay() + 6) % 7) + 1) / 7);
-  return { from, to, channel, gst, ...totals, units, expenses, expenseByCategory, costs, cogs: costs.soldCost, gross: totals.revenue - costs.soldCost, net: totals.revenue - costs.soldCost - expenses, average: totals.bills ? Math.round(totals.revenue / totals.bills) : 0,
+  return { from, to, channel, gst, source, payment, ...totals, units, expenses, expenseByCategory, costs, cogs: costs.soldCost, gross: totals.revenue - costs.soldCost, net: totals.revenue - costs.soldCost - expenses, average: totals.bills ? Math.round(totals.revenue / totals.bills) : 0,
     topProduct: products[0]?.name ?? null, daily, products, coupons, discountedList, year, monthly, week, weekNo };
 }
 

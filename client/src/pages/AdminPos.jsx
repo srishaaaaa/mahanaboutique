@@ -433,20 +433,30 @@ function MoneyDetail({ kind, rep, from, to, onClose, goExpenses }) {
 
 function Analytics({ channel, openInvoice, tick, goExpenses }) {
   const ws = channel === 'wholesale';
-  const [tab, setTab] = useState('revenue'); const [gst, setGst] = useState('all'); const [per, setPer] = usePeriod('all');
+  const [tab, setTab] = useState('revenue'); const [gst, setGst] = useState('all'); const [per, setPer] = usePeriod('all'); const [src, setSrc] = useState('all'); const [pay, setPay] = useState('all');
   const [rep, setRep] = useState(null); const [bills, setBills] = useState(null); const [err, setErr] = useState(); const [detail, setDetail] = useState(null);
   const today = todayStr();
   const [from, to] = tab === 'today' ? [today, today] : periodRange(per);
   useEffect(() => {
     setRep(null); setBills(null); setErr();
-    api(`/admin/pos/reports?from=${from}&to=${to}&channel=${channel}&gst=${gst}`).then(setRep).catch(e => setErr(e.message));
+    api(`/admin/pos/reports?from=${from}&to=${to}&channel=${channel}&gst=${gst}&source=${src}&payment=${pay}`).then(setRep).catch(e => setErr(e.message));
     if (tab === 'today') api(`/admin/pos/sales?from=${from}&to=${to}&channel=${channel}&gst=${gst}`).then(setBills).catch(() => {});
-  }, [from, to, channel, gst, tab, tick]);
+  }, [from, to, channel, gst, src, pay, tab, tick]);
   const v = (f, d = '…') => rep ? f(rep) : d;
   return (
     <>
-      <div className="dpos-bar-tools"><Chips value={gst} onChange={setGst} options={GST_CHIPS} />{tab !== 'today' && <PeriodFilter value={per} onChange={setPer} />}</div>
+      <div className="an-head">
+        <div><h2 className="an-title">POS Analytics</h2><p className="an-sub">Real-time store &amp; channel insights</p></div>
+        {tab !== 'today' && <div className="an-period"><span>PERIOD</span><PeriodFilter value={per} onChange={setPer} /></div>}
+      </div>
       <div className="dpos-tabs" role="tablist">{[['revenue', 'Revenue'], ['today', 'Today’s sales'], ['products', 'Products'], ['coupons', 'Coupons']].map(([id, l]) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>{l}</button>)}</div>
+      <div className="an-bar an-chan" role="group" aria-label="Sales channel">
+        {[['all', 'All Channels', null], ['offline', 'Offline (POS)', 'amber'], ['online', 'Online', 'green']].map(([v, l, d]) => <button key={v} type="button" className={src === v ? 'on' : ''} aria-pressed={src === v} onClick={() => setSrc(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+        <span className="an-gst"><Chips value={gst} onChange={setGst} options={GST_CHIPS} /></span>
+      </div>
+      <div className="an-bar an-pay" role="group" aria-label="Payment method"><b>PAYMENT</b>
+        {[['all', 'All Methods', null], ['cash', 'Cash', 'amber'], ['upi', 'QR / GPay', 'blue'], ['card', 'Card', 'pink'], ['split', 'Split', 'violet']].map(([v, l, d]) => <button key={v} type="button" className={pay === v ? 'on' : ''} aria-pressed={pay === v} onClick={() => setPay(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+      </div>
       <Err>{err}</Err>
 
       {(tab === 'revenue' || tab === 'today') && <>

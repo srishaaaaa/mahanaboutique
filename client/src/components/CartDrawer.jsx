@@ -63,7 +63,8 @@ export function BagLines({ compact = false }) {
 }
 
 export default function CartDrawer() {
-  const { bagOpen, setBagOpen, cart, bagSubtotal, bagCount } = useApp();
+  const { bagOpen, setBagOpen, cart, bagSubtotal, bagCount, cartInfo } = useApp();
+  const freeOver = cartInfo.shipping?.freeOver, toFree = freeOver != null ? Math.max(0, freeOver - bagSubtotal) : null;
   const ref = useRef();
   const close = () => setBagOpen(false);
   useModal(bagOpen, close, ref);
@@ -79,15 +80,21 @@ export default function CartDrawer() {
               <button className="icon-btn" onClick={close} aria-label="Close shopping bag">✕</button>
             </header>
             <div className="drawer-body">
+              {cart.length > 0 && freeOver != null && (
+                <div className="bag-ship" role="status">
+                  <p>{toFree === 0 ? <>You have <b>free shipping</b> on this order.</> : <>Add <b>{inr(toFree)}</b> more for <b>free shipping</b>.</>}</p>
+                  <span className="bar"><i style={{ width: `${Math.min(100, Math.round(bagSubtotal / freeOver * 100))}%` }} /></span>
+                </div>
+              )}
               {!cart.length
                 ? <div className="empty"><p className="serif big">Your bag is empty.</p><p className="muted">Pieces you add will wait for you here.</p><Link className="btn" to="/shop" onClick={close}>EXPLORE THE COLLECTION</Link></div>
                 : <BagLines compact />}
             </div>
             {cart.length > 0 && (
               <footer className="drawer-foot">
-                <div className="row between"><span>Subtotal</span><strong>{inr(bagSubtotal)}</strong></div>
-                <ShippingNote subtotal={bagSubtotal} />
-                <Link className="btn solid wide" to="/checkout" onClick={close} data-cursor="PAY">CHECKOUT</Link>
+                <BagTotals />
+                <Link className="btn solid wide" to="/checkout" onClick={close} data-cursor="PAY">CHECKOUT · {inr(cartInfo.total ?? bagSubtotal)}</Link>
+                <p className="bag-trust">Secure payment · Prices include GST</p>
                 <Link className="link-u center" to="/cart" onClick={close}>View bag</Link>
               </footer>
             )}

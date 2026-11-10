@@ -135,9 +135,9 @@ export default function pos({ db, auth }) {
     res.json(await voidSale(db, req.user, req.params.invoice, reason));
   }));
   r.get('/pos/reports', manager, wrap(async (req, res) => {
-    const { from, to, channel: ch, gst } = z.object({ from: date, to: date, channel, gst: gstFilter }).parse(req.query);
+    const { from, to, channel: ch, gst, source, payment } = z.object({ from: date, to: date, channel, gst: gstFilter, source: z.enum(['all', 'offline', 'online']).default('all'), payment: z.enum(['all', 'cash', 'upi', 'card', 'split']).default('all') }).parse(req.query);
     if (from > to) throw new HttpError(400, 'From date is after To date');
-    res.json(await report(db, from, to, ch, gst));
+    res.json(await report(db, from, to, ch, gst, source, payment));
   }));
 
   // ---- advance orders (deposit now, bill on collection) ----
