@@ -457,3 +457,11 @@
 .inv-nm b, .sg-row b { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere }
 .inv-nm { align-items: start }
 .pe-sug { padding: 0 clamp(14px, 2vw, 28px) 24px }
+
+/* single-line cells in tables read as one family: same size, weights 500/600/700, accent only on the amount */
+.dpos-ord td { font-size: 14px; line-height: 1.35; vertical-align: middle }
+.dpos-ord td.oid { font-size: 13.5px; font-weight: 600 }
+.dpos-ord td b { font-size: 14px; font-weight: 600 }
+.dpos-ord td .small { font-size: 12px; font-weight: 400 }
+.dpos-ord td.due { font-size: 14px; font-weight: 700; color: var(--d-acc, #1c284f) }
+.dpos-ord td:nth-child(4) { font-weight: 500 }
