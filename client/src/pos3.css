@@ -465,3 +465,15 @@
 .dpos-ord td .small { font-size: 12px; font-weight: 400 }
 .dpos-ord td.due { font-size: 14px; font-weight: 700; color: var(--d-acc, #1c284f) }
 .dpos-ord td:nth-child(4) { font-weight: 500 }
+
+/* Coupons: equal columns, light small-caps labels, soft grey fields, tiny superscript counts */
+.cp-two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) } @media (max-width: 1000px) { .cp-two { grid-template-columns: 1fr } }
+.cp-card { padding: clamp(22px, 2.4vw, 34px); border-radius: 26px; gap: 16px }
+.cp-card h3 { font-size: 24px; font-weight: 700 }
+.cp-l { font: 500 11.5px 'Poppins', sans-serif; letter-spacing: .12em; color: #3a3730 } .cp-l em { color: var(--d-acc, #1c284f); margin-left: 4px }
+.cp-l input, .cp-code input, .cp-search { background: #efeef2 }
+.cp-code { background: #efeef2 }
+.cp-type { background: #f4f3f6; padding: 5px; border: 1px solid #e6e4ea } .cp-type button { background: #fff; border-radius: 10px; padding: 10px 18px; font-weight: 700 } .cp-type button.on { background: var(--d-acc, #1c284f); color: #fff }
+.cp-filters small { font-size: 9px; vertical-align: super; margin-left: 3px; opacity: .7 }
+.cp-sw { background: #f4f3f6 }
+.cp-go { border-radius: 14px; padding: 20px; letter-spacing: .06em }
