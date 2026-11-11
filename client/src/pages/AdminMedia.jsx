@@ -44,7 +44,7 @@ function HomePicks({ onSaved, toast, only }) {
   const { site, catalog } = useApp();
   const hp = site.homepage || { trending: [], collections: [] };
   const [trend, setTrend] = useState((hp.trending || []).slice(0, 4)); const [colSel, setColSel] = useState(hp.collections); const [catSel, setCatSel] = useState(hp.categories || []);
-  const [names, setNames] = useState({}); const [pics, setPics] = useState({}); const [q, setQ] = useState(''); const [found, setFound] = useState([]);
+  const [names, setNames] = useState({}); const [pics, setPics] = useState({}); const [q, setQ] = useState(''); const [all, setAll] = useState([]); const [cat, setCat] = useState('all');
   const [busy, setBusy] = useState(false); const [err, setErr] = useState();
   const auto = !(hp.trending || []).length;
   const [seeded, setSeeded] = useState(false);
@@ -52,7 +52,9 @@ function HomePicks({ onSaved, toast, only }) {
   useEffect(() => { setTrend((hp.trending || []).slice(0, 4)); setColSel(hp.collections); setCatSel(hp.categories || []) }, [site.homepage]); // eslint-disable-line
   useEffect(() => { if (auto && shownNow.length && !trend.length && !seeded) { setSeeded(true); setTrend(shownNow.map(p => p.slug)); setNames(n => ({ ...n, ...Object.fromEntries(shownNow.map(p => [p.slug, p.name])) })); setPics(x => ({ ...x, ...Object.fromEntries(shownNow.map(p => [p.slug, p.image])) })) } }, [auto, shownNow.map(p => p.slug).join(',')]); // eslint-disable-line
   useEffect(() => { if (!trend.length) return; api(`/products?slugs=${encodeURIComponent(trend.join(','))}&limit=48`).then(d => { setNames(n => ({ ...n, ...Object.fromEntries(d.items.map(p => [p.slug, p.name])) })); setPics(x => ({ ...x, ...Object.fromEntries(d.items.map(p => [p.slug, p.image])) })) }).catch(() => {}) }, [trend.join(',')]); // eslint-disable-line
-  useEffect(() => { const t = q.trim(); if (!t) { setFound([]); return } const id = setTimeout(() => api(`/products?q=${encodeURIComponent(t)}&limit=8`).then(d => setFound(d.items)).catch(() => {}), 250); return () => clearTimeout(id) }, [q]);
+  useEffect(() => { api('/admin/pos/products?q=').then(r => setAll(r.filter(p => p.status === 'active'))).catch(() => {}) }, []);
+  const cats = [...new Map(all.filter(p => p.categorySlug).map(p => [p.categorySlug, p.category])).entries()];
+  const found = all.filter(p => (cat === 'all' || p.categorySlug === cat) && (!q.trim() || p.name.toLowerCase().includes(q.trim().toLowerCase())) && !trend.includes(p.slug)).slice(0, 40);
   const move = (list, set, i, d) => { const j = i + d; if (j < 0 || j >= list.length) return; const n = [...list]; [n[i], n[j]] = [n[j], n[i]]; set(n) };
   const save = async () => { setBusy(true); setErr(); try { await api('/admin/settings/homepage', { method: 'PUT', body: { trending: trend, collections: colSel, categories: catSel } }); toast('Homepage picks saved.'); onSaved() } catch (e) { setErr(e.message) } finally { setBusy(false) } };
   const catName = s => catalog.categories.find(c => c.slug === s)?.name || s;
@@ -69,10 +71,10 @@ function HomePicks({ onSaved, toast, only }) {
       <p className="muted small">The pieces shown in “Trending collections” on the homepage, in this order.</p>
       {auto && <p className="adm-note">Nothing is saved here yet, so the homepage is showing your <b>featured</b> pieces, listed below. Change them if you like, then press Save to keep this list.</p>}
       <ol className="adm-picks">{trend.map((s, i) => row(<span className="adm-pick-n">{pics[s] && <img src={pics[s]} alt="" width="40" height="50" />}{names[s] || s}</span>, i, trend, setTrend))}</ol>
-      {trend.length < 4 && <>
-        <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search a product to add…" aria-label="Search products to add" />
-        <ul className="adm-picks">{found.filter(p => !trend.includes(p.slug)).map(p => <li key={p.id} className="adm-pick"><b>{p.name}</b><span className="adm-pick-act"><button type="button" onClick={() => { setNames(n => ({ ...n, [p.slug]: p.name })); setTrend([...trend, p.slug]); setQ('') }}>Add</button></span></li>)}</ul>
-      </>}
+      <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search a product to add to Trending…" aria-label="Search products to add" />
+      <div className="inv-chips" role="group" aria-label="Category" style={{ margin: '10px 0' }}><button type="button" className={cat === 'all' ? 'on' : ''} onClick={() => setCat('all')}>ALL</button>{cats.map(([slug, name]) => <button key={slug} type="button" className={cat === slug ? 'on' : ''} onClick={() => setCat(slug)}>{String(name).toUpperCase()}</button>)}</div>
+      {trend.length >= 4 && <p className="muted small">Trending holds 4 pieces. Remove one above to add another.</p>}
+      <ul className="adm-picks">{found.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{p.image ? <img src={p.image} alt="" width="40" height="50" /> : <i className="sg-ph" />}<span><b>{p.name}</b><br /><small className="muted">{p.category || 'Product'}</small></span></span><span className="adm-pick-act"><button type="button" disabled={trend.length >= 4} onClick={() => { setNames(n => ({ ...n, [p.slug]: p.name })); setPics(x => ({ ...x, [p.slug]: p.image })); setTrend([...trend, p.slug]) }}>+ Add</button></span></li>)}</ul>
       {!only && <>
       <h3 className="adm-h3">Categories ({catSel.length} of 12)</h3>
       <p className="muted small">The categories in the “Categories” menu and the “Featured categories” section, in this order. Leave empty to list every category.</p>
