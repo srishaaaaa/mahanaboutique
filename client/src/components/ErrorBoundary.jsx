@@ -3,25 +3,28 @@ import { Component } from 'react';
 // Shows the error instead of a blank page when a screen crashes while drawing, or when a lazy-loaded
 // page fails to download (usually a tab left open across a new release: a reload fixes it).
 export function reloadOnce() {
+  // A tab left open across a release asks for files that no longer exist: fetch the new version, up to 3 times in 5 minutes
+  // (the new index.html is never cached, so one reload is normally enough).
   try {
-    const last = +sessionStorage.getItem('stale-reload') || 0;
-    if (Date.now() - last < 60_000) return false; // already tried a moment ago: show the button instead of looping
-    sessionStorage.setItem('stale-reload', String(Date.now()));
-  } catch { /* storage blocked: fall through to one reload */ }
+    const t = Date.now(), log = JSON.parse(sessionStorage.getItem('stale-reload') || '[]').filter(x => t - x < 300_000);
+    if (log.length >= 3) return false;
+    sessionStorage.setItem('stale-reload', JSON.stringify([...log, t]));
+  } catch { /* storage blocked: still reload once */ }
   window.location.reload(); return true;
 }
 export default class ErrorBoundary extends Component {
-  state = { error: null };
+  state = { error: null, gaveUp: false };
   static getDerivedStateFromError(error) { return { error } }
   componentDidCatch(error, info) {
     console.error('Screen crashed:', error, info?.componentStack);
     // A tab left open across a release asks for files that no longer exist: fetch the new version once, automatically.
-    if (/Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk/i.test(String(error?.message))) reloadOnce();
+    if (/Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk/i.test(String(error?.message))) if (!reloadOnce()) this.setState({ gaveUp: true });
   }
   render() {
     const { error } = this.state;
     if (!error) return this.props.children;
     const stale = /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk/i.test(String(error?.message));
+    if (stale && !this.state.gaveUp) return <div role="status" aria-live="polite" style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', font: '15px system-ui, sans-serif', color: '#1c1b3a' }}>Updating…</div>;
     return (
       <div role="alert" style={{ maxWidth: 560, margin: '12vh auto', padding: 24, background: '#fff', borderRadius: 16, font: '15px/1.5 system-ui, sans-serif', color: '#1c1b3a' }}>
         <h1 style={{ margin: '0 0 8px', fontSize: 20 }}>{stale ? 'This page is out of date' : 'Something went wrong on this screen'}</h1>
