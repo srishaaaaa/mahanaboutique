@@ -5,13 +5,15 @@ import { Emblem } from './Wordmark';
 
 const PortalCanvas = lazy(() => import('../three/canvases').then(m => ({ default: m.PortalCanvas })));
 
-const ENTER_MS = 2300;
+const ENTER_MS = 1300;
+// The 888 KB 3D scene is only fetched on a fast, non-metered connection; everyone else gets the light CSS backdrop instantly.
+const lightLink = () => { const c = typeof navigator !== 'undefined' ? navigator.connection : null; return !!c && (c.saveData || /(^|-)2g|3g/.test(c.effectiveType || '')) };
 
 // Skippable cinematic entrance. Never blocks the page: the skip control is available from the first frame.
 export default function Intro({ onDone }) {
   const reduced = useReduced();
   const quality = useQuality();
-  const webgl = useMemo(hasWebGL, []);
+  const webgl = useMemo(() => hasWebGL() && !lightLink(), []);
   const [phase, setPhase] = useState('idle'); // idle | entering
   const [line2, setLine2] = useState(false);
   const ref = useRef();
@@ -19,7 +21,7 @@ export default function Intro({ onDone }) {
   const finish = () => { clearTimeout(timer.current); onDone() };
   useModal(true, finish, ref); // Esc skips
 
-  useEffect(() => { const t = setTimeout(() => setLine2(true), 1700); return () => clearTimeout(t) }, []);
+  useEffect(() => { const t = setTimeout(() => setLine2(true), 900); return () => clearTimeout(t) }, []);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const enter = () => {
