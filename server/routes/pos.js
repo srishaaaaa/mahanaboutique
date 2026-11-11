@@ -292,7 +292,7 @@ export default function pos({ db, auth }) {
   // Delivery rules: distance bands from the shop's postal code, free-delivery threshold, optional cheaper tiers for bigger orders.
   r.get('/pos/delivery-rules', manager, wrap(async (_req, res) => res.json(await loadRules(db))));
   r.put('/pos/delivery-rules', manager, wrap(async (req, res) => {
-    const v = z.object({ enabled: z.boolean(), storePostal: z.string().regex(/^(\d{6})?$/, 'Shop postal code must be 6 digits'), freeOver: paise, maxKm: z.number().min(0).max(500), perKmBeyond: paise,
+    const v = z.object({ enabled: z.boolean(), note: text(300).default(''), storePostal: z.string().regex(/^(\d{6})?$/, 'Shop postal code must be 6 digits'), freeOver: paise, maxKm: z.number().min(0).max(500), perKmBeyond: paise,
       bands: z.array(z.object({ upToKm: z.number().positive().max(500), fee: paise })).min(1).max(12), orderTiers: z.array(z.object({ minOrder: paise, fee: paise })).max(8) }).parse(req.body);
     await putSetting(db, 'delivery_rules', v); await audit(db, req.user.id, 'pos.delivery_rules', 'pos_settings', 'delivery_rules'); res.json(v);
   }));

@@ -24,6 +24,7 @@ export function BagTotals() {
       <div><dt>Subtotal <small>(incl. GST)</small></dt><dd>{inr(subtotal)}</dd></div>
       <div><dt>Delivery{shipping.km != null ? <small> ({shipping.km} km)</small> : null}</dt><dd>{shipping.blocked ? '—' : shipping.amount === 0 ? 'Free' : inr(shipping.amount)}</dd></div>
       {shipping.note && <p className="muted small" role="status" style={{ margin: '0 0 6px' }}>{shipping.note}</p>}
+      {shipping.policy && <p className="muted small" style={{ margin: '0 0 6px' }}>{shipping.policy}</p>}
       {!shipping.note && shipping.km == null && shipping.freeOver ? <p className="muted small" style={{ margin: '0 0 6px' }}>Delivery is priced by distance. Enter your postal code at checkout. Free over {inr(shipping.freeOver)}.</p> : null}
       <div className="grand"><dt>Total</dt><dd>{inr(total)}</dd></div>
       {gst.byRate.length > 0 && <div className="gst-split" role="group" aria-label="GST included in the total">

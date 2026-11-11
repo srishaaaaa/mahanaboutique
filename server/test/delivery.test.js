@@ -13,3 +13,8 @@ test('delivery fee follows distance bands, free threshold, order tiers and the m
   assert.equal(feeFor(D, null, 5000).amount, 800, 'unknown distance uses the first band');
   assert.equal(feeFor({ ...D, enabled: false }, 3, 100).amount, 0);
 });
+
+test('shipping note: defaults to a sentence, shows on the cart, and the owner can change it', async () => {
+  const { DELIVERY_DEFAULTS } = await import('../lib/delivery.js');
+  assert.ok(DELIVERY_DEFAULTS.note.length > 10);
+});

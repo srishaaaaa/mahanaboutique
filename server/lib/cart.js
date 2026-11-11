@@ -61,7 +61,7 @@ export async function shippingFor(q, subtotal, pin) {
   const m = await one(q, `SELECT id, code, name FROM shipping_methods WHERE active ORDER BY id LIMIT 1`);
   const d = await deliveryFor(q, subtotal, pin);
   if (d.amount == null) throw new HttpError(400, d.reason, 'out_of_range');
-  return { id: m?.id ?? null, name: m?.name ?? 'Delivery', amount: d.amount, freeOver: d.freeOver, km: d.km, note: d.reason };
+  return { id: m?.id ?? null, name: m?.name ?? 'Delivery', amount: d.amount, freeOver: d.freeOver, km: d.km, note: d.reason, policy: d.policy };
 }
 
 export function issueFor(l) {
@@ -88,8 +88,8 @@ export async function cartView(db, cart, pin) {
   const lines = cart ? await cartLines(db, cart.id) : [];
   const items = lines.map(l => ({ variantId: l.variantId, slug: l.slug, name: l.name, size: l.size, color: l.color, price: l.price, taxRate: l.taxRate, qty: l.qty, stock: l.stock, image: l.image, issue: issueFor(l) }));
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-  const ship = await shippingFor(db, subtotal, pin).catch(e => ({ amount: 0, freeOver: null, note: e.message, blocked: true }));
-  const shipping = { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null, km: ship.km ?? null, note: ship.note ?? null, blocked: !!ship.blocked }, gst = gstSplit(items);
+  const ship = await shippingFor(db, subtotal, pin).catch(e => ({ amount: 0, freeOver: null, note: e.message, blocked: true, policy: '' }));
+  const shipping = { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null, km: ship.km ?? null, note: ship.note ?? null, policy: ship.policy ?? '', blocked: !!ship.blocked }, gst = gstSplit(items);
   return { items, count: items.reduce((s, i) => s + i.qty, 0), subtotal, shipping, gst, total: subtotal + shipping.amount, hasIssues: items.some(i => i.issue) };
 }
 

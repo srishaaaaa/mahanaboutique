@@ -4,7 +4,7 @@ const getSetting = async (db, key, fallback) => (await one(db, 'SELECT value FRO
 // Delivery charge = distance band (km from the shop to the customer's postal code) with a free-delivery threshold on the order value.
 // The rules live in Admin → POS Settings → Delivery rules; nothing here is hard-coded except the first-run defaults.
 export const DELIVERY_DEFAULTS = {
-  enabled: true, storePostal: '', freeOver: 15000, maxKm: 0, perKmBeyond: 0,
+  enabled: true, note: 'Delivered within 3 to 5 working days across Singapore. You will get a message when your order ships.', storePostal: '', freeOver: 15000, maxKm: 0, perKmBeyond: 0,
   bands: [{ upToKm: 5, fee: 800 }, { upToKm: 10, fee: 1200 }, { upToKm: 20, fee: 1800 }],
   orderTiers: [], // [{ minOrder, fee }] : an order of at least minOrder pays at most fee (e.g. bigger baskets ship cheaper)
 };
@@ -53,5 +53,5 @@ export async function deliveryFor(db, subtotal, pin) {
   const rules = await loadRules(db);
   let km = null;
   if (pin && rules.storePostal) { const [a, b] = await Promise.all([geocode(rules.storePostal), geocode(pin)]); if (a && b) km = Math.round(haversineKm(a, b) * 10) / 10 }
-  return { ...feeFor(rules, km, subtotal), freeOver: rules.freeOver || null };
+  return { ...feeFor(rules, km, subtotal), freeOver: rules.freeOver || null, policy: rules.note || '' };
 }

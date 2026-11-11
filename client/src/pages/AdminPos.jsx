@@ -655,7 +655,7 @@ function DeliveryRulesCard() {
   const save = async e => {
     e.preventDefault(); setBusy(true); setErr();
     try {
-      const body = { enabled: r.enabled, storePostal: r.storePostal.trim(), freeOver: toPaise(r.freeOver), maxKm: Math.max(0, +r.maxKm || 0), perKmBeyond: toPaise(r.perKmBeyond),
+      const body = { enabled: r.enabled, note: (r.note || '').trim(), storePostal: r.storePostal.trim(), freeOver: toPaise(r.freeOver), maxKm: Math.max(0, +r.maxKm || 0), perKmBeyond: toPaise(r.perKmBeyond),
         bands: r.bands.filter(b => +b.upToKm > 0).map(b => ({ upToKm: +b.upToKm, fee: toPaise(b.fee) })), orderTiers: r.orderTiers.filter(t => toPaise(t.minOrder) > 0).map(t => ({ minOrder: toPaise(t.minOrder), fee: toPaise(t.fee) })) };
       await api('/admin/pos/delivery-rules', { method: 'PUT', body }); toast('Delivery rules saved.');
     } catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
@@ -664,6 +664,7 @@ function DeliveryRulesCard() {
     <form className="dpos-card" onSubmit={save} style={{ marginTop: 16 }}>
       <h2><Icon n="truck" />Online delivery charge (by distance &amp; order)</h2>
       <label style={{ display: 'flex', gap: 10, alignItems: 'center', margin: '4px 0 12px' }}><input type="checkbox" checked={r.enabled} onChange={e => setR({ ...r, enabled: e.target.checked })} /><span>Charge for delivery</span></label>
+      <label className="f" style={{ marginBottom: 12 }}>Shipping note shown to customers (bag, checkout)<textarea rows={2} maxLength={300} value={r.note || ''} onChange={e => setR({ ...r, note: e.target.value })} placeholder="e.g. Delivered within 3 to 5 working days across Singapore." /></label>
       <div className="dpos-grid">
         <label className="f">Shop postal code (distance starts here)<input inputMode="numeric" maxLength={6} value={r.storePostal} onChange={e => setR({ ...r, storePostal: e.target.value.replace(/\D/g, '') })} placeholder="6 digits" /></label>
         <label className="f">Free delivery when the order is at least (S$, 0 = never)<input inputMode="decimal" value={r.freeOver} onChange={e => setR({ ...r, freeOver: e.target.value })} /></label>
