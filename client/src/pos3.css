@@ -495,3 +495,6 @@
 
 /* Desktop admin is drawn at 90% so it looks right at the browser's own 100% zoom (the portal-level barcode pop-ups follow it; phones stay at 100%) */
 @media (min-width: 900px) { .bc-portal { zoom: .9 } }
+
+/* "Add Barcode" sits beside "Add Product" in the Inventory header: same height, outlined so Add Product stays the primary action */
+.inv-add.inv-add-bc { background: #fff; color: var(--d-acc, #1c284f); border: 1.5px solid var(--d-acc, #1c284f) } .inv-add.inv-add-bc:hover { background: color-mix(in srgb, var(--d-acc, #1c284f) 8%, #fff) }

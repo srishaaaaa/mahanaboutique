@@ -314,6 +314,7 @@ function ProductsStock({ manager, stocker }) {
       <div className="inv-head"><div><p>{list ? `${list.length} products` : '…'} · same catalog customers see</p></div>
         <div className="inv-head-a">
           <button type="button" className={`inv-alerts ${needCount ? 'warn' : ''}`} onClick={() => setAlertOpen(true)}>🔔 Alerts{needCount > 0 && <b>{needCount}</b>}</button>
+          {stocker && <button type="button" className="inv-add inv-add-bc" title="Generate & print barcodes for items" onClick={() => setBcGen({})}><Icon n="printer" size={16} /> Add Barcode</button>}
           {manager && <button type="button" className="inv-add" onClick={() => setModal({ t: 'add' })}><Icon n="plus" size={16} /> Add Product</button>}
         </div></div>
       {list && (counts.out > 0 || counts.low > 0 || counts.sizes > 0) && <div className="inv-banner" role="status">⚠ {[counts.out ? `${counts.out} out of stock` : null, counts.low ? `${counts.low} running low` : null, counts.sizes ? `${counts.sizes} with a size sold out` : null].filter(Boolean).join(' · ')} — restock soon.</div>}
@@ -322,7 +323,6 @@ function ProductsStock({ manager, stocker }) {
         <select value={catF} onChange={e => setCatF(e.target.value)} aria-label="Category">{[['', 'All Categories'], ...cats.map(c => [c.slug, c.name])].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort">{[['name', 'Name A–Z'], ['stock-asc', 'Stock: low to high'], ['stock-desc', 'Stock: high to low'], ['price-asc', 'Price: low to high'], ['price-desc', 'Price: high to low']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <div className="inv-view" role="group" aria-label="View">{[['grid', 'Grid'], ['list', 'List']].map(([v, l]) => <button key={v} type="button" className={view === v ? 'on' : ''} aria-pressed={view === v} onClick={() => setView(v)}>{l}</button>)}</div>
-        {stocker && <button type="button" className="dpos-btn ghost sm inv-bcbtn" title="Generate & print barcodes for items" onClick={() => setBcGen({})}><Icon n="printer" size={15} />Add barcode</button>}
         <label className="inv-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search products…" aria-label="Search products" /></label>
       </div>
       <Err>{err}</Err>
