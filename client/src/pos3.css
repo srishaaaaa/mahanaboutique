@@ -523,3 +523,11 @@
 .inv-filters select { padding: 8px 12px; font-size: 13px; border-radius: 10px; min-width: 0 } .inv-filters select.inv-sel { min-width: 150px }
 .inv-view { padding: 2px; border-radius: 9px } .inv-view button { padding: 6px 12px; font-size: 12px }
 .inv-search { min-width: 220px; border-radius: 12px; padding: 0 12px } .inv-search input { padding: 9px 0; font-size: 13px }
+
+/* Coupon rows: compact buttons and icons (smaller, not tiny) */
+.cp-list li { padding: 14px 16px; gap: 3px 0 }
+.cp-list li .cp-c { font-size: 17px } .cp-list li .cp-st { padding: 3px 9px; font-size: 10.5px }
+.cp-list li .cp-d { font-size: 17px } .cp-list li .cp-d small { font-size: 12.5px } .cp-list li .cp-u { font-size: 12px }
+.cp-list li .cp-act { gap: 6px; margin-top: 6px }
+.cp-b { padding: 7px 13px; border-radius: 9px; font-size: 12px; gap: 6px } .cp-b svg { width: 14px; height: 14px }
+.cp-i { width: 32px; height: 32px; border-radius: 9px } .cp-i svg { width: 14px; height: 14px }
