@@ -21,6 +21,7 @@ export function A4Doc({ sale, shop }) {
   return (
     <article className="inv-doc">
       {sale.status === 'voided' && <div className="inv-void" aria-hidden="true">VOID</div>}
+      {sale.returns?.length > 0 && <p className="inv-retflag" style={{ margin: '0 0 10px', padding: '6px 12px', border: '1px solid #f3b8b8', background: '#fdecec', color: '#b91c1c', fontWeight: 800, letterSpacing: '.06em', fontSize: 12, borderRadius: 6 }}>↩ {sale.items.every(i => i.returnedQty >= i.quantity) ? 'FULLY RETURNED' : 'PARTLY RETURNED'} · {sale.returns.map(r => r.returnNo).join(', ')}</p>}
       <header className="inv-head">
         <div className="inv-brand">
           {shop.logo && <div className="inv-logo"><img src={shop.logo} alt="" /></div>}
@@ -222,6 +223,7 @@ export default function InvoicePage() {
       <div className="inv-page">
         <div className="inv-bar">
           {staffR ? <Link className="inv-btn" to="/admin/billing/orders">← Return to POS</Link> : <Link className="inv-btn" to="/">← {shop.name}</Link>}
+          <Link className="inv-btn" to={`/invoice/${ret.saleToken}`}>View original bill #{ret.invoiceNo}</Link>
           <span className="inv-grow" />
           <a className="inv-btn" href={rwa} target="_blank" rel="noopener noreferrer">Share WhatsApp</a>
           <button className="inv-btn" onClick={async () => { try { await navigator.clipboard.writeText(rlink); setCopied(true); setTimeout(() => setCopied(false), 1800) } catch { window.prompt('Copy this link', rlink) } }}>{copied ? 'Link copied ✓' : 'Copy Link'}</button>
@@ -268,7 +270,7 @@ export function InvoicePreview({ token, invoiceNo, onClose }) {
   const [tok, setTok] = useState(token || null); const [d, setD] = useState(null); const [err, setErr] = useState();
   const [orig, setOrig] = useState(null); // the original bill's token and its return invoices, for the tabs
   useEffect(() => { if (!tok && invoiceNo) api('/admin/pos/sales/' + encodeURIComponent(invoiceNo)).then(x => setTok((x.sale || x).shareToken)).catch(e => setErr(e.message)) }, [tok, invoiceNo]);
-  useEffect(() => { if (tok) api('/invoice/' + encodeURIComponent(tok)).then(x => { setD(x); if (x.kind !== 'return') setOrig(o => (o && o.tok === tok && o.returns?.length === (x.sale.returns || []).length ? o : { tok, returns: x.sale.returns || [] })) }).catch(e => setErr(e.message)) }, [tok]);
+  useEffect(() => { if (tok) api('/invoice/' + encodeURIComponent(tok)).then(x => { setD(x); if (x.kind === 'return') api('/invoice/' + encodeURIComponent(x.ret.saleToken)).then(y => setOrig({ tok: x.ret.saleToken, returns: y.sale.returns || [] })).catch(() => {}); else setOrig(o => (o && o.tok === tok && o.returns?.length === (x.sale.returns || []).length ? o : { tok, returns: x.sale.returns || [] })) }).catch(e => setErr(e.message)) }, [tok]);
   useEffect(() => { const k = e => e.key === 'Escape' && onClose(); document.addEventListener('keydown', k); const o = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.removeEventListener('keydown', k); document.body.style.overflow = o } }, [onClose]);
   const no = d?.kind === 'return' ? d.ret.returnNo : d?.sale?.invoiceNo || invoiceNo || '';
   return (

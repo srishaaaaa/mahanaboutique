@@ -127,7 +127,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
           <ul className="oo-list">{page.map(r => { const dt = dtShort(r.createdAt); return (
             <li key={r.invoiceNo} className={`oo-card ${r.status === 'voided' ? 'voided' : ''}`}>
               <div className="oo-top"><div className="oo-id"><b>{r.invoiceNo}</b><span className="oo-tag">ONLINE</span></div>
-                <div className="oo-amt"><b>{inr(r.total)}</b><span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Cancelled' : 'Completed'}</span></div></div>
+                <div className="oo-amt"><b>{inr(r.total)}</b><span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Cancelled' : 'Completed'}</span>{r.returnCount > 0 && <span className="dpos-pill bad">↩ Returned</span>}</div></div>
               <p className="oo-name">{r.customerName || 'Guest'}</p>
               <p className="oo-meta">{[r.customerPhone, r.webEmail, dt.d, dt.t, r.items ? `${r.items} item${r.items === 1 ? '' : 's'}` : null].filter(Boolean).join(' · ')}</p>
               <div className="oo-foot oh-foot">
@@ -155,6 +155,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                 <td className="due">{inr(r.total)}</td>
                 <td className="r"><div className="dpos-rowact">
                   <span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Void' : 'Completed'}</span>
+                  {r.returnCount > 0 && <span className="dpos-pill bad" title="A return invoice was made against this bill">↩ Returned</span>}
                   <a className="ra wa" title="Send invoice on WhatsApp" aria-label="Send on WhatsApp" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
                   <a className="ra doc" title="Preview the invoice" aria-label="Preview invoice" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}><DocIcon /></a>
                   <button className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(r)}><EyeIcon /></button>
