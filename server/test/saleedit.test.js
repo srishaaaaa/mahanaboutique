@@ -49,6 +49,6 @@ test('editing an issued bill: details, quantity (stock follows), price, discount
   assert.equal((await patch({ items: [{ id: svc.id, remove: true }] })).status, 400);
   assert.equal((await o('PATCH', `/admin/pos/sales/${sale.invoiceNo}`, { reason: 'x' })).status, 400);
   // a bill with a return can no longer be edited
-  const r = await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: svc.id, qty: 1 }], refundMode: 'cash' }); assert.equal(r.status, 201);
+  const r = await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: svc.id, qty: 1 }], refundMode: 'cash', approval: { self: true } }); assert.equal(r.status, 201);
   assert.equal((await patch({ notes: 'late' })).status, 409);
 });

@@ -11,6 +11,7 @@ import { MODE, clock, longDate, money } from '../lib/invoiceFormat';
 import PayPicker, { blankPay, payParts } from '../components/PayPicker';
 import BillSummary from '../components/BillSummary';
 import EditSaleModal from '../components/EditSaleModal';
+import ReturnModal from '../components/ReturnModal';
 
 // "Cash S$500 · PayNow S$500" for a {cash, upi, card} split.
 const SPLIT_L = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card']];
@@ -68,6 +69,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
   const [f, setF] = useState({ q: '', name: '', phone: '', source: 'all', gst: 'all', payment: 'all' }); const [per, setPer] = usePeriod('all');
   const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [n, setN] = useState(0);
   const [openNo, setOpenNo] = useState(null); const [detail, setDetail] = useState(null); const [quick, setQuick] = useState(null);
+  const [retFor, setRetFor] = useState(null); const [editFor, setEditFor] = useState(null);
   const [sort, setSort] = useState('new'); const [shown, setShown] = useState(20);
   useEffect(() => setShown(20), [f, per, sort]);
   const [queue, setQueue] = useState([]); // website orders still to pack / ship, oldest first
@@ -134,6 +136,8 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                   <a className="oh-btn wa" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}`)} target="_blank" rel="noopener noreferrer"><WaIcon /> WhatsApp</a>
                   <a className="oh-btn inv" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}><DocIcon /> Invoice</a>
                   <button type="button" className="oh-btn plain" onClick={() => setQuick(r)}>Details</button>
+                  <button type="button" className="oh-btn plain" disabled={r.status === 'voided'} onClick={() => setRetFor(r.invoiceNo)}>↩ Return</button>
+                  {manager && <button type="button" className="oh-btn plain" disabled={r.status === 'voided'} onClick={() => setEditFor(r.invoiceNo)}>✎ Edit</button>}
                 </span>
               </div>
             </li>) })}</ul>)
@@ -154,11 +158,15 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                   <a className="ra wa" title="Send invoice on WhatsApp" aria-label="Send on WhatsApp" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
                   <a className="ra doc" title="Preview the invoice" aria-label="Preview invoice" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}><DocIcon /></a>
                   <button className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(r)}><EyeIcon /></button>
+                  <button className="ra" title="Return items" aria-label="Return items" disabled={r.status === 'voided'} onClick={() => setRetFor(r.invoiceNo)}>↩</button>
+                  {manager && <button className="ra" title="Edit this invoice" aria-label="Edit invoice" disabled={r.status === 'voided'} onClick={() => setEditFor(r.invoiceNo)}>✎</button>}
                   {manager && <button className="ra del" title="Void this invoice" aria-label="Void invoice" disabled={r.status === 'voided'} onClick={() => voidIt(r)}><TrashIcon /></button>}
                 </div></td></tr>
               {openNo === r.invoiceNo && <tr className="dpos-xrow"><td colSpan={7}>{!detail ? <span className="muted">Loading…</span> : <div className="dpos-xsum"><BillSummary bill={detail} /></div>}</td></tr>}</Fragment>) })}</tbody></table></div>)}
       </section>)}
       {sorted && sorted.length > shown && <button type="button" className="dpos-btn outline" style={{ margin: '10px auto', display: 'flex' }} onClick={() => setShown(x => x + 20)}>Show more ({sorted.length - shown} remaining)</button>}
+      {retFor && <ReturnModal invoiceNo={retFor} onClose={() => setRetFor(null)} onDone={() => { setN(x => x + 1); onChanged?.() }} />}
+      {editFor && <EditSaleModal invoiceNo={editFor} onClose={() => setEditFor(null)} onSaved={() => { setN(x => x + 1); onChanged?.() }} />}
       {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={openInvoice} manager={manager} onEdited={() => setN(x => x + 1)} />}
     </>
   );

@@ -29,7 +29,7 @@ test('return invoices: partial and final returns, refund maths, stock, public cr
   const goods = sale.items.find(i => i.variant?.size || i.sku), svc = sale.items.find(i => i !== goods);
 
   // return one of the three pieces
-  const r1 = await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 1 }], reason: 'Wrong size', refundMode: 'upi' });
+  const r1 = await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 1 }], reason: 'Wrong size', refundMode: 'upi', approval: { self: true } });
   assert.equal(r1.status, 201, JSON.stringify(r1.body));
   assert.equal(await stockOf(v.variantId), before + 1, 'stock goes back');
   const g = r1.body;
@@ -37,12 +37,12 @@ test('return invoices: partial and final returns, refund maths, stock, public cr
   assert.equal(g.returned.length, 1); assert.equal(g.kept.find(i => i.id === goods.id).keptQty, 2); assert.ok(g.kept.find(i => i.id === svc.id), 'the stitching line was not returned');
 
   // can't return more than is left; the last units take the remainder so the parts add up exactly
-  assert.equal((await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 3 }], refundMode: 'upi' })).status, 400);
-  const r2 = (await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 2 }, { itemId: svc.id, qty: 1 }], refundMode: 'cash' })).body;
+  assert.equal((await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 3 }], refundMode: 'upi', approval: { self: true } })).status, 400);
+  const r2 = (await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 2 }, { itemId: svc.id, qty: 1 }], refundMode: 'cash', approval: { self: true } })).body;
   assert.equal(g.subtotal + r2.subtotal, sale.subtotal, 'returns add up to the original subtotal');
   assert.equal(g.tax + r2.tax, sale.tax); assert.equal(g.discount + r2.discount, sale.discount);
   assert.equal(r2.kept.length, 0);
-  assert.equal((await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 1 }], refundMode: 'cash' })).status, 400, 'already fully returned');
+  assert.equal((await o('POST', `/admin/pos/sales/${sale.invoiceNo}/returns`, { items: [{ itemId: goods.id, qty: 1 }], refundMode: 'cash', approval: { self: true } })).status, 400, 'already fully returned');
 
   // the original lists its returns; it cannot be voided any more
   const again = (await o('GET', `/admin/pos/sales/${encodeURIComponent(sale.invoiceNo)}`)).body; const s2 = again.sale || again;

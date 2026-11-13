@@ -121,7 +121,7 @@ export async function getSale(q, invoice) {
   if (!sale) return null;
   sale.items = await rows(q, `
     SELECT id, name_snapshot AS name, sku_snapshot AS sku, variant_snapshot AS variant, unit_price AS "unitPrice", quantity,
-           line_total AS "lineTotal", discount_alloc AS discount, tax_rate AS "taxRate", tax_amount AS tax
+           line_total AS "lineTotal", discount_alloc AS discount, tax_rate AS "taxRate", tax_amount AS tax, (variant_id IS NOT NULL) AS stocked
     FROM pos_sale_items WHERE sale_id = $1 ORDER BY id`, [sale.id]);
   // Returns against this bill: how much of each line came back, and the return invoices.
   const back = await returnedByItem(q, sale.id);

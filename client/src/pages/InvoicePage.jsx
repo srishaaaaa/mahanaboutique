@@ -129,6 +129,7 @@ function ReturnHeader({ ret, shop }) {
           <div><dt>Time:</dt><dd>{clock(ret.createdAt)}</dd></div>
           <div><dt>Original invoice:</dt><dd><b>#{ret.invoiceNo}</b></dd></div>
           <div><dt>Invoice date:</dt><dd>{longDate(ret.billDate)}</dd></div>
+          {ret.approvedBy && <div><dt>Approved by:</dt><dd>{ret.approvedBy}</dd></div>}
         </dl>
       </div>
     </header>
@@ -147,6 +148,7 @@ function ReturnA4({ ret, shop }) {
         <thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">RETURNED</th><th className="r">RATE (S$)</th><th className="r">AMOUNT (S$)</th></tr></thead>
         <tbody>{ret.returned.map((i, n) => <tr key={n}><td className="n">{n + 1}</td><td><b>{i.name}</b>{i.variant?.size ? <span className="inv-var"> ({i.variant.size}{i.variant.color && i.variant.color !== 'Default' ? `, ${i.variant.color}` : ''})</span> : null}<span className="inv-var"> · returned {i.returnQty} of {i.quantity} sold</span></td><td className="c mono">{i.returnQty}</td><td className="r mono muted">{num2(i.unitPrice)}</td><td className="r mono"><b>{num2(i.returnLine)}</b></td></tr>)}</tbody>
       </table>
+      <p className="muted small" style={{ margin: '8px 0' }}>Delivery charge is not refunded.</p>
       <p className="inv-l inv-sec">ITEMS NOT RETURNED (KEPT BY THE CUSTOMER)</p>
       {ret.kept.length === 0 ? <p className="inv-none">Nothing — every item on the original invoice has now been returned.</p> : (
         <table className="inv-items kept"><thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">KEPT</th><th className="r">RATE (S$)</th></tr></thead>
@@ -249,7 +251,7 @@ export default function InvoicePage() {
         <button className="inv-btn" onClick={copy}>{copied ? 'Link copied ✓' : 'Copy Link'}</button>
         {manager && sale.status === 'completed' && !sale.returns?.length && <button className="inv-btn bad" onClick={voidIt} disabled={busy}>Void</button>}
         {manager && sale.status === 'completed' && !sale.returns?.length && sale.items.some(i => i.id != null) && <button className="inv-btn" onClick={() => setEditOpen(true)}>✎ Edit</button>}
-        {manager && sale.status === 'completed' && sale.items.some(i => i.id != null && i.returnedQty < i.quantity) && <button className="inv-btn" onClick={() => setRetOpen(true)}>↩ Return items</button>}
+        {staff && sale.status === 'completed' && sale.items.some(i => i.id != null && i.returnedQty < i.quantity) && <button className="inv-btn" onClick={() => setRetOpen(true)}>↩ Return items</button>}
         <button className="inv-btn dark" onClick={() => setPs(true)}><PrintIcon size={15} /> Print</button>
       </div>
       {fmt === 'thermal' ? <Thermal sale={sale} shop={shop} paper={paper} /> : <A4Doc sale={sale} shop={shop} />}
@@ -264,8 +266,9 @@ export default function InvoicePage() {
 export function InvoicePreview({ token, invoiceNo, onClose }) {
   const nav = useNavigate();
   const [tok, setTok] = useState(token || null); const [d, setD] = useState(null); const [err, setErr] = useState();
+  const [orig, setOrig] = useState(null); // the original bill's token and its return invoices, for the tabs
   useEffect(() => { if (!tok && invoiceNo) api('/admin/pos/sales/' + encodeURIComponent(invoiceNo)).then(x => setTok((x.sale || x).shareToken)).catch(e => setErr(e.message)) }, [tok, invoiceNo]);
-  useEffect(() => { if (tok) api('/invoice/' + encodeURIComponent(tok)).then(setD).catch(e => setErr(e.message)) }, [tok]);
+  useEffect(() => { if (tok) api('/invoice/' + encodeURIComponent(tok)).then(x => { setD(x); if (x.kind !== 'return') setOrig(o => (o && o.tok === tok && o.returns?.length === (x.sale.returns || []).length ? o : { tok, returns: x.sale.returns || [] })) }).catch(e => setErr(e.message)) }, [tok]);
   useEffect(() => { const k = e => e.key === 'Escape' && onClose(); document.addEventListener('keydown', k); const o = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.removeEventListener('keydown', k); document.body.style.overflow = o } }, [onClose]);
   const no = d?.kind === 'return' ? d.ret.returnNo : d?.sale?.invoiceNo || invoiceNo || '';
   return (
@@ -273,6 +276,9 @@ export function InvoicePreview({ token, invoiceNo, onClose }) {
       <div className="inv-pv-box">
         <div className="inv-pv-h"><span><PrintIcon size={16} /> INVOICE PREVIEW • #{no}</span>
           <span className="inv-pv-a">{tok && <button type="button" onClick={() => { onClose(); nav('/invoice/' + tok) }}>Open Full Page ↗</button>}<button type="button" aria-label="Close" onClick={onClose}>✕</button></span></div>
+        {orig?.returns?.length > 0 && <div className="inv-tabs" role="tablist" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: '8px 14px', borderBottom: '1px solid #e5e7eb' }}>
+          {[{ k: orig.tok, l: 'Original bill', on: tok === orig.tok }, ...orig.returns.map(r => ({ k: r.shareToken, l: r.returnNo, on: tok === r.shareToken }))].map(t => <button key={t.k} type="button" role="tab" aria-selected={t.on} className={`inv-btn ${t.on ? 'dark' : ''}`} onClick={() => { setD(null); setTok(t.k) }}>{t.l}</button>)}
+        </div>}
         <div className="inv-page inv-pv-body">{err ? <p className="inv-err">{err}</p> : !d ? <p className="inv-err">Loading invoice…</p> : d.kind === 'return' ? <ReturnA4 ret={d.ret} shop={d.shop} /> : <A4Doc sale={d.sale} shop={d.shop} />}</div>
       </div>
     </div>

@@ -502,6 +502,7 @@ function MoneyDetail({ kind, rep, from, to, onClose, goExpenses }) {
 
 function Analytics({ channel, openInvoice, tick, goExpenses }) {
   const ws = channel === 'wholesale';
+  const [redRef, setRedRef] = useState(() => { try { return localStorage.getItem('mahana.reduceRefunds') !== '0' } catch { return true } });
   const [tab, setTab] = useState('revenue'); const [gst, setGst] = useState('all'); const [per, setPer] = usePeriod('all'); const [src, setSrc] = useState('all'); const [pay, setPay] = useState('all');
   const [rep, setRep] = useState(null); const [bills, setBills] = useState(null); const [err, setErr] = useState(); const [detail, setDetail] = useState(null);
   const today = todayStr();
@@ -529,10 +530,15 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
 
       {(tab === 'revenue' || tab === 'today') && <>
         <div className="dpos-k4">
-          <Stat cls="net" icon="wallet" label="Net profit" value={v(r => r.net < 0 ? `− ${inr(-r.net)}` : inr(r.net))} sub={ws ? 'Wholesale sales' : 'Sales − Expenses'} onOpen={!ws && rep ? () => setDetail('net') : undefined} />
+          <Stat cls="net" icon="wallet" label="Net profit" value={v(r => { const n = redRef ? r.net : r.net + (r.returned?.total || 0); return n < 0 ? `− ${inr(-n)}` : inr(n) })} sub={ws ? 'Wholesale sales' : 'Sales − Expenses'} onOpen={!ws && rep ? () => setDetail('net') : undefined} />
           <Stat cls="gstc" icon="doc" label="GST sales" value={v(r => inr(r.gstSales))} sub={v(r => `${r.gstBills} GST invoices`, ' ')} />
           <Stat cls="nong" icon="trend" label="Non-GST sales" value={v(r => `+ ${inr(r.nonGstSales)}`)} sub={v(r => `${r.nonGstBills} ${ws ? 'wholesale' : 'retail'} bills`, ' ')} />
           {!ws && <Stat cls="exp" icon="wallet" label="Total expenses" value={v(r => `− ${inr(r.expenses)}`)} sub={v(r => r.expenseByCategory?.length ? `${r.expenseByCategory.length} categor${r.expenseByCategory.length === 1 ? 'y' : 'ies'} · top: ${r.expenseByCategory[0].category}` : 'No expenses yet', ' ')} onOpen={rep ? () => setDetail('expenses') : undefined} />}
+        </div>
+        <div className="dpos-k4">
+          <Stat cls="exp" icon="wallet" label="Refunded amount" value={v(r => `− ${inr(r.returned?.total || 0)}`)} sub="Returns made in this period" />
+          <Stat cls="nong" icon="doc" label="Refunded bills" value={v(r => String(r.returned?.count || 0))} sub="Return invoices" />
+          <label className="an-chk" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}><input type="checkbox" checked={redRef} onChange={e => { setRedRef(e.target.checked); try { localStorage.setItem('mahana.reduceRefunds', e.target.checked ? '1' : '0') } catch {} }} /> Reduce refunds from Net Profit</label>
         </div>
         {!ws && rep && <div className="dpos-formula"><span><b className="tag">Calculation formula</b> &nbsp;Sales ({inr(rep.revenue)}){rep.costs?.enabled ? ` − Cost of goods (${inr(rep.cogs)})` : ''} − Expenses ({inr(rep.expenses)})</span><span>= Net profit: <span className="np">{rep.net < 0 ? `− ${inr(-rep.net)}` : inr(rep.net)}</span></span></div>}
         {!ws && rep && (

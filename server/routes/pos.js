@@ -167,8 +167,8 @@ export default function pos({ db, auth }) {
     }).parse(req.body);
     res.json(await editSale(db, req.user, String(req.params.invoice), b));
   }));
-  r.post('/pos/sales/:invoice/returns', manager, wrap(async (req, res) => {
-    const b = z.object({ items: z.array(z.object({ itemId: id, qty: z.number().int().min(1).max(10000) })).min(1).max(100), reason: text(300).default(''), refundMode: z.enum(['cash', 'upi', 'card']) }).parse(req.body);
+  r.post('/pos/sales/:invoice/returns', biller, wrap(async (req, res) => {
+    const b = z.object({ items: z.array(z.object({ itemId: id, qty: z.number().int().min(1).max(10000), restock: z.boolean().default(true) })).min(1).max(100), reason: text(300).default(''), refundMode: z.enum(['cash', 'upi', 'card']), approval: z.object({ self: z.boolean().optional(), email: text(200).optional(), password: z.string().max(200).optional() }).default({}) }).parse(req.body);
     res.status(201).json(await createReturn(db, req.user, String(req.params.invoice), b));
   }));
   r.get('/pos/returns/:no', biller, wrap(async (req, res) => { const x = await getReturn(db, String(req.params.no)); if (!x) throw new HttpError(404, 'Return not found'); res.json(x) }));
