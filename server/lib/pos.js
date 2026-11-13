@@ -63,7 +63,7 @@ export async function couponAccessProblem(q, c, phone) {
 // Short, easy-to-read references: INV-2026-G3AKL for bills, DEP-20261026-8207 for advance orders. Look-alike characters (0/O, 1/I) are left out.
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const randCode = n => Array.from(crypto.randomBytes(n), b => CODE_CHARS[b % CODE_CHARS.length]).join('');
-const invoiceNo = async (t, channel) => {
+export const invoiceNo = async (t, channel) => {
   const y = istYear();
   if (channel === 'wholesale') { // older wholesale bills keep their numbered series
     const { last } = await one(t, 'INSERT INTO pos_counters (year, channel, last) VALUES ($1, $2, 1) ON CONFLICT (year, channel) DO UPDATE SET last = pos_counters.last + 1 RETURNING last', [y, channel]);
@@ -313,7 +313,7 @@ export function listSales(db, { q = '', name = '', phone = '', source = 'all', f
   if (to) w.push(`${dayExpr} <= ${add(to)}::date`);
   return rows(db, `
     SELECT s.invoice_no AS "invoiceNo", s.status, s.customer_name AS "customerName", s.customer_phone AS "customerPhone", s.total_amount AS total,
-           s.payment_mode AS "paymentMode", s.created_at AS "createdAt", s.bill_date::text AS "billDate", s.is_gst AS "isGst", s.source, s.share_token AS "shareToken", (SELECT COALESCE(SUM(quantity), 0)::int FROM pos_sale_items i WHERE i.sale_id = s.id) AS "itemCount"
+           s.payment_mode AS "paymentMode", s.created_at AS "createdAt", s.bill_date::text AS "billDate", s.is_gst AS "isGst", s.source, s.share_token AS "shareToken", NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int AS "webOrderId", (SELECT o.status FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webStatus", (SELECT o.order_number FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webOrderNumber", (SELECT o.email FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webEmail", s.customer_address AS "customerAddress", (SELECT COALESCE(SUM(quantity), 0)::int FROM pos_sale_items i WHERE i.sale_id = s.id) AS "itemCount"
     FROM pos_sales s WHERE ${w.join(' AND ')} ORDER BY s.id DESC LIMIT ${Math.min(limit, 500)}`, a);
 }
 

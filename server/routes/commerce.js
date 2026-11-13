@@ -6,6 +6,7 @@ import { one } from '../db/index.js';
 import { HttpError, wrap } from '../lib/http.js';
 import { resolveCart } from '../lib/cart.js';
 import { loadRules, activeRegions } from '../lib/delivery.js';
+import { syncWebOrders } from '../lib/webSales.js';
 import { createPendingOrder, markPaid, ordersForUser, releaseOrder, releaseExpired } from '../lib/orders.js';
 
 const address = z.object({
@@ -56,6 +57,7 @@ export function commerceRoutes(ctx) {
     const paid = await payments.confirm(req.body ?? {});
     if (!paid) return res.json({ ok: false, pending: true }); // e.g. a PayNow transfer still clearing: the webhook finishes it
     const result = await markPaid(db, { provider: payments.name, providerOrderId: paid.providerOrderId, providerPaymentId: paid.providerPaymentId });
+    await syncWebOrders(db, { force: true }).catch(() => {}); // the paid order becomes an online bill with an invoice
     if (result.status === 'paid') {
       const cart = await resolveCart(ctx, req, res);
       if (cart) await db.query('DELETE FROM cart_items WHERE cart_id = $1', [cart.id]);
@@ -77,7 +79,7 @@ export function webhookRoute({ db, payments }) {
   const r = Router();
   r.post('/payments/webhook', express.raw({ type: '*/*', limit: '1mb' }), wrap(async (req, res) => {
     const ev = payments.parseWebhook(req.body, req.get('stripe-signature'));
-    if (ev?.type === 'captured') await markPaid(db, { provider: payments.name, providerOrderId: ev.providerOrderId, providerPaymentId: ev.providerPaymentId });
+    if (ev?.type === 'captured') { await markPaid(db, { provider: payments.name, providerOrderId: ev.providerOrderId, providerPaymentId: ev.providerPaymentId }); await syncWebOrders(db, { force: true }).catch(() => {}) }
     if (ev?.type === 'failed') {
       const o = await one(db, `SELECT o.order_number FROM payments p JOIN orders o ON o.id = p.order_id WHERE p.provider = $1 AND p.provider_order_id = $2`, [payments.name, ev.providerOrderId]);
       if (o) await releaseOrder(db, o.order_number, 'failed');

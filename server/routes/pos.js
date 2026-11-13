@@ -8,6 +8,7 @@ import { createReturn, getReturn } from '../lib/returns.js';
 import { editSale, PHONE_SQL } from '../lib/pos.js';
 import { capFlags } from '../lib/catalog.js';
 import { loadRules } from '../lib/delivery.js';
+import { syncWebOrders } from '../lib/webSales.js';
 import { listMeasurementBills, setTailoringStatus, listStitchingOrders, stitchingOverview } from '../lib/measurements.js';
 import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, couponAccessProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
 
@@ -128,6 +129,7 @@ export default function pos({ db, auth }) {
   r.get('/pos/sales', biller, wrap(async (req, res) => {
     const f = z.object({ q: text(80).default(''), name: text(80).default(''), phone: text(20).default(''), source: z.enum(['all', 'offline', 'online']).default('all'), from: date.optional(), to: date.optional(), channel, gst: gstFilter, payment: z.enum(['all', 'cash', 'upi', 'card', 'split']).default('all') }).parse(req.query);
     // Cashiers only see today's bills; owner/admin can search the full history.
+    await syncWebOrders(db).catch(() => {});
     if (req.user.role === 'cashier') f.from = f.to = today();
     res.json(await listSales(db, f));
   }));
@@ -177,6 +179,7 @@ export default function pos({ db, auth }) {
   r.get('/pos/reports', manager, wrap(async (req, res) => {
     const { from, to, channel: ch, gst, source, payment } = z.object({ from: date, to: date, channel, gst: gstFilter, source: z.enum(['all', 'offline', 'online']).default('all'), payment: z.enum(['all', 'cash', 'upi', 'card', 'split']).default('all') }).parse(req.query);
     if (from > to) throw new HttpError(400, 'From date is after To date');
+    await syncWebOrders(db).catch(() => {}); // website orders count as online bills
     res.json(await report(db, from, to, ch, gst, source, payment));
   }));
 

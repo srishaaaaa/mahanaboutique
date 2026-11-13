@@ -318,8 +318,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
       </div>
 
       <div className="dpos-col dpos-sticky">
-        <section className="dpos-card"><div className="dpos-head" style={{ marginBottom: 10 }}><h2 style={{ marginBottom: 0 }}><Icon n="orders" />Current order{priced.length > 0 && <span className={`dpos-count ${flash ? 'pop' : ''}`} aria-label={`${priced.reduce((t, l) => t + l.qty, 0)} items on the bill`}>{priced.reduce((t, l) => t + l.qty, 0)}</span>}</h2>
-          {!ws && <div className="dpos-src" role="radiogroup" aria-label="Order source"><button role="radio" aria-checked={source === 'offline'} className={source === 'offline' ? 'on' : ''} onClick={() => setSource('offline')}>Offline (POS)</button><button role="radio" aria-checked={source === 'online'} className={source === 'online' ? 'on' : ''} onClick={() => setSource('online')}><i />Online order</button></div>}</div>
+        <section className="dpos-card"><div className="dpos-head" style={{ marginBottom: 10 }}><h2 style={{ marginBottom: 0 }}><Icon n="orders" />Current order{priced.length > 0 && <span className={`dpos-count ${flash ? 'pop' : ''}`} aria-label={`${priced.reduce((t, l) => t + l.qty, 0)} items on the bill`}>{priced.reduce((t, l) => t + l.qty, 0)}</span>}</h2></div>
           <div className="dpos-box dpos-sum" style={{ marginBottom: 14 }}>
             <div><span>SOURCE</span><span className="dpos-pill">{ws ? 'Wholesale' : source === 'online' ? 'Online' : 'Offline'}</span></div>
             <div><span>CUSTOMER</span><span>{cust.name || '-'}</span></div><div><span>PHONE</span><span>{cust.phone || '-'}</span></div>
@@ -519,7 +518,7 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
       <div className="dpos-tabs" role="tablist">{[['revenue', 'Revenue'], ['today', 'Today’s sales'], ['products', 'Products'], ['coupons', 'Coupons']].map(([id, l]) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>{l}</button>)}</div>
       <div className="an-bar an-all">
         <div className="an-grp" role="group" aria-label="Sales channel">
-          {[['all', 'All Channels', null], ['offline', 'Offline (POS)', 'amber'], ['online', 'Online', 'green']].map(([v, l, d]) => <button key={v} type="button" className={src === v ? 'on' : ''} aria-pressed={src === v} onClick={() => setSrc(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+          {[['all', 'All Channels', null], ['offline', 'Offline (POS)', 'amber'], ['online', 'Online (website)', 'green']].map(([v, l, d]) => <button key={v} type="button" className={src === v ? 'on' : ''} aria-pressed={src === v} onClick={() => setSrc(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
         </div>
         <span className="an-gst"><Chips value={gst} onChange={setGst} options={GST_CHIPS} /></span>
         <div className="an-grp an-pay" role="group" aria-label="Payment method"><b>PAYMENT</b>

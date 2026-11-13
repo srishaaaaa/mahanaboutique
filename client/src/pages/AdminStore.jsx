@@ -38,22 +38,17 @@ export function AdminOrders() {
         <div className="dpos-kpi"><span>Average order</span><b>{s ? inr(s.averageOrder) : '…'}</b></div>
       </div>
       <div className="dpos-bar-tools"><Chips label="Payment" value={pay} onChange={setPay} options={[['all', 'All'], ['paid', 'Paid'], ['unpaid', 'Unpaid']]} /><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="online-orders" header={['Order', 'Email', 'Total (S$)', 'Payment', 'Status', 'Date']} rows={shownO.map(x => [x.order_number, x.email, (x.total / 100).toFixed(2), x.payment_status, x.status, String(x.created_at).slice(0, 10)])} /></div>
-      <p className="oo-count">{o ? `${shownO.length} order${shownO.length === 1 ? '' : 's'}` : ' '}</p>
       {!o ? <p className="dpos-empty">Loading…</p> : !shownO.length ? <p className="dpos-empty">No online orders here.</p> : (
-        <ul className="oo-list">{shownO.map(x => {
-          const d = new Date(x.created_at), when = `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} · ${d.toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase()}`;
-          return (
-            <li key={x.id} className="oo-card">
-              <div className="oo-top">
-                <div className="oo-id"><b>{x.order_number}</b><span className="oo-tag">ONLINE</span></div>
-                <div className="oo-amt"><b>{inr(x.total)}</b><span className={`dpos-pill ${x.payment_status === 'paid' ? 'ok' : ''}`}>{x.payment_status}</span></div>
-              </div>
-              <p className="oo-name">{x.name || x.email}</p>
-              <p className="oo-meta">{[x.phone, x.name ? x.email : null, when, `${x.item_count} item${x.item_count === 1 ? '' : 's'}`].filter(Boolean).join(' · ')}</p>
-              <div className="oo-foot">
-                <select className={`oo-st st-${x.status}`} value={x.status} aria-label={`Status for ${x.order_number}`} onChange={async ev => { try { await api('/admin/orders/' + x.order_number, { method: 'PATCH', body: { status: ev.target.value } }); setO(list => list.map(y => y.id === x.id ? { ...y, status: ev.target.value } : y)) } catch (err) { setE(err.message) } }}>{STATUSES.map(v => <option key={v} value={v}>{v === 'delivered' || v === 'shipped' ? '✓ ' : ''}{v}</option>)}</select>
-              </div>
-            </li>) })}</ul>)}
+        <section className="dpos-card"><div className="dpos-tw"><table className="oo-table">
+          <thead><tr><th>Order</th><th>Email</th><th className="r">Total</th><th>Payment</th><th>Status</th></tr></thead>
+          <tbody>{shownO.map(x => (
+            <tr key={x.id}>
+              <td className="oid"><b>{x.order_number}</b></td>
+              <td>{x.email}</td>
+              <td className="r">{inr(x.total)}</td>
+              <td><span className={`dpos-pill ${x.payment_status === 'paid' ? 'ok' : ''}`}>{x.payment_status}</span></td>
+              <td><select className={`oo-st st-${x.status}`} value={x.status} aria-label={`Status for ${x.order_number}`} onChange={async ev => { try { await api('/admin/orders/' + x.order_number, { method: 'PATCH', body: { status: ev.target.value } }); setO(list => list.map(y => y.id === x.id ? { ...y, status: ev.target.value } : y)) } catch (err) { setE(err.message) } }}>{STATUSES.map(v => <option key={v} value={v}>{v === 'delivered' || v === 'shipped' ? '✓ ' : ''}{v}</option>)}</select></td>
+            </tr>))}</tbody></table></div></section>)}
     </AdminShell>
   );
 }
