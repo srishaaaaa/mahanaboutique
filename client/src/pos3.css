@@ -506,3 +506,9 @@
 .inv-alert-p { padding: 12px 14px; border-radius: 14px } .inv-alert-t { padding-bottom: 6px; gap: 10px } .inv-alert-t b { font-size: 15px } .inv-alert-t small { font-size: 12.5px } .inv-alert-e { padding: 7px 14px; border-radius: 9px; font-size: 13px }
 .inv-alert-v { padding-top: 6px; font-size: 13px } .inv-alert-q button { padding: 5px 10px; font-size: 12px }
 .inv-alert-d { padding: 11px; border-radius: 12px; font-size: 14px }
+
+/* Online orders: the status select is a compact control under the details, not a full-width bar */
+.dpos .oo-foot { display: flex; align-items: center; justify-content: flex-start; gap: 10px; flex-wrap: wrap }
+.dpos select.oo-st { width: auto; min-width: 170px; max-width: 100%; padding: 8px 34px 8px 14px; border-radius: 10px; font-size: 12.5px; line-height: 1.2 }
+.dpos .oo-name { margin: 8px 0 0; font-size: 17px } .dpos .oo-meta { margin: 2px 0 0; font-size: 13.5px }
+.dpos .oo-id b { font-size: 17px } .dpos .oo-amt b { font-size: 17px }
