@@ -498,3 +498,11 @@
 
 /* "Add Barcode" sits beside "Add Product" in the Inventory header: same height, outlined so Add Product stays the primary action */
 .inv-add.inv-add-bc { background: #fff; color: var(--d-acc, #1c284f); border: 1.5px solid var(--d-acc, #1c284f) } .inv-add.inv-add-bc:hover { background: color-mix(in srgb, var(--d-acc, #1c284f) 8%, #fff) }
+
+/* Stock Alert pop-up: a compact version */
+.inv-alert { width: min(460px, calc(100% - 24px)); padding: 20px 22px; border-radius: 22px; gap: 12px }
+.inv-alert-h { gap: 12px } .inv-alert-h h2 { font-size: 19px } .inv-alert-h p { font-size: 13px; margin: 0 } .inv-alert-i { width: 42px; height: 42px; font-size: 20px }
+.inv-alert-l { gap: 8px; max-height: 46vh }
+.inv-alert-p { padding: 12px 14px; border-radius: 14px } .inv-alert-t { padding-bottom: 6px; gap: 10px } .inv-alert-t b { font-size: 15px } .inv-alert-t small { font-size: 12.5px } .inv-alert-e { padding: 7px 14px; border-radius: 9px; font-size: 13px }
+.inv-alert-v { padding-top: 6px; font-size: 13px } .inv-alert-q button { padding: 5px 10px; font-size: 12px }
+.inv-alert-d { padding: 11px; border-radius: 12px; font-size: 14px }
