@@ -68,6 +68,8 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
   const [f, setF] = useState({ q: '', name: '', phone: '', source: 'all', gst: 'all', payment: 'all' }); const [per, setPer] = usePeriod('all');
   const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [n, setN] = useState(0);
   const [openNo, setOpenNo] = useState(null); const [detail, setDetail] = useState(null); const [quick, setQuick] = useState(null);
+  const [sort, setSort] = useState('new'); const [shown, setShown] = useState(20);
+  useEffect(() => setShown(20), [f, per, sort]);
   const [queue, setQueue] = useState([]); // website orders still to pack / ship, oldest first
   useEffect(() => { if (manager) api('/admin/pos/sales?source=online&channel=retail&limit=200').then(r => setQueue(r.filter(x => x.status === 'completed' && ['confirmed', 'packed'].includes(x.webStatus)).reverse())).catch(() => {}) }, [n, tick, manager]);
   const toggle = no => { if (openNo === no) { setOpenNo(null); return } setOpenNo(no); setDetail(null); api('/admin/pos/sales/' + encodeURIComponent(no)).then(d => setDetail(d.sale || d)).catch(e => setErr(e.message)) };
@@ -85,6 +87,8 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
     try { await api(`/admin/pos/sales/${encodeURIComponent(r.invoiceNo)}/void`, { method: 'POST', body: { reason } }); setN(x => x + 1); onChanged?.() } catch (e) { setErr(e.message) }
   };
   const advance = async (r, status) => { try { await api('/admin/orders/' + encodeURIComponent(r.webOrderNumber), { method: 'PATCH', body: { status } }); setN(x => x + 1); onChanged?.() } catch (e) { setErr(e.message) } };
+  const sorted = useMemo(() => rows && [...rows].sort((a, b) => sort === 'old' ? new Date(a.createdAt) - new Date(b.createdAt) : sort === 'hi' ? b.total - a.total : sort === 'lo' ? a.total - b.total : new Date(b.createdAt) - new Date(a.createdAt)), [rows, sort]);
+  const page = sorted && sorted.slice(0, shown);
   const exportCsv = () => {
     const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const lines = [['Order ID', 'Date', 'Time', 'Customer', 'Mobile', 'Source', 'Type', 'Payment', 'Total (INR)', 'Status'].map(esc).join(',')]
@@ -108,6 +112,8 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
         <div role="group" aria-label="Payment filter"><b>PAYMENT</b>{[['all', 'All methods'], ['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']].map(([v, l]) => <button key={v} type="button" className={f.payment === v ? 'on' : ''} aria-pressed={f.payment === v} onClick={() => setF({ ...f, payment: v })}>{l}</button>)}</div>
       </div>
       <Err>{err}</Err>
+      <div className="oh-foot" style={{ margin: '4px 2px' }}><b>{rows ? rows.length : 0} orders</b>
+        <label className="f" style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>Sort<select value={sort} onChange={e => setSort(e.target.value)}><option value="new">Newest first</option><option value="old">Oldest first</option><option value="hi">Total: high → low</option><option value="lo">Total: low → high</option></select></label></div>
       {manager && queue.length > 0 && f.source !== 'offline' && (
         <section className="dpos-card oq-queue"><div className="oq-qh"><span className="oq-bolt">⚡</span><div><b>Online orders to process</b><small>{queue.length} order{queue.length === 1 ? '' : 's'} waiting to be packed or shipped</small></div></div>
           <ul>{queue.map(r => (
@@ -116,7 +122,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
               <a className="oh-btn inv" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}>Invoice</a></li>))}</ul></section>)}
       {f.source === 'online' ? (
         !rows ? <Empty>Loading…</Empty> : !rows.length ? <Empty>No online orders match.</Empty> : (
-          <ul className="oo-list">{rows.map(r => { const dt = dtShort(r.createdAt); return (
+          <ul className="oo-list">{page.map(r => { const dt = dtShort(r.createdAt); return (
             <li key={r.invoiceNo} className={`oo-card ${r.status === 'voided' ? 'voided' : ''}`}>
               <div className="oo-top"><div className="oo-id"><b>{r.invoiceNo}</b><span className="oo-tag">ONLINE</span></div>
                 <div className="oo-amt"><b>{inr(r.total)}</b><span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Cancelled' : 'Completed'}</span></div></div>
@@ -135,7 +141,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
       <section className="dpos-card dpos-ordcard">
         {!rows ? <Empty>Loading…</Empty> : !rows.length ? <Empty>No orders match.</Empty> : (
           <div className="dpos-tw"><table className="dpos-ord"><thead><tr><th>Order ID</th><th>Date &amp; time</th><th>Customer name</th><th>Mobile number</th><th>Source</th><th>Total due</th><th className="r">Status</th></tr></thead>
-            <tbody>{rows.map(r => { const dt = dtShort(r.createdAt); return (
+            <tbody>{page.map(r => { const dt = dtShort(r.createdAt); return (
               <Fragment key={r.invoiceNo}><tr className={`${r.status === 'voided' ? 'voided' : ''} click`} onClick={e => { if (!e.target.closest('a,button')) toggle(r.invoiceNo) }} title="Show the bill split-up">
                 <td className="oid">{r.invoiceNo} <span className="muted small">{openNo === r.invoiceNo ? '▴' : '▾'}</span></td>
                 <td><b>{longDate(r.billDate)}</b><div className="muted small">{dt.t}</div></td>
@@ -152,6 +158,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                 </div></td></tr>
               {openNo === r.invoiceNo && <tr className="dpos-xrow"><td colSpan={7}>{!detail ? <span className="muted">Loading…</span> : <div className="dpos-xsum"><BillSummary bill={detail} /></div>}</td></tr>}</Fragment>) })}</tbody></table></div>)}
       </section>)}
+      {sorted && sorted.length > shown && <button type="button" className="dpos-btn outline" style={{ margin: '10px auto', display: 'flex' }} onClick={() => setShown(x => x + 20)}>Show more ({sorted.length - shown} remaining)</button>}
       {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={openInvoice} manager={manager} onEdited={() => setN(x => x + 1)} />}
     </>
   );
