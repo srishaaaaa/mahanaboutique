@@ -61,7 +61,8 @@ export function ScanBox({ onCode, ...props }: { onItemScanned: (item: ScannedIte
 /** Always mounted in the admin: the keyboard-wedge scanner listener, plus the "scanned on another page" dialog. */
 export function BarcodeLayer({ onBilling, goBilling, shopName }: { onBilling: boolean; goBilling: () => void; shopName?: string }) {
   useEffect(() => { setBrand(shopName) }, [shopName])
-  useHardwareBarcodeScanner({ isBillingActive: onBilling })
+  // On Billing the scan box's own listener adds the item (handling it here too would add it twice); elsewhere the dialog offers to switch to Billing.
+  useHardwareBarcodeScanner({ isBillingActive: onBilling, onScanDirect: () => {} })
   return <BarcodeRedirectDialog onNavigateToBilling={() => goBilling()} />
 }
 

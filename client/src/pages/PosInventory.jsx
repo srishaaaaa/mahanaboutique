@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, uploadImage } from '../lib/api';
 import { inr } from '../lib/format';
 import { useApp } from '../context/App';
@@ -9,6 +9,11 @@ import { ColourModal, colourGroups } from '../components/ColourOptions';
 import ProductPhotos from '../components/ProductPhotos';
 import SuggestPicker from '../components/SuggestPicker';
 import StockMovements, { downloadCsv } from '../components/StockMovements';
+
+// The barcode workspace (Generator, label printing) is a separate lazy chunk with its own scoped styles.
+const loadBarcode = () => import('../barcode/entry');
+const BarcodeGenerator = lazy(() => loadBarcode().then(m => ({ default: m.BarcodeGenerator })));
+const PrintLabels = lazy(() => loadBarcode().then(m => ({ default: m.PrintLabels })));
 
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
 const rupees = p => (p / 100).toFixed(2).replace(/\.00$/, '');
@@ -276,6 +281,7 @@ function ProductsStock({ manager, stocker }) {
   const { toast } = useApp();
   const [q, setQ] = useState(''); const [stock, setStock] = useState('all'); const [list, setList] = useState(null); const [cats, setCats] = useState([]);
   const [view, setView] = useState('grid'); const [alertOpen, setAlertOpen] = useState(false); const [catF, setCatF] = useState(''); const [sort, setSort] = useState('name');
+  const [bcGen, setBcGen] = useState(null); const [bcPrint, setBcPrint] = useState(null);
   const [open, setOpen] = useState(null); const [modal, setModal] = useState(null); const [err, setErr] = useState(); const [nv, setNv] = useState({ size: '', color: '', sku: '', stock: '' });
   const load = useCallback(() => api('/admin/pos/products?q=' + encodeURIComponent(q)).then(r => { setList(r); setErr() }).catch(e => setErr(e.message)), [q]);
   useEffect(() => { const t = setTimeout(load, 200); return () => clearTimeout(t) }, [load]);
@@ -307,6 +313,7 @@ function ProductsStock({ manager, stocker }) {
         <select value={catF} onChange={e => setCatF(e.target.value)} aria-label="Category">{[['', 'All Categories'], ...cats.map(c => [c.slug, c.name])].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort">{[['name', 'Name A–Z'], ['stock-asc', 'Stock: low to high'], ['stock-desc', 'Stock: high to low'], ['price-asc', 'Price: low to high'], ['price-desc', 'Price: high to low']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <div className="inv-view" role="group" aria-label="View">{[['grid', 'Grid'], ['list', 'List']].map(([v, l]) => <button key={v} type="button" className={view === v ? 'on' : ''} aria-pressed={view === v} onClick={() => setView(v)}>{l}</button>)}</div>
+        {stocker && <button type="button" className="dpos-btn ghost sm inv-bcbtn" title="Generate & print barcodes for items" onClick={() => setBcGen({})}><Icon n="printer" size={15} />Add barcode</button>}
         <label className="inv-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search products…" aria-label="Search products" /></label>
       </div>
       <Err>{err}</Err>
@@ -319,6 +326,7 @@ function ProductsStock({ manager, stocker }) {
                 <span className={`inv-badge ${st[0]}`}>{st[1]}</span>
                 <span className="inv-ic">{manager && <button type="button" aria-label={`Edit ${p.name}`} onClick={() => setModal({ t: 'edit', p })}><Icon n="edit" size={16} /></button>}{manager && <button type="button" className="del" aria-label={`Delete ${p.name}`} onClick={() => del(p)}><Icon n="trash" size={16} /></button>}</span></div>
               <div className="inv-body"><div className="inv-nm"><b title={p.name}>{p.name}</b><strong>{inr(p.price)}</strong></div><small>{p.category || 'Product'}</small>
+                {(() => { const withBc = p.variants.filter(v => v.barcode); return <div className="inv-bc">{withBc.length ? <span title={withBc.map(v => v.barcode).join(', ')}>{withBc.length === 1 ? withBc[0].barcode : `${withBc.length} of ${p.variants.length} sizes`}</span> : <span className="none">No Barcode</span>}{withBc.length > 0 && <button type="button" className="inv-bcp" aria-label={`Print barcode labels for ${p.name}`} title="Print barcode labels" onClick={() => { const v = withBc[0]; setBcPrint({ name: p.name, variantName: [v.size, v.color].filter(x => x && x !== 'Default').join(' · '), barcode: v.barcode, price: v.price, stock: v.stock }) }}><Icon n="printer" size={14} /></button>}</div> })()}
                 {manager && <div className="inv-pr"><span>Cost<b>{p.costPrice ? inr(p.costPrice) : '—'}</b></span><span>Selling<b>{inr(p.price)}</b></span></div>}
                 <div className="inv-foot"><button type="button" className="inv-units" onClick={() => stocker && setModal({ t: 'stock', p })} disabled={!stocker}><b>{p.stock}</b> Total Units</button><span>{st[0] === 'in' ? 'In stock' : st[0] === 'low' ? `Low · reorder @ ${lowOf(p)}` : 'Sold out'}</span></div></div>
             </li>);
@@ -354,8 +362,8 @@ function ProductsStock({ manager, stocker }) {
                     <span key={c.name} className="dpos-pill" style={{ display: 'inline-flex', gap: 8, alignItems: 'center', padding: '7px 12px', fontSize: 11 }}>{c.name} · {c.stock} in stock{c.price !== p.price ? ` · ${inr(c.price)}` : ''}
                       {manager && colourGroups(p).length > 1 && <button type="button" aria-label={`Remove colour ${c.name}`} style={{ color: '#b3261e', fontWeight: 800 }} onClick={() => removeColour(p, c.name)}>✕</button>}</span>))}</div>
                 </div>
-                <div className="dpos-tw"><table><thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th className="r">Stock</th><th /></tr></thead>
-                  <tbody>{p.variants.map(v => <tr key={v.id}><td>{v.size}</td><td>{v.color}</td><td className="muted small">{v.sku}</td><td className="r"><b>{v.stock}</b> {tag(v.stock)}</td><td className="r">{stocker && <button className="dpos-btn ghost sm" onClick={() => setModal({ t: 'stock', p, vid: v.id })}>Stock</button>}</td></tr>)}</tbody></table></div>
+                <div className="dpos-tw"><table><thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Barcode</th><th className="r">Stock</th><th /></tr></thead>
+                  <tbody>{p.variants.map(v => <tr key={v.id}><td>{v.size}</td><td>{v.color}</td><td className="muted small">{v.sku}</td><td className="small">{v.barcode ? <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}><b>{v.barcode}</b>{stocker && <button type="button" className="inv-bcp" aria-label={`Print labels for ${v.size}`} onClick={() => setBcPrint({ name: p.name, variantName: [v.size, v.color].filter(x => x && x !== 'Default').join(' · '), barcode: v.barcode, price: v.price, stock: v.stock })}><Icon n="printer" size={14} /></button>}</span> : <span className="muted" style={{ fontStyle: 'italic' }}>No Barcode</span>}</td><td className="r"><b>{v.stock}</b> {tag(v.stock)}</td><td className="r">{stocker && <button className="dpos-btn ghost sm" onClick={() => setModal({ t: 'stock', p, vid: v.id })}>Stock</button>}</td></tr>)}</tbody></table></div>
                 {manager && <form onSubmit={e => addVariant(p, e)} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr)) auto', gap: 8 }}>
                   <input required aria-label="New size" placeholder="New size" value={nv.size} onChange={e => setNv({ ...nv, size: e.target.value })} /><input aria-label="Colour" placeholder="Colour" value={nv.color} onChange={e => setNv({ ...nv, color: e.target.value })} />
                   <input aria-label="SKU" placeholder="SKU (auto)" value={nv.sku} onChange={e => setNv({ ...nv, sku: e.target.value })} /><input aria-label="Opening stock" inputMode="numeric" placeholder="Stock" value={nv.stock} onChange={e => setNv({ ...nv, stock: e.target.value.replace(/\D/g, '') })} />
@@ -364,6 +372,8 @@ function ProductsStock({ manager, stocker }) {
           </div>))}
       </section>
       {alertOpen && list && <StockAlert list={list} stocker={stocker} manager={manager} onClose={() => setAlertOpen(false)} onEdit={p => { setAlertOpen(false); setModal({ t: 'edit', p }) }} onRestock={stockDone} />}
+      {bcGen && <Suspense fallback={null}><BarcodeGenerator preselectedVariantId={bcGen.variantId ?? null} onClose={() => setBcGen(null)} onSuccess={load} /></Suspense>}
+      {bcPrint && <Suspense fallback={null}><PrintLabels item={bcPrint} onClose={() => setBcPrint(null)} /></Suspense>}
       {modal?.t === 'stock' && <StockModal product={list.find(x => x.id === modal.p.id) || modal.p} variantId={modal.vid} onClose={() => setModal(null)} onDone={stockDone} />}
       {modal?.t === 'edit' && <EditModal product={modal.p} categories={cats} onClose={() => setModal(null)} onDone={() => { toast('Product saved.'); load() }} onPhotos={load} />}
       {modal?.t === 'colour' && <ColourModal product={modal.p} onClose={() => setModal(null)} onDone={() => { toast('Colour added.'); load() }} />}

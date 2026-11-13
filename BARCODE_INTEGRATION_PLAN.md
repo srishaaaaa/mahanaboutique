@@ -1,5 +1,7 @@
 # Barcode integration plan: bring the Mahalashmi barcode system into Mahana, identical
 
+> **Status: built** (answers given: Mahana theme; both size lists; Mahalashmi's printers; custom sizes on the server *and* in the browser; cashiers scan / inventory staff generate and print / only admin or owner deactivate). See the 'Barcodes' section at the end of `PORT_TO_DHANYA_PROMPT.md` for what shipped. Still to verify by hand: real printing on your label printer and an A4 sheet, and camera scanning over HTTPS.
+
 Source of truth: `github.com/srishaaaaa/mahalashmi` (branch `main`, HEAD `bae0be6`, 199 commits). I cloned it read-only into a scratch folder and read every barcode file listed below. Nothing in the Mahalashmi repo was changed and nothing in Mahana has been changed yet; **this document is the plan only.**
 
 ---

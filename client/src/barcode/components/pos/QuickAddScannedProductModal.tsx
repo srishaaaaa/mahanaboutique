@@ -94,7 +94,7 @@ export const QuickAddScannedProductModal: React.FC<QuickAddScannedProductModalPr
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Tata Salt 1kg"
+              placeholder="e.g. Banarasi Silk Saree"
               className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-white text-sm font-bold text-gray-900 outline-none focus:border-[var(--accent)]"
             />
           </div>

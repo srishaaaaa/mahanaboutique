@@ -46,6 +46,8 @@ const ICONS = {
   spark: <><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z" /></>,
   download: <><path d="M12 4v11M7 11l5 5 5-5M5 20h14" /></>,
   send: <><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z" /></>,
+  printer: <><path d="M7 8V3h10v5M7 17H4v-7h16v7h-3" /><path d="M7 14h10v7H7z" /></>,
+  barcode: <path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M20 5v14" />,
   save: <><path d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6" /></>,
 };
 export const Icon = ({ n, size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICONS[n]}</svg>;

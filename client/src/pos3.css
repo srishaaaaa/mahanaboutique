@@ -477,3 +477,11 @@
 .cp-filters small { font-size: 9px; vertical-align: super; margin-left: 3px; opacity: .7 }
 .cp-sw { background: #f4f3f6 }
 .cp-go { border-radius: 14px; padding: 20px; letter-spacing: .06em }
+
+/* barcode touches in Inventory */
+.inv-bc { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12px; color: #55524d; font-family: ui-monospace, Consolas, monospace }
+.inv-bc .none { font-family: 'Poppins', sans-serif; font-style: italic; color: #9a968f }
+.inv-bcp { width: 28px; height: 28px; border-radius: 8px; display: inline-grid; place-items: center; background: #f1efe9; color: var(--d-acc, #1c284f) } .inv-bcp:hover { background: var(--d-acc, #1c284f); color: #fff }
+.inv-bcbtn { white-space: nowrap }
+
+.inv-bcbtn { margin-left: auto } .inv-bcbtn + .inv-search { margin-left: 0 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ExportCsv from '../components/ExportCsv';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
@@ -20,6 +20,12 @@ import PosBirthdays from './PosBirthdays';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
 import { Chips, PeriodFilter, inPeriod, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
 import StaffOnly from '../components/StaffOnly';
+
+// Barcode tools (scan box, hardware scanner, quick add) load only when needed; they bring their own scoped styles.
+const loadBarcode = () => import('../barcode/entry');
+const ScanBox = lazy(() => loadBarcode().then(m => ({ default: m.ScanBox })));
+const QuickAdd = lazy(() => loadBarcode().then(m => ({ default: m.QuickAdd })));
+const BarcodeLayer = lazy(() => loadBarcode().then(m => ({ default: m.BarcodeLayer })));
 
 // Mahana POS: the in-store billing module of the admin. Everything the screen shows comes from the API; prices, stock,
 // totals and invoice numbers are decided on the server (the totals here are only a live preview).
@@ -178,6 +184,17 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   // Shows that the piece went onto the bill: a toast, a pulse on its row and the item count beside "Current order".
   const add = v => { setFlash(v.variantId); clearTimeout(flashT.current); flashT.current = setTimeout(() => setFlash(null), 1600); say(`${v.name}${v.size && v.size !== 'Default' ? ` (${v.size})` : ''} added to the bill`); addLine(v) };
   // OK in the Catalog window: every picked piece goes onto the bill in one go (quantities added to lines already there).
+  // Barcode scans (scan box, camera, keyboard-wedge reader): the size goes onto the bill; an unknown code offers to create the product.
+  const [qaCode, setQaCode] = useState(null); const [scanTick, setScanTick] = useState(0); const [catNames, setCatNames] = useState([]);
+  const scanCode = useCallback(async code => {
+    try {
+      const v = await (await loadBarcode()).scanLookup(code);
+      if (!v) return setQaCode(code);
+      if (v.stock < 1) return say(`${v.name} is out of stock`, 'warn');
+      add(v);
+    } catch (e) { say(e.message, 'warn') }
+  }, []); // eslint-disable-line
+  useEffect(() => { if (qaCode && !catNames.length) api('/categories').then(c => setCatNames(c.map(x => x.name))).catch(() => {}) }, [qaCode]); // eslint-disable-line
   const addMany = picked => {
     setLines(ls => { let out = ls; for (const { v, qty } of picked) {
       const i = out.findIndex(l => l.variantId === v.variantId);
@@ -287,6 +304,8 @@ function Billing({ channel, shop, onSale, onAdvance }) {
               {!ws && <button className="dpos-btn sm" onClick={() => setCatalogOpen(true)}>☰ Catalog</button>}
               {!ws && <button className="dpos-btn ghost sm" onClick={() => setLines(ls => ls.some(x => x.service && !x.name.trim() && !x.priceStr && !x.measure) ? ls : [...ls, blankCustom(true)])}>✂ Add service</button>}
               <button className="dpos-btn ghost sm" onClick={() => setLines(ls => [...ls, blankCustom()])}>+ Add {ws ? 'item' : 'custom item'}</button></div></div>
+          {!ws && <Suspense fallback={null}><ScanBox onItemScanned={p => scanCode(p.barcode)} onNotFound={setQaCode} clearSignal={scanTick} onCode={scanCode} /></Suspense>}
+          {qaCode && <Suspense fallback={null}><QuickAdd barcode={qaCode} categories={catNames} onClose={() => setQaCode(null)} onCreated={p => { setQaCode(null); setScanTick(t => t + 1); scanCode(p.barcode) }} /></Suspense>}
           {ws && <datalist id="dpos-ws-list">{wsItems.map(i => <option key={i.id} value={[i.code, i.company, i.colour].filter(Boolean).join(' · ')} />)}</datalist>}
           {lines.length ? lineEls : <Empty>No items yet. Press Catalog to pick products, or add a service or custom item.</Empty>}
           {catalogOpen && <CatalogPicker onClose={() => setCatalogOpen(false)} onOk={addMany} />}
@@ -799,6 +818,7 @@ export default function AdminPos() {
       <Err>{err}</Err>
       {body}
       {allowed && <LowStockAlert />}
+      <Suspense fallback={null}><BarcodeLayer onBilling={tab === 'billing'} goBilling={() => nav('/admin/billing')} shopName={shop?.name} /></Suspense>
       {pv && <InvoicePreview token={pv.token} invoiceNo={pv.invoiceNo} onClose={() => setPv(null)} />}
       {done && <BillDone sale={done} shop={shop} onClose={() => setDone(null)} />}
       {advDone && <AdvanceDone adv={advDone} shop={shop} onClose={() => setAdvDone(null)} onView={() => { setAdvDone(null); nav('/admin/billing/advance') }} />}
