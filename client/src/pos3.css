@@ -512,3 +512,14 @@
 .dpos select.oo-st { width: auto; min-width: 170px; max-width: 100%; padding: 8px 34px 8px 14px; border-radius: 10px; font-size: 12.5px; line-height: 1.2 }
 .dpos .oo-name { margin: 8px 0 0; font-size: 17px } .dpos .oo-meta { margin: 2px 0 0; font-size: 13.5px }
 .dpos .oo-id b { font-size: 17px } .dpos .oo-amt b { font-size: 17px }
+
+/* Inventory header, banner and filters: smaller and more compact */
+.inv-tabs { padding: 4px; gap: 4px; margin-bottom: 10px; border-radius: 14px } .inv-tabs button { padding: 8px 14px; font-size: 12.5px; border-radius: 10px; gap: 6px }
+.inv-head { gap: 10px } .inv-head p { font-size: 13.5px; margin: 0 }
+.inv-head-a { gap: 8px } .inv-alerts, .inv-add { padding: 8px 16px; font-size: 13px; border-radius: 12px } .inv-add { gap: 6px } .inv-alerts b { min-width: 22px; height: 22px; font-size: 11.5px; top: -9px; right: -7px }
+.inv-banner { padding: 9px 16px; border-radius: 12px; font-size: 13.5px }
+.inv-filters { gap: 8px; padding: 10px 14px; border-radius: 16px }
+.inv-chips { gap: 6px } .inv-chips button { padding: 7px 14px; font-size: 12.5px }
+.inv-filters select { padding: 8px 12px; font-size: 13px; border-radius: 10px; min-width: 0 } .inv-filters select.inv-sel { min-width: 150px }
+.inv-view { padding: 2px; border-radius: 9px } .inv-view button { padding: 6px 12px; font-size: 12px }
+.inv-search { min-width: 220px; border-radius: 12px; padding: 0 12px } .inv-search input { padding: 9px 0; font-size: 13px }
