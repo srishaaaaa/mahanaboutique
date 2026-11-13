@@ -1,4 +1,5 @@
 import { capFlags } from '../lib/catalog.js';
+import { setVariantBarcode } from '../lib/barcodes.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { one, rows } from '../db/index.js';
@@ -60,7 +61,7 @@ export default function admin({ db, auth }) {
     category: z.string().optional(), price: z.number().int().min(0), gst_rate: z.number().int().min(0).max(28).default(0),
     status: z.enum(['draft', 'active', 'archived']).default('draft'), featured: z.boolean().default(false), cost_price: z.number().int().min(0).optional(),
     material: z.string().max(80).optional(), new_arrival: z.boolean().default(false), best_seller: z.boolean().default(false), low_stock_alert: z.number().int().min(0).max(100000).default(3),
-    variants: z.array(z.object({ sku: z.string().min(1), size: z.string().min(1), color: z.string().default('Default'), stock: z.number().int().min(0).default(0), price: z.number().int().min(0).nullable().optional(), cost: z.number().int().min(0).nullable().optional() })).default([]),
+    variants: z.array(z.object({ sku: z.string().min(1), size: z.string().min(1), color: z.string().default('Default'), stock: z.number().int().min(0).default(0), price: z.number().int().min(0).nullable().optional(), cost: z.number().int().min(0).nullable().optional(), barcode: z.string().trim().max(64).optional() })).default([]),
   });
   r.post('/products', staff, wrap(async (req, res) => {
     const d = productBody.parse(req.body);
@@ -70,6 +71,7 @@ export default function admin({ db, auth }) {
         [d.slug, d.name, d.description ?? '', cat?.id ?? null, d.price, d.gst_rate, d.status, d.featured]);
       for (const v of d.variants) {
         const row = await one(t, 'INSERT INTO product_variants (product_id, sku, size, color, stock_quantity, price_override) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id', [p.id, v.sku, v.size, v.color, v.stock, v.price ?? null]);
+        if (v.barcode) await setVariantBarcode(t, req.user, row.id, v.barcode);
         if (v.cost != null && await hasVariantCost(t)) await t.query('UPDATE product_variants SET cost_override = $2 WHERE id = $1', [row.id, v.cost]);
         if (v.stock) await t.query('INSERT INTO inventory_movements (variant_id, quantity_change, reason) VALUES ($1,$2,$3)', [row.id, v.stock, 'initial_stock']);
       }

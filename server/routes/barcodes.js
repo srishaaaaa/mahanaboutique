@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { wrap } from '../lib/http.js';
-import { lookupBarcode, generateBarcodeValue, receiveStockWithBarcode, listRegistry, deactivateBarcode, listBarcodeItems, listCustomSizes, saveCustomSize, deleteCustomSize, quickAddScanned } from '../lib/barcodes.js';
+import { lookupBarcode, generateBarcodeValue, receiveStockWithBarcode, listRegistry, deactivateBarcode, listBarcodeItems, listCustomSizes, saveCustomSize, deleteCustomSize, quickAddScanned, setVariantBarcode } from '../lib/barcodes.js';
 
 const id = z.coerce.number().int().positive();
 const text = n => z.string().trim().max(n);
@@ -24,6 +24,7 @@ export default function barcodes({ db, auth }) {
     const d = z.object({ barcode: text(64).min(1), name: text(160).min(1), price: z.number().int().min(1).max(100_000_000), category: text(80).default(''), stock: z.number().int().min(0).max(1_000_000).default(0) }).parse(req.body);
     res.status(201).json(await quickAddScanned(db, req.user, d));
   }));
+  r.put('/variant/:vid', make, wrap(async (req, res) => res.json(await setVariantBarcode(db, req.user, id.parse(req.params.vid), z.object({ barcode: text(64).nullable() }).parse(req.body).barcode || ''))));
   r.get('/registry', make, wrap(async (req, res) => res.json(await listRegistry(db, z.object({ search: text(80).default(''), limit: z.coerce.number().default(50), offset: z.coerce.number().default(0) }).parse(req.query)))));
   r.post('/:id/deactivate', manager, wrap(async (req, res) => { await deactivateBarcode(db, req.user, id.parse(req.params.id)); res.json({ ok: true }); }));
   r.get('/sizes', scan, wrap(async (_req, res) => res.json(await listCustomSizes(db))));

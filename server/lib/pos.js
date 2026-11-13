@@ -446,8 +446,8 @@ export async function adjustStock(db, user, { variantId, type, qty, note }) {
 }
 
 // ---- stock movements: every change to stock, with the level before and after ----
-const KNOWN_REASONS = ['initial_stock', 'pos_sale', 'pos_void', 'pos_restock', 'pos_return', 'pos_loss', 'pos_reconcile', 'order_reserved', 'order_released'];
-const MOVE_TYPES = { opening: ['initial_stock'], sale: ['pos_sale'], online: ['order_reserved', 'order_released'], restock: ['pos_restock', 'pos_return', 'pos_void'], loss: ['pos_loss'], count: ['pos_reconcile'] };
+const KNOWN_REASONS = ['initial_stock', 'pos_sale', 'pos_void', 'pos_restock', 'pos_return', 'pos_loss', 'pos_reconcile', 'order_reserved', 'order_released', 'barcode_initial_stock', 'barcode_restock'];
+const MOVE_TYPES = { opening: ['initial_stock'], sale: ['pos_sale'], online: ['order_reserved', 'order_released'], intake: ['barcode_initial_stock'], restock: ['pos_restock', 'pos_return', 'pos_void', 'barcode_restock'], loss: ['pos_loss'], count: ['pos_reconcile'] };
 export async function stockMovements(db, { from, to, q = '', type = 'all', limit = 500 }) {
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   const reasons = MOVE_TYPES[type] ?? null;

@@ -118,3 +118,27 @@ export async function quickAddScanned(db, user, { barcode, name, price, category
   await receiveStockWithBarcode(db, user, { variantId: made.variantId, quantity: stock, customBarcode: code, note: 'Added from a scanned barcode' });
   return lookupBarcode(db, code);
 }
+
+// The product form's barcode field: set, change or clear one size's barcode. A barcode that belongs to another item is refused; the size's older
+// registry entries are retired and the new value is registered and copied onto the size (as Mahalashmi's Add / Edit product does).
+export async function setVariantBarcode(db, user, variantId, value) {
+  const code = normalizeBarcode(value);
+  const inTx = typeof db.tx === 'function' ? fn => db.tx(fn) : fn => fn(db); // also callable from inside a transaction (product create)
+  return inTx(async t => {
+    const v = await one(t, 'SELECT id, product_id FROM product_variants WHERE id = $1 FOR UPDATE', [variantId]);
+    if (!v) throw new HttpError(404, 'Size not found', 'not_found');
+    if (code) {
+      if (!validBarcode(code)) throw new HttpError(400, 'A barcode is 4 to 32 letters, numbers, - or _', 'bad_barcode');
+      const taken = await one(t, `SELECT 1 AS x FROM barcode_registry WHERE upper(barcode_value) = $1 AND variant_id <> $2 AND is_active UNION SELECT 1 FROM product_variants WHERE upper(barcode) = $1 AND id <> $2`, [code, v.id]);
+      if (taken) throw new HttpError(409, `Barcode "${code}" is already registered to another item.`, 'barcode_taken');
+    }
+    await t.query(`UPDATE barcode_registry SET is_active = false, updated_at = now() WHERE variant_id = $1 AND is_active AND ($2 = '' OR upper(barcode_value) <> $2)`, [v.id, code]);
+    if (code) {
+      await t.query(`INSERT INTO barcode_registry (barcode_value, entity_type, product_id, variant_id, created_by_name) VALUES ($1,'variant',$2,$3,$4)
+        ON CONFLICT (barcode_value) DO UPDATE SET is_active = true, product_id = EXCLUDED.product_id, variant_id = EXCLUDED.variant_id, updated_at = now()`, [code, v.product_id, v.id, user?.name || user?.email || 'Admin']);
+    }
+    await t.query('UPDATE product_variants SET barcode = $2 WHERE id = $1', [v.id, code || null]);
+    await audit(t, user?.id ?? null, 'barcode.set', 'variant', v.id, { barcode: code || null });
+    return { variantId: v.id, barcode: code || null };
+  });
+}

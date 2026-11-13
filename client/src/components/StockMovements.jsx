@@ -3,8 +3,8 @@ import { api } from '../lib/api';
 import { clock, longDate } from '../lib/invoiceFormat';
 import { PeriodFilter, istDay, periodRange, usePeriod } from './PeriodFilter';
 
-const TYPES = [['all', 'All Types'], ['opening', 'Opening stock'], ['sale', 'POS sale'], ['online', 'Online order'], ['restock', 'Restock / return'], ['loss', 'Lost / damaged'], ['count', 'Stock count'], ['manual', 'Manual']];
-const LABEL = { initial_stock: ['OPENING STOCK', 'in'], pos_sale: ['POS SALE', 'out'], pos_void: ['VOID RESTOCK', 'in'], pos_restock: ['RESTOCK', 'in'], pos_return: ['RETURN', 'in'], pos_loss: ['LOST / DAMAGED', 'warn'], pos_reconcile: ['STOCK COUNT', 'neutral'], order_reserved: ['ONLINE ORDER', 'out'], order_released: ['ORDER RELEASED', 'in'] };
+const TYPES = [['all', 'All Types'], ['opening', 'Opening stock'], ['intake', 'Intake (barcode)'], ['sale', 'POS sale'], ['online', 'Online order'], ['restock', 'Restock / return'], ['loss', 'Lost / damaged'], ['count', 'Stock count'], ['manual', 'Manual']];
+const LABEL = { initial_stock: ['OPENING STOCK', 'in'], barcode_initial_stock: ['INTAKE', 'in'], barcode_restock: ['RESTOCK', 'in'], pos_sale: ['POS SALE', 'out'], pos_void: ['VOID RESTOCK', 'in'], pos_restock: ['RESTOCK', 'in'], pos_return: ['RETURN', 'in'], pos_loss: ['LOST / DAMAGED', 'warn'], pos_reconcile: ['STOCK COUNT', 'neutral'], order_reserved: ['ONLINE ORDER', 'out'], order_released: ['ORDER RELEASED', 'in'] };
 const label = r => LABEL[r] || [String(r || 'adjustment').replace(/_/g, ' ').toUpperCase(), 'neutral'];
 const sign = n => (n > 0 ? '+' : '') + n;
 
@@ -57,7 +57,7 @@ export default function StockMovements({ onSnapshot }) {
               <td><span className={`sm-tag ${tone}`}>{l}</span></td>
               <td className={`r sm-ch ${r.change > 0 ? 'g' : 'r'}`}>{sign(r.change)}</td>
               <td className="r"><span className="muted">{r.before}</span> → <b>{r.after}</b></td>
-              <td>{r.reason === 'pos_sale' || r.reason === 'pos_void' ? `Bill #${r.ref}` : r.reason === 'order_reserved' || r.reason === 'order_released' ? `Order ${r.ref}` : r.reason === 'initial_stock' ? 'Opening stock' : r.ref || '—'}</td></tr>) })}</tbody></table></div>
+              <td>{r.reason === 'pos_sale' || r.reason === 'pos_void' ? `Bill #${r.ref}` : r.reason === 'order_reserved' || r.reason === 'order_released' ? `Order ${r.ref}` : r.reason === 'initial_stock' ? 'Opening stock' : r.reason === 'barcode_initial_stock' || r.reason === 'barcode_restock' ? `Barcode ${r.ref}` : r.ref || '—'}</td></tr>) })}</tbody></table></div>
       </section>
     </>
   );

@@ -185,12 +185,16 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   const add = v => { setFlash(v.variantId); clearTimeout(flashT.current); flashT.current = setTimeout(() => setFlash(null), 1600); say(`${v.name}${v.size && v.size !== 'Default' ? ` (${v.size})` : ''} added to the bill`); addLine(v) };
   // OK in the Catalog window: every picked piece goes onto the bill in one go (quantities added to lines already there).
   // Barcode scans (scan box, camera, keyboard-wedge reader): the size goes onto the bill; an unknown code offers to create the product.
+  const linesRef = useRef(lines); linesRef.current = lines;
   const [qaCode, setQaCode] = useState(null); const [scanTick, setScanTick] = useState(0); const [catNames, setCatNames] = useState([]);
   const scanCode = useCallback(async code => {
     try {
       const v = await (await loadBarcode()).scanLookup(code);
       if (!v) return setQaCode(code);
-      if (v.stock < 1) return say(`${v.name} is out of stock`, 'warn');
+      const nm = `"${v.name}${v.size && v.size !== 'Default' ? ` (${v.size})` : ''}"`;
+      if (v.stock < 1) return say(`${nm} is out of stock (Stock: 0)`, 'warn');
+      const have = linesRef.current.find(l => l.variantId === v.variantId);
+      if (have && have.qty + 1 > v.stock) return say(`${nm} cannot exceed available stock (${v.stock})`, 'warn');
       add(v);
     } catch (e) { say(e.message, 'warn') }
   }, []); // eslint-disable-line

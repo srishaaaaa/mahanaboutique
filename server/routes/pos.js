@@ -339,7 +339,7 @@ export default function pos({ db, auth }) {
   }));
 
   r.get('/pos/stock/movements', stockers, wrap(async (req, res) => {
-    const f = z.object({ from: date.default(() => today()), to: date.default(() => today()), q: text(80).default(''), type: z.enum(['all', 'opening', 'sale', 'online', 'restock', 'loss', 'count', 'manual']).default('all') }).parse(req.query);
+    const f = z.object({ from: date.default(() => today()), to: date.default(() => today()), q: text(80).default(''), type: z.enum(['all', 'opening', 'intake', 'sale', 'online', 'restock', 'loss', 'count', 'manual']).default('all') }).parse(req.query);
     res.json(await stockMovements(db, f));
   }));
 

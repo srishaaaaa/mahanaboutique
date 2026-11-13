@@ -43,7 +43,7 @@ function StockModal({ product, variantId, onClose, onDone }) {
         <div className="dpos-box" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
           <div><span className="muted small" style={{ letterSpacing: '.12em', fontWeight: 800 }}>TARGET ITEM</span><div style={{ fontWeight: 800, fontSize: 17 }}>{product.name}</div>
             {product.variants.length > 1 && <select aria-label="Variant" value={vid} onChange={e => setVid(+e.target.value)} style={{ marginTop: 6 }}>{product.variants.map(x => <option key={x.id} value={x.id}>{x.size}{x.color !== 'Default' ? ` · ${x.color}` : ''} · {x.sku} ({x.stock})</option>)}</select>}</div>
-          <div style={{ textAlign: 'right' }}><span className="muted small" style={{ letterSpacing: '.12em', fontWeight: 800 }}>CURRENT STOCK</span><div style={{ fontWeight: 800, fontSize: 30 }}>{v?.stock ?? 0} <span className="muted small">units</span></div></div>
+          <div style={{ textAlign: 'right' }}><span className="muted small" style={{ letterSpacing: '.12em', fontWeight: 800 }}>CURRENT STOCK</span>{v?.barcode && <div className="small" style={{ marginTop: 6 }}>Barcode: <b style={{ fontFamily: 'ui-monospace, Consolas, monospace', background: '#fff', padding: '1px 6px', borderRadius: 6, border: '1px solid #e5e4e0' }}>{v.barcode}</b></div>}<div style={{ fontWeight: 800, fontSize: 30 }}>{v?.stock ?? 0} <span className="muted small">units</span></div></div>
         </div>
         <div><p className="muted small" style={{ letterSpacing: '.1em', fontWeight: 800, margin: '0 0 8px' }}>SELECT ADJUSTMENT TYPE *</p>
           <div className="dpos-types" role="radiogroup" aria-label="Adjustment type">{ADJ.map(([k, l, s, c, ic]) => <button key={k} type="button" role="radio" aria-checked={type === k} className={type === k ? 'on' : ''} onClick={() => setType(k)}><Icon n={ic} size={20} />{l}<small style={{ color: c }}>{s}</small></button>)}</div></div>
@@ -60,8 +60,10 @@ function StockModal({ product, variantId, onClose, onDone }) {
 
 // Everything about one product in one window: details, website text, collections, sizes & colours, and photos.
 function VariantRow({ productId, v, basePrice, onChanged, setErr, onlyOne }) {
+  const [bc, setBc] = useState(v.barcode || '');
+  const bcDirty = bc.trim().toUpperCase() !== (v.barcode || '');
   const [r, setR] = useState({ size: v.size, color: v.color, sku: v.sku, price: v.priceOverride != null ? rupees(v.priceOverride) : '', cost: v.costOverride != null ? rupees(v.costOverride) : '' });
-  const dirty = r.size !== v.size || r.color !== v.color || r.sku !== v.sku || (r.price ? toPaise(r.price) : null) !== (v.priceOverride ?? null) || (r.cost ? toPaise(r.cost) : null) !== (v.costOverride ?? null);
+  const dirty = bcDirty || r.size !== v.size || r.color !== v.color || r.sku !== v.sku || (r.price ? toPaise(r.price) : null) !== (v.priceOverride ?? null) || (r.cost ? toPaise(r.cost) : null) !== (v.costOverride ?? null);
   const call = async (body, method = 'PATCH') => {
     setErr();
     try { await api(`/admin/pos/products/${productId}/variants/${v.id}`, { method, ...(body ? { body } : {}) }); onChanged() }
@@ -72,11 +74,12 @@ function VariantRow({ productId, v, basePrice, onChanged, setErr, onlyOne }) {
       <td><input aria-label="Size" value={r.size} maxLength={40} onChange={e => setR({ ...r, size: e.target.value })} /></td>
       <td><input aria-label="Colour" value={r.color} maxLength={40} onChange={e => setR({ ...r, color: e.target.value })} /></td>
       <td><input aria-label="SKU" value={r.sku} maxLength={80} onChange={e => setR({ ...r, sku: e.target.value.toUpperCase() })} /></td>
+      <td><input aria-label="Barcode" value={bc} maxLength={32} placeholder="No Barcode" style={{ fontFamily: 'ui-monospace, Consolas, monospace', fontSize: 12.5, paddingInline: 8 }} onChange={e => setBc(e.target.value.toUpperCase())} /></td>
       <td><input aria-label="Own price in dollars" inputMode="decimal" value={r.price} placeholder={rupees(basePrice)} onChange={e => setR({ ...r, price: e.target.value })} /></td>
       <td><input aria-label="Cost price in dollars" inputMode="decimal" value={r.cost} placeholder={v.cost ? rupees(v.cost) : '0'} onChange={e => setR({ ...r, cost: e.target.value })} /></td>
       <td className="r"><b>{v.stock}</b></td>
       <td className="r pe-acts">
-        {dirty && <button type="button" className="dpos-btn sm" onClick={() => call({ size: r.size.trim(), color: r.color.trim() || 'Default', sku: r.sku.trim(), price: r.price ? toPaise(r.price) : null, cost: r.cost ? toPaise(r.cost) : null })}>Save</button>}
+        {dirty && <button type="button" className="dpos-btn sm" onClick={async () => { if (bcDirty) { try { await api(`/admin/pos/barcodes/variant/${v.id}`, { method: 'PUT', body: { barcode: bc.trim() || null } }) } catch (x) { return setErr(x.message) } } call({ size: r.size.trim(), color: r.color.trim() || 'Default', sku: r.sku.trim(), price: r.price ? toPaise(r.price) : null, cost: r.cost ? toPaise(r.cost) : null }) }}>Save</button>}
         <button type="button" className="dpos-btn ghost sm" title={v.active ? 'Hide this size from the website and billing' : 'Show this size again'} onClick={() => call({ active: !v.active })}>{v.active ? 'Hide' : 'Show'}</button>
         <button type="button" className="dpos-btn ghost sm" disabled={onlyOne} aria-label={`Delete ${v.size} ${v.color}`} onClick={() => confirm(`Delete size ${v.size} (${v.color})? Past bills keep their own copy.`) && call(null, 'DELETE')}>✕</button>
       </td>
@@ -144,7 +147,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
       <section className="pe-vars-sec">
         <div className="pe-vh"><div><h3 className="pe-h">Product Variants</h3><p className="pe-hint">MANAGE SIZES, COLORS, AND SPECIFIC INVENTORY</p></div></div>
         <div className="acc-scroll"><table className="dpos-table pe-vars">
-          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Selling price S$</th><th>Cost price S$</th><th className="r">Stock</th><th /></tr></thead>
+          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Barcode</th><th>Selling price S$</th><th>Cost price S$</th><th className="r">Stock</th><th /></tr></thead>
           <tbody>{(product.variants || []).map(v => <VariantRow key={`${v.id}-${v.size}-${v.color}-${v.sku}-${v.priceOverride}-${v.active}`} productId={product.id} v={v} basePrice={product.price} onChanged={reload} setErr={setErr} onlyOne={product.variants.length < 2} />)}</tbody>
         </table></div>
         <form onSubmit={addVariant} className="pe-add">
@@ -161,7 +164,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
   );
 }
 
-const blankVar = () => ({ size: '', color: '', price: '', cost: '', stock: '' });
+const blankVar = () => ({ size: '', color: '', price: '', cost: '', barcode: '', stock: '' });
 function AddModal({ categories, onClose, onDone }) {
   const [f, setF] = useState({ name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', featured: false, bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
   const [sug, setSug] = useState([]); const [vars, setVars] = useState([blankVar()]); const [files, setFiles] = useState([]); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const pick = useRef();
@@ -178,7 +181,7 @@ function AddModal({ categories, onClose, onDone }) {
     const list = rows.length ? rows : [{ size: '', color: '', price: '', stock: '' }];
     const payload = slug => ({ slug, name: f.name.trim(), description: f.description.trim(), category: f.cat || undefined, price: toPaise(f.price), ...(toPaise(f.cost) ? { cost_price: toPaise(f.cost) } : {}), gst_rate: +f.tax, status: f.status,
       material: f.material.trim() || undefined, featured: f.featured, best_seller: f.bestSeller, low_stock_alert: Math.max(0, parseInt(f.lowAlert, 10) || 0),
-      variants: list.map(v => ({ size: v.size.trim() || 'Free Size', color: v.color.trim() || 'Default', sku: `${slug}-${slugify(v.size) || 'free'}-${slugify(v.color) || 'default'}`.toUpperCase(), stock: v.stock === '' ? dflt : Math.max(0, parseInt(v.stock, 10) || 0), ...(toPaise(v.price) ? { price: toPaise(v.price) } : {}), ...(toPaise(v.cost) ? { cost: toPaise(v.cost) } : {}) })) });
+      variants: list.map(v => ({ size: v.size.trim() || 'Free Size', color: v.color.trim() || 'Default', sku: `${slug}-${slugify(v.size) || 'free'}-${slugify(v.color) || 'default'}`.toUpperCase(), stock: v.stock === '' ? dflt : Math.max(0, parseInt(v.stock, 10) || 0), ...(toPaise(v.price) ? { price: toPaise(v.price) } : {}), ...(toPaise(v.cost) ? { cost: toPaise(v.cost) } : {}), ...(v.barcode.trim() ? { barcode: v.barcode.trim() } : {}) })) });
     try {
       let made;
       try { made = await api('/admin/products', { method: 'POST', body: payload(base) }) }
@@ -226,13 +229,14 @@ function AddModal({ categories, onClose, onDone }) {
       </form>
       <section className="pe-vars-sec">
         <div className="pe-vh"><div><h3 className="pe-h">Product Variants</h3><p className="pe-hint">MANAGE SIZES, COLOURS AND SPECIFIC INVENTORY</p></div><button type="button" className="pe-addrow" onClick={() => setVars(v => [...v, blankVar()])}>＋ Add Row</button></div>
-        <div className="pe-vhead"><span>SIZE</span><span>COLOUR</span><span>SELLING (S$)</span><span>COST (S$)</span><span>STOCK</span><span /></div>
+        <div className="pe-vhead"><span>SIZE</span><span>COLOUR</span><span>SELLING (S$)</span><span>COST (S$)</span><span>BARCODE</span><span>STOCK</span><span /></div>
         {vars.map((v, i) => (
           <div key={i} className="pe-vrow">
             <input aria-label="Size" placeholder="e.g. M" value={v.size} onChange={e => setV(i, { size: e.target.value })} />
             <input aria-label="Colour" placeholder="e.g. Blue" value={v.color} onChange={e => setV(i, { color: e.target.value })} />
             <input aria-label="Own price" inputMode="decimal" placeholder="Same" value={v.price} onChange={e => setV(i, { price: e.target.value })} />
             <input aria-label="Own cost" inputMode="decimal" placeholder="Same" value={v.cost} onChange={e => setV(i, { cost: e.target.value })} />
+            <input aria-label="Barcode" placeholder="Optional" maxLength={32} value={v.barcode} onChange={e => setV(i, { barcode: e.target.value.toUpperCase() })} />
             <input aria-label="Stock" inputMode="numeric" placeholder="0" value={v.stock} onChange={e => setV(i, { stock: e.target.value.replace(/\D/g, '') })} />
             <button type="button" className="pe-vdel" aria-label="Remove row" disabled={vars.length === 1} onClick={() => setVars(vs => vs.filter((_, n) => n !== i))}>🗑</button>
           </div>))}

@@ -74,3 +74,26 @@ test('quick add from a scanned code creates the product, registers the barcode a
   const cashier = await role('bc-cashier2@test.dev', 'cashier');
   assert.equal((await cashier('POST', '/admin/pos/barcodes/quick-add', { barcode: 'QA-777002', name: 'Nope', price: 100 })).status, 403);
 });
+
+test('product form barcode: set on create, change retires the old one, conflicts are refused, clear removes it; barcode movements are filterable', async () => {
+  const o = client(); await o('POST', '/auth/login', { email: 'owner@test.dev', password: 'OwnerPass123!' });
+  assert.equal((await o('POST', '/admin/products', { slug: 'bc-form', name: 'bc-form', price: 5000, gst_rate: 9, status: 'active', variants: [{ sku: 'BCF-S', size: 'S', color: 'Blue', stock: 1, barcode: 'bcf-0001' }, { sku: 'BCF-M', size: 'M', color: 'Blue', stock: 1 }] })).status, 201);
+  const items = (await o('GET', '/admin/pos/barcodes/items?q=bc-form')).body, S = items.find(x => x.size === 'S'), M = items.find(x => x.size === 'M');
+  assert.equal(S.barcode, 'BCF-0001'); assert.equal((await o('GET', '/admin/pos/barcodes/lookup?code=bcf-0001')).body.variantId, S.variantId);
+  // another size cannot take it
+  const clash = await o('PUT', `/admin/pos/barcodes/variant/${M.variantId}`, { barcode: 'BCF-0001' });
+  assert.equal(clash.status, 409); assert.match(clash.body.error?.message || clash.body.message || JSON.stringify(clash.body), /already registered to another item/);
+  // changing S retires the old registry row
+  assert.equal((await o('PUT', `/admin/pos/barcodes/variant/${S.variantId}`, { barcode: 'BCF-0002' })).status, 200);
+  assert.equal((await o('GET', '/admin/pos/barcodes/lookup?code=BCF-0001')).body, null);
+  assert.equal((await o('GET', '/admin/pos/barcodes/lookup?code=BCF-0002')).body.variantId, S.variantId);
+  assert.equal((await o('PUT', `/admin/pos/barcodes/variant/${M.variantId}`, { barcode: 'BCF-0001' })).status, 200, 'the retired value is free again');
+  // clearing
+  assert.equal((await o('PUT', `/admin/pos/barcodes/variant/${S.variantId}`, { barcode: null })).status, 200);
+  assert.equal((await o('GET', '/admin/pos/barcodes/lookup?code=BCF-0002')).body, null);
+  // the intake filter finds barcode receipts
+  const recv = await o('POST', '/admin/pos/barcodes/receive', { variantId: M.variantId, quantity: 2 }); assert.equal(recv.status, 200);
+  const d = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date());
+  const mv = (await o('GET', `/admin/pos/stock/movements?from=${d}&to=${d}&type=restock`)).body;
+  assert.ok(mv.rows.some(r => r.reason === 'barcode_restock'), 'a repeat receipt is a restock');
+});
