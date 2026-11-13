@@ -42,3 +42,13 @@ export async function hasVariantBarcode(db) {
   bcKnown = !!(await one(db, `SELECT 1 AS x FROM information_schema.columns WHERE table_name = 'product_variants' AND column_name = 'barcode'`));
   return bcKnown;
 }
+
+// products.weight_grams / product_variants.weight_grams arrive with migration 034; until then every bag weighs the default per piece.
+let wtKnown = false, wtAt = 0;
+export async function hasWeightColumns(db) {
+  if (wtKnown) return true;
+  if (Date.now() - wtAt < 60_000) return false;
+  wtAt = Date.now();
+  wtKnown = !!(await one(db, `SELECT 1 AS x FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'weight_grams'`));
+  return wtKnown;
+}

@@ -5,12 +5,13 @@ import rateLimit from 'express-rate-limit';
 import { one } from '../db/index.js';
 import { HttpError, wrap } from '../lib/http.js';
 import { resolveCart } from '../lib/cart.js';
+import { loadRules, activeRegions } from '../lib/delivery.js';
 import { createPendingOrder, markPaid, ordersForUser, releaseOrder, releaseExpired } from '../lib/orders.js';
 
 const address = z.object({
   name: z.string().trim().min(1).max(100), phone: z.string().trim().min(8).max(20),
   line1: z.string().trim().min(3).max(200), line2: z.string().trim().max(200).optional(),
-  city: z.string().trim().max(80).default('Singapore').transform(v => v || 'Singapore'), state: z.string().trim().max(80).default(''), pin: z.string().regex(/^\d{6}$/, 'Postal code must be 6 digits'),
+  city: z.string().trim().max(80).default('Singapore').transform(v => v || 'Singapore'), state: z.string().trim().max(80).default(''), pin: z.string().regex(/^\d{6}$/, 'Postal code must be 6 digits'), regionId: z.string().trim().max(40).optional(),
 });
 
 // Where Stripe sends the customer back to: SITE_URL when set, else this request's own origin, else the dev client.
@@ -25,6 +26,12 @@ export function commerceRoutes(ctx) {
   const { db, cfg, auth, payments } = ctx;
   const r = Router();
   const limiter = rateLimit({ windowMs: 60_000, limit: cfg.NODE_ENV === 'test' ? 1000 : 20, standardHeaders: true, legacyHeaders: false });
+
+  // Delivery copy the owner writes in the admin (landing page line, product-page lines, the shipping note) and the regions customers can pick.
+  r.get('/delivery-info', wrap(async (_req, res) => {
+    const rules = await loadRules(db);
+    res.set('Cache-Control', 'public, max-age=60').json({ landingText: rules.landingText || '', productLines: rules.productLines || [], note: rules.note || '', freeOver: rules.freeOver || null, regions: activeRegions(rules).map(x => ({ id: x.id, name: x.name })) });
+  }));
 
   // Builds the order from the SERVER cart. The browser never submits prices or totals.
   r.post('/checkout', limiter, auth.optional, wrap(async (req, res) => {

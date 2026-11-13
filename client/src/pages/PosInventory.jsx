@@ -61,9 +61,11 @@ function StockModal({ product, variantId, onClose, onDone }) {
 // Everything about one product in one window: details, website text, collections, sizes & colours, and photos.
 function VariantRow({ productId, v, basePrice, onChanged, setErr, onlyOne }) {
   const [bc, setBc] = useState(v.barcode || '');
+  const [wt, setWt] = useState(v.weightOverride != null ? String(v.weightOverride) : '');
   const bcDirty = bc.trim().toUpperCase() !== (v.barcode || '');
   const [r, setR] = useState({ size: v.size, color: v.color, sku: v.sku, price: v.priceOverride != null ? rupees(v.priceOverride) : '', cost: v.costOverride != null ? rupees(v.costOverride) : '' });
-  const dirty = bcDirty || r.size !== v.size || r.color !== v.color || r.sku !== v.sku || (r.price ? toPaise(r.price) : null) !== (v.priceOverride ?? null) || (r.cost ? toPaise(r.cost) : null) !== (v.costOverride ?? null);
+  const wtDirty = (wt === '' ? null : parseInt(wt, 10)) !== (v.weightOverride ?? null);
+  const dirty = wtDirty || bcDirty || r.size !== v.size || r.color !== v.color || r.sku !== v.sku || (r.price ? toPaise(r.price) : null) !== (v.priceOverride ?? null) || (r.cost ? toPaise(r.cost) : null) !== (v.costOverride ?? null);
   const call = async (body, method = 'PATCH') => {
     setErr();
     try { await api(`/admin/pos/products/${productId}/variants/${v.id}`, { method, ...(body ? { body } : {}) }); onChanged() }
@@ -76,10 +78,11 @@ function VariantRow({ productId, v, basePrice, onChanged, setErr, onlyOne }) {
       <td><input aria-label="SKU" value={r.sku} maxLength={80} onChange={e => setR({ ...r, sku: e.target.value.toUpperCase() })} /></td>
       <td><input aria-label="Barcode" value={bc} maxLength={32} placeholder="No Barcode" style={{ fontFamily: 'ui-monospace, Consolas, monospace', fontSize: 12.5, paddingInline: 8 }} onChange={e => setBc(e.target.value.toUpperCase())} /></td>
       <td><input aria-label="Own price in dollars" inputMode="decimal" value={r.price} placeholder={rupees(basePrice)} onChange={e => setR({ ...r, price: e.target.value })} /></td>
+      <td><input aria-label="Weight in grams (blank = the product's weight)" inputMode="numeric" value={wt} placeholder={String(v.weight ?? '')} onChange={e => setWt(e.target.value.replace(/\D/g, ''))} style={{ maxWidth: 90 }} /></td>
       <td><input aria-label="Cost price in dollars" inputMode="decimal" value={r.cost} placeholder={v.cost ? rupees(v.cost) : '0'} onChange={e => setR({ ...r, cost: e.target.value })} /></td>
       <td className="r"><b>{v.stock}</b></td>
       <td className="r pe-acts">
-        {dirty && <button type="button" className="dpos-btn sm" onClick={async () => { if (bcDirty) { try { await api(`/admin/pos/barcodes/variant/${v.id}`, { method: 'PUT', body: { barcode: bc.trim() || null } }) } catch (x) { return setErr(x.message) } } call({ size: r.size.trim(), color: r.color.trim() || 'Default', sku: r.sku.trim(), price: r.price ? toPaise(r.price) : null, cost: r.cost ? toPaise(r.cost) : null }) }}>Save</button>}
+        {dirty && <button type="button" className="dpos-btn sm" onClick={async () => { if (bcDirty) { try { await api(`/admin/pos/barcodes/variant/${v.id}`, { method: 'PUT', body: { barcode: bc.trim() || null } }) } catch (x) { return setErr(x.message) } } call({ size: r.size.trim(), color: r.color.trim() || 'Default', sku: r.sku.trim(), price: r.price ? toPaise(r.price) : null, cost: r.cost ? toPaise(r.cost) : null, weight: wt === '' ? null : parseInt(wt, 10) }) }}>Save</button>}
         <button type="button" className="dpos-btn ghost sm" title={v.active ? 'Hide this size from the website and billing' : 'Show this size again'} onClick={() => call({ active: !v.active })}>{v.active ? 'Hide' : 'Show'}</button>
         <button type="button" className="dpos-btn ghost sm" disabled={onlyOne} aria-label={`Delete ${v.size} ${v.color}`} onClick={() => confirm(`Delete size ${v.size} (${v.color})? Past bills keep their own copy.`) && call(null, 'DELETE')}>✕</button>
       </td>
@@ -89,7 +92,7 @@ function VariantRow({ productId, v, basePrice, onChanged, setErr, onlyOne }) {
 
 function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
   const [product, setProduct] = useState(start);
-  const [f, setF] = useState({ name: start.name, price: rupees(start.price), cost: start.costPrice ? rupees(start.costPrice) : '', tax: start.taxRate, cat: start.categorySlug || '', status: start.status,
+  const [f, setF] = useState({ weight: String(start.weightGrams ?? 500), name: start.name, price: rupees(start.price), cost: start.costPrice ? rupees(start.costPrice) : '', tax: start.taxRate, cat: start.categorySlug || '', status: start.status,
     description: start.description || '', material: start.material || '', featured: !!start.featured, collections: start.collections || [], lowAlert: String(start.lowAlert ?? LOW), bestSeller: !!start.bestSeller });
   const [cols, setCols] = useState([]); const [sug, setSug] = useState([]); const [sug0, setSug0] = useState('');
   useEffect(() => { api(`/admin/pos/products/${start.id}/suggested`).then(r => { setSug(r); setSug0(r.map(x => x.slug).join()) }).catch(() => {}) }, [start.id]);
@@ -100,7 +103,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
   const submit = async e => {
     e.preventDefault(); setBusy(true); setErr();
     try {
-      await api(`/admin/pos/products/${product.id}`, { method: 'PATCH', body: { name: f.name.trim(), price: toPaise(f.price), costPrice: toPaise(f.cost), taxRate: +f.tax, categorySlug: f.cat || null, status: f.status,
+      await api(`/admin/pos/products/${product.id}`, { method: 'PATCH', body: { weightGrams: Math.max(0, parseInt(f.weight, 10) || 0), name: f.name.trim(), price: toPaise(f.price), costPrice: toPaise(f.cost), taxRate: +f.tax, categorySlug: f.cat || null, status: f.status,
         description: f.description.trim(), material: f.material.trim(), featured: f.featured, collections: f.collections, lowAlert: Math.max(0, parseInt(f.lowAlert, 10) || 0), bestSeller: f.bestSeller } });
       if (sug.map(x => x.slug).join() !== sug0) await api(`/admin/pos/products/${product.id}/suggested`, { method: 'PUT', body: { slugs: sug.map(x => x.slug) } });
       onDone(); onClose();
@@ -132,6 +135,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
             <label className="pe-l">STATUS<select value={f.status} onChange={e => setF({ ...f, status: e.target.value })}><option value="active">Active (on sale)</option><option value="draft">Draft (hidden)</option><option value="archived">Archived</option></select></label>
             <label className="pe-l">SELLING PRICE (S$)<input required inputMode="decimal" value={f.price} onChange={e => setF({ ...f, price: e.target.value })} /></label>
             <label className="pe-l">COST PRICE (S$)<input inputMode="decimal" value={f.cost} onChange={e => setF({ ...f, cost: e.target.value })} placeholder="What you paid" /></label>
+            <label className="pe-l">WEIGHT (GRAMS)<input inputMode="numeric" value={f.weight} onChange={e => setF({ ...f, weight: e.target.value.replace(/\D/g, '') })} placeholder="500" /></label>
             <label className="pe-l">GST %<select value={f.tax} onChange={e => setF({ ...f, tax: e.target.value })}>{[0, 9].map(r => <option key={r} value={r}>{r}%</option>)}</select></label>
             <label className="pe-l">FABRIC / MATERIAL<input value={f.material} maxLength={80} onChange={e => setF({ ...f, material: e.target.value })} placeholder="e.g. Cotton" /></label>
           </div>
@@ -147,7 +151,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
       <section className="pe-vars-sec">
         <div className="pe-vh"><div><h3 className="pe-h">Product Variants</h3><p className="pe-hint">MANAGE SIZES, COLORS, AND SPECIFIC INVENTORY</p></div></div>
         <div className="acc-scroll"><table className="dpos-table pe-vars">
-          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Barcode</th><th>Selling price S$</th><th>Cost price S$</th><th className="r">Stock</th><th /></tr></thead>
+          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Barcode</th><th>Selling price S$</th><th>Weight g</th><th>Cost price S$</th><th className="r">Stock</th><th /></tr></thead>
           <tbody>{(product.variants || []).map(v => <VariantRow key={`${v.id}-${v.size}-${v.color}-${v.sku}-${v.priceOverride}-${v.active}`} productId={product.id} v={v} basePrice={product.price} onChanged={reload} setErr={setErr} onlyOne={product.variants.length < 2} />)}</tbody>
         </table></div>
         <form onSubmit={addVariant} className="pe-add">
@@ -166,7 +170,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
 
 const blankVar = () => ({ size: '', color: '', price: '', cost: '', barcode: '', stock: '' });
 function AddModal({ categories, onClose, onDone }) {
-  const [f, setF] = useState({ name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', featured: false, bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
+  const [f, setF] = useState({ weight: '500', name: '', description: '', price: '', cost: '', tax: 9, cat: '', status: 'active', material: '', featured: false, bestSeller: false, defaultStock: '', lowAlert: String(LOW) });
   const [sug, setSug] = useState([]); const [vars, setVars] = useState([blankVar()]); const [files, setFiles] = useState([]); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const pick = useRef();
   const setV = (i, p) => setVars(v => v.map((x, n) => n === i ? { ...x, ...p } : x));
   const previews = useMemo(() => files.map(file => URL.createObjectURL(file)), [files]);
@@ -179,7 +183,7 @@ function AddModal({ categories, onClose, onDone }) {
     const base = slugify(f.name) || 'product', dflt = Math.max(0, parseInt(f.defaultStock, 10) || 0);
     const rows = vars.filter(v => v.size.trim() || v.color.trim() || v.stock !== '' || v.price !== '');
     const list = rows.length ? rows : [{ size: '', color: '', price: '', stock: '' }];
-    const payload = slug => ({ slug, name: f.name.trim(), description: f.description.trim(), category: f.cat || undefined, price: toPaise(f.price), ...(toPaise(f.cost) ? { cost_price: toPaise(f.cost) } : {}), gst_rate: +f.tax, status: f.status,
+    const payload = slug => ({ slug, weight_grams: Math.max(0, parseInt(f.weight, 10) || 0), name: f.name.trim(), description: f.description.trim(), category: f.cat || undefined, price: toPaise(f.price), ...(toPaise(f.cost) ? { cost_price: toPaise(f.cost) } : {}), gst_rate: +f.tax, status: f.status,
       material: f.material.trim() || undefined, featured: f.featured, best_seller: f.bestSeller, low_stock_alert: Math.max(0, parseInt(f.lowAlert, 10) || 0),
       variants: list.map(v => ({ size: v.size.trim() || 'Free Size', color: v.color.trim() || 'Default', sku: `${slug}-${slugify(v.size) || 'free'}-${slugify(v.color) || 'default'}`.toUpperCase(), stock: v.stock === '' ? dflt : Math.max(0, parseInt(v.stock, 10) || 0), ...(toPaise(v.price) ? { price: toPaise(v.price) } : {}), ...(toPaise(v.cost) ? { cost: toPaise(v.cost) } : {}), ...(v.barcode.trim() ? { barcode: v.barcode.trim() } : {}) })) });
     try {
@@ -213,6 +217,7 @@ function AddModal({ categories, onClose, onDone }) {
             <label className="pe-l">STATUS<select value={f.status} onChange={e => setF({ ...f, status: e.target.value })}><option value="active">Active (on sale)</option><option value="draft">Draft (hidden)</option></select></label>
             <label className="pe-l">SELLING PRICE (S$)<input required inputMode="decimal" value={f.price} onChange={e => setF({ ...f, price: e.target.value })} placeholder="0" /></label>
             <label className="pe-l">COST PRICE (S$)<input inputMode="decimal" value={f.cost} onChange={e => setF({ ...f, cost: e.target.value })} placeholder="What you paid" /></label>
+            <label className="pe-l">WEIGHT (GRAMS)<input inputMode="numeric" value={f.weight} onChange={e => setF({ ...f, weight: e.target.value.replace(/\D/g, '') })} placeholder="500" /></label>
             <label className="pe-l">GST %<select value={f.tax} onChange={e => setF({ ...f, tax: e.target.value })}>{[0, 9].map(r => <option key={r} value={r}>{r}%</option>)}</select></label>
             <label className="pe-l">FABRIC / MATERIAL<input value={f.material} maxLength={80} onChange={e => setF({ ...f, material: e.target.value })} placeholder="e.g. Cotton" /></label>
           </div>

@@ -85,13 +85,14 @@ export function Checkout() {
   }, [user?.id]); // eslint-disable-line
 
   // Delivery is priced by distance: once the postal code is complete, ask the server for the delivery charge.
-  useEffect(() => { if (/^\d{6}$/.test(f.pin)) loadCart(f.pin) }, [f.pin, cartInfo.subtotal]); // eslint-disable-line
+  const [region, setRegion] = useState('');
+  useEffect(() => { loadCart(region) }, [region, cartInfo.subtotal]); // eslint-disable-line
   const [confirm, setConfirm] = useState(false);
   async function pay() {
     setErr(); setBusy(true);
     try {
       const { email, ...address } = f;
-      const o = await api('/checkout', { method: 'POST', body: { email, address } });
+      const o = await api('/checkout', { method: 'POST', body: { email, address: { ...address, regionId: region || cartInfo.shipping?.region?.id || undefined } } });
       window.location.assign(o.redirectUrl); // Stripe's secure payment page: PayNow, cards, GrabPay, Apple/Google Pay
     } catch (x) { setErr(x.message); setBusy(false); loadCart() }
   }
@@ -111,6 +112,7 @@ export function Checkout() {
       </section>
       <form onSubmit={e => { e.preventDefault(); setErr(); setConfirm(true) }} className="co-form">
         <h2 className="eyebrow">Delivery details</h2>
+        {(cartInfo.shipping?.regions?.length || 0) > 1 && <label className="field"><span>Delivery region</span><select value={region || cartInfo.shipping.region?.id || ''} onChange={e => setRegion(e.target.value)}>{cartInfo.shipping.regions.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select></label>}
         {FIELDS.map(([k, l, ac]) => <label key={k} className="field"><span>{l}</span><input required autoComplete={ac} type={k === 'email' ? 'email' : 'text'} value={f[k]} onChange={set(k)} /></label>)}
         {cartInfo.hasIssues && <p role="alert" className="err">Some items in your bag are no longer available in the requested quantity. Please review your bag.</p>}
         {err && <p role="alert" className="err">{err}</p>}

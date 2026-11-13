@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { api } from '../lib/api';
-import { FREE_SHIPPING_AT, SHIPPING_FLAT, inr, sortSizes } from '../lib/format';
+import { inr, sortSizes } from '../lib/format';
 import { useApp } from '../context/App';
 import { useFinePointer, useModal, useReduced } from '../lib/hooks';
 import { ProductMedia } from '../components/ProductCard3D';
@@ -106,6 +106,9 @@ export default function Product() {
 
   const liked = wish.includes(p.slug);
   const label = !variant ? 'SELECT A SIZE' : variant.stock < 1 ? 'SOLD OUT' : added ? 'ADDED TO BAG ✓' : 'ADD TO BAG';
+  // The delivery lines the owner writes in the admin (Settings -> Delivery charge); delivery is charged by weight.
+  const [dinfo, setDinfo] = useState(null);
+  useEffect(() => { api('/delivery-info').then(setDinfo).catch(() => {}) }, []);
   const add = async () => {
     if (!variant || variant.stock < 1) return;
     if (await addToBag({ variantId: variant.id })) { setAdded(true); setTimeout(() => setAdded(false), 1800) }
@@ -143,7 +146,8 @@ export default function Product() {
           <section className="pdp-delivery" aria-labelledby="dr-h">
             <h3 id="dr-h">DELIVERY &amp; RETURNS</h3>
             <ul>
-              <li>Delivery across Singapore: {inr(SHIPPING_FLAT)}, free on bag totals above {inr(FREE_SHIPPING_AT)}</li>
+              {dinfo?.productLines?.length ? dinfo.productLines.map(l => <li key={l}>{l}</li>) : <li>Delivery is charged by the weight of your bag{dinfo?.freeOver ? `, free on orders above ${inr(dinfo.freeOver)}` : ''}</li>}
+              {p.weightGrams ? <li>Weight of this piece: {p.weightGrams >= 1000 ? `${(p.weightGrams / 1000).toFixed(p.weightGrams % 1000 ? 2 : 0)} kg` : `${p.weightGrams} g`}</li> : null}
               <li>{p.gst_rate > 0 ? `Price includes ${p.gst_rate}% GST, itemised at checkout and on your bill` : 'This piece carries no GST'}</li>
               <li>Made-to-measure and altered garments are non-returnable</li>
               <li>Questions about fit or fabric? Message us on WhatsApp before you order</li>

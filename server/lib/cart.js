@@ -1,6 +1,7 @@
 import { rows, one } from '../db/index.js';
 import { HttpError } from './http.js';
-import { deliveryFor } from './delivery.js';
+import { deliveryFor, bagWeight, loadRules } from './delivery.js';
+import { hasWeightColumns } from './cost.js';
 import { CART_COOKIE, cookieOpts, randomToken, sha256 } from './auth.js';
 
 export const MAX_QTY = 10;
@@ -45,9 +46,10 @@ export async function mergeCarts(db, fromId, toId) {
 }
 
 // Authoritative cart lines: prices and stock always come from the database.
-export function cartLines(q, cartId) {
+export async function cartLines(q, cartId) {
+  const weight = (await hasWeightColumns(q)) ? 'COALESCE(v.weight_grams, p.weight_grams)' : 'NULL';
   return rows(q, `
-    SELECT v.id AS "variantId", p.id AS "productId", p.slug, p.name, v.sku, v.size, v.color, ci.quantity AS qty,
+    SELECT v.id AS "variantId", p.id AS "productId", p.slug, p.name, v.sku, v.size, v.color, ci.quantity AS qty, ${weight} AS weight,
            v.stock_quantity AS stock, COALESCE(v.price_override, p.base_price) AS price, p.tax_rate AS "taxRate",
            (v.active AND p.status = 'active') AS available,
            (SELECT image_url FROM product_images i WHERE i.product_id = p.id ORDER BY i.display_order, i.id LIMIT 1) AS image
@@ -57,11 +59,12 @@ export function cartLines(q, cartId) {
     WHERE ci.cart_id = $1 ORDER BY ci.id`, [cartId]);
 }
 
-export async function shippingFor(q, subtotal, pin) {
+// The delivery charge for a bag: priced by its total weight in the chosen region (rules are set in the admin).
+export async function shippingFor(q, subtotal, lines, regionId) {
   const m = await one(q, `SELECT id, code, name FROM shipping_methods WHERE active ORDER BY id LIMIT 1`);
-  const d = await deliveryFor(q, subtotal, pin);
-  if (d.amount == null) throw new HttpError(400, d.reason, 'out_of_range');
-  return { id: m?.id ?? null, name: m?.name ?? 'Delivery', amount: d.amount, freeOver: d.freeOver, km: d.km, note: d.reason, policy: d.policy };
+  const rules = await loadRules(q);
+  const d = await deliveryFor(q, subtotal, { regionId, grams: bagWeight(lines, rules) });
+  return { id: m?.id ?? null, name: m?.name ?? 'Delivery', amount: d.amount, freeOver: d.freeOver, grams: d.grams, region: d.regionId ? { id: d.regionId, name: d.regionName } : null, regions: d.regions, note: d.reason, policy: d.policy };
 }
 
 export function issueFor(l) {
@@ -84,12 +87,12 @@ export function gstSplit(lines) {
   return { byRate, included: byRate.reduce((s, r) => s + r.tax, 0) };
 }
 
-export async function cartView(db, cart, pin) {
+export async function cartView(db, cart, regionId) {
   const lines = cart ? await cartLines(db, cart.id) : [];
   const items = lines.map(l => ({ variantId: l.variantId, slug: l.slug, name: l.name, size: l.size, color: l.color, price: l.price, taxRate: l.taxRate, qty: l.qty, stock: l.stock, image: l.image, issue: issueFor(l) }));
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-  const ship = await shippingFor(db, subtotal, pin).catch(e => ({ amount: 0, freeOver: null, note: e.message, blocked: true, policy: '' }));
-  const shipping = { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null, km: ship.km ?? null, note: ship.note ?? null, policy: ship.policy ?? '', blocked: !!ship.blocked }, gst = gstSplit(items);
+  const ship = await shippingFor(db, subtotal, lines, regionId).catch(e => ({ amount: 0, freeOver: null, grams: 0, region: null, regions: [], note: e.message, policy: '' }));
+  const shipping = { amount: items.length ? ship.amount : 0, freeOver: ship.freeOver ?? null, grams: items.length ? ship.grams : 0, region: ship.region ?? null, regions: ship.regions ?? [], note: ship.note ?? null, policy: ship.policy ?? '' }, gst = gstSplit(items);
   return { items, count: items.reduce((s, i) => s + i.qty, 0), subtotal, shipping, gst, total: subtotal + shipping.amount, hasIssues: items.some(i => i.issue) };
 }
 

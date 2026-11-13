@@ -1,3 +1,4 @@
+import { hasWeightColumns } from './cost.js';
 import { rows, one } from '../db/index.js';
 
 const BASE_SELECT = `
@@ -75,6 +76,7 @@ export async function productBySlug(q, slug) {
   const p = await one(q, `${BASE_SELECT} WHERE p.status = 'active' AND p.slug = $1`, [slug]);
   if (!p) return null;
   const extra = await one(q, 'SELECT material FROM products WHERE id = $1', [p.id]);
+  const weightGrams = (await hasWeightColumns(q)) ? (await one(q, 'SELECT weight_grams AS w FROM products WHERE id = $1', [p.id]))?.w ?? null : null;
   const [variants, images] = await Promise.all([
     rows(q, `SELECT v.id, v.sku, v.size, v.color, v.stock_quantity AS stock, COALESCE(v.price_override, $2) AS price
              FROM product_variants v WHERE v.product_id = $1 AND v.active ORDER BY v.id`, [p.id, p.price]),
@@ -82,7 +84,7 @@ export async function productBySlug(q, slug) {
   ]);
   const related = await rows(q, `${BASE_SELECT} WHERE p.status = 'active' AND p.id <> $1 AND p.category_id IS NOT NULL AND p.category_id = (SELECT category_id FROM products WHERE id = $1) ORDER BY p.featured DESC, p.id DESC LIMIT 8`, [p.id]);
   const suggested = await rows(q, `${BASE_SELECT} JOIN product_suggestions ps ON ps.suggested_id = p.id WHERE ps.product_id = $1 AND p.status = 'active' ORDER BY ps.position`, [p.id]).catch(() => []);
-  return { ...p, material: extra.material, variants, images, related, suggested };
+  return { ...p, material: extra.material, weightGrams, variants, images, related, suggested };
 }
 
 export const listCategories = (q) => rows(q, `

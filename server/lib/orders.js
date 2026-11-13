@@ -20,7 +20,7 @@ export async function createPendingOrder({ db, cfg }, { cartId, user, email, add
     }
     // Prices include GST: the order total is the subtotal plus shipping, and tax_amount records the GST contained in it.
     const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0), tax = gstSplit(lines).included;
-    const ship = await shippingFor(t, subtotal, address?.pin);
+    const ship = await shippingFor(t, subtotal, lines, address?.regionId);
     const total = subtotal + ship.amount;
     const number = orderNumber();
     const order = await one(t, `INSERT INTO orders (user_id, order_number, email, subtotal, shipping_amount, tax_amount, total_amount, shipping_address_snapshot, shipping_method_id, reservation_expires_at)

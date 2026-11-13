@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { one, rows } from '../db/index.js';
 import { HttpError, wrap } from '../lib/http.js';
 import { audit } from '../lib/orders.js';
-import { hasCostColumns, hasVariantCost } from '../lib/cost.js';
+import { hasCostColumns, hasVariantCost, hasWeightColumns } from '../lib/cost.js';
 import { createReturn, getReturn } from '../lib/returns.js';
 import { editSale, PHONE_SQL } from '../lib/pos.js';
 import { capFlags } from '../lib/catalog.js';
@@ -73,9 +73,9 @@ const couponBody = z.object({
 const wsItem = z.object({ code: text(60).min(1), company: text(120).default(''), colour: text(60).default('') });
 const customerBody = z.object({ name: text(120).default(''), phone: text(20).regex(/^[0-9+\-\s]*$/, 'Phone may only contain digits'), dob: date.nullable().default(null), notes: text(300).nullable().default(null) });
 const expenseBody = z.object({ title: text(120).min(1), category: text(60).default('General'), amount: z.number().int().min(1).max(100_000_000), paymentMode: z.enum(['cash', 'upi', 'card']).default('cash'), notes: text(300).nullable().default(null), date: date.optional() });
-const productPatch = z.object({ name: text(160).min(1), price: paise, costPrice: paise.optional(), taxRate: z.number().int().min(0).max(28), categorySlug: text(80).nullable().default(null), status: z.enum(['draft', 'active', 'archived']),
+const productPatch = z.object({ name: text(160).min(1), price: paise, costPrice: paise.optional(), weightGrams: z.number().int().min(0).max(100_000).optional(), taxRate: z.number().int().min(0).max(28), categorySlug: text(80).nullable().default(null), status: z.enum(['draft', 'active', 'archived']),
   description: text(4000).optional(), material: text(80).optional(), featured: z.boolean().optional(), collections: z.array(text(120).min(1)).max(50).optional(), lowAlert: z.number().int().min(0).max(100000).optional(), newArrival: z.boolean().optional(), bestSeller: z.boolean().optional() });
-const variantPatch = z.object({ size: text(40).min(1), color: text(40).min(1), sku: text(80).min(1), price: paise.nullable(), cost: paise.nullable(), active: z.boolean() }).partial();
+const variantPatch = z.object({ size: text(40).min(1), color: text(40).min(1), sku: text(80).min(1), price: paise.nullable(), cost: paise.nullable(), weight: z.number().int().min(0).max(100_000).nullable(), active: z.boolean() }).partial();
 const variantBody = z.object({ size: text(40).min(1), color: text(40).default('Default'), sku: text(80).min(1), stock: z.number().int().min(0).max(1_000_000).default(0) });
 const colourBody = z.object({ color: text(40).min(1), price: paise.nullable().default(null),
   sizes: z.array(z.object({ size: text(40).min(1), stock: z.number().int().min(0).max(1_000_000).default(0), sku: text(80).optional() })).min(1).max(30) });
@@ -292,8 +292,12 @@ export default function pos({ db, auth }) {
   // Delivery rules: distance bands from the shop's postal code, free-delivery threshold, optional cheaper tiers for bigger orders.
   r.get('/pos/delivery-rules', manager, wrap(async (_req, res) => res.json(await loadRules(db))));
   r.put('/pos/delivery-rules', manager, wrap(async (req, res) => {
-    const v = z.object({ enabled: z.boolean(), note: text(300).default(''), storePostal: z.string().regex(/^(\d{6})?$/, 'Shop postal code must be 6 digits'), freeOver: paise, maxKm: z.number().min(0).max(500), perKmBeyond: paise,
-      bands: z.array(z.object({ upToKm: z.number().positive().max(500), fee: paise })).min(1).max(12), orderTiers: z.array(z.object({ minOrder: paise, fee: paise })).max(8) }).parse(req.body);
+    const tier = z.object({ minGrams: z.number().int().min(0).max(1_000_000), maxGrams: z.number().int().min(1).max(1_000_000).nullable(), fee: paise });
+    const region = z.object({ id: text(40).min(1), name: text(60).min(1), active: z.boolean().default(true), tiers: z.array(tier).min(1).max(12) });
+    const v = z.object({ enabled: z.boolean(), note: text(300).default(''), landingText: text(500).default(''), productLines: z.array(text(300).min(1)).max(20).default([]),
+      freeOver: paise, defaultWeightGrams: z.number().int().min(0).max(100_000).default(500), regions: z.array(region).min(1).max(20) }).parse(req.body);
+    for (const r of v.regions) for (const t of r.tiers) if (t.maxGrams != null && t.maxGrams <= t.minGrams) throw new HttpError(400, `${r.name}: a tier's "up to" weight must be above its "from" weight`);
+    if (new Set(v.regions.map(r => r.id)).size !== v.regions.length) throw new HttpError(400, 'Each delivery region needs its own id');
     await putSetting(db, 'delivery_rules', v); await audit(db, req.user.id, 'pos.delivery_rules', 'pos_settings', 'delivery_rules'); res.json(v);
   }));
   // Everything one customer has done: bills, advance orders and stitching lines, newest first.
@@ -357,6 +361,7 @@ export default function pos({ db, auth }) {
     if (d.categorySlug && !cat) throw new HttpError(400, 'Unknown category');
     const u = await db.query('UPDATE products SET name = $2, base_price = $3, tax_rate = $4, category_id = $5, status = $6, updated_at = now() WHERE id = $1 RETURNING id', [id.parse(req.params.id), d.name, d.price, d.taxRate, cat?.id ?? null, d.status]);
     if (!u.rows.length) throw new HttpError(404, 'Product not found');
+    if (d.weightGrams !== undefined && await hasWeightColumns(db)) await db.query('UPDATE products SET weight_grams = $2 WHERE id = $1', [id.parse(req.params.id), d.weightGrams]);
     if (d.costPrice !== undefined) {
       if (await hasCostColumns(db)) await db.query('UPDATE products SET cost_price = $2 WHERE id = $1', [id.parse(req.params.id), d.costPrice]);
       else if (d.costPrice > 0) throw new HttpError(409, 'Cost prices need a one-time database update first (migration 019).', 'cost_not_ready');
@@ -384,6 +389,7 @@ export default function pos({ db, auth }) {
         price_override = CASE WHEN $6 THEN $7::int ELSE price_override END, active = COALESCE($8, active) WHERE id = $2 AND product_id = $1 RETURNING id`,
       [pid, vid, d.size ?? null, d.color ?? null, d.sku ?? null, d.price !== undefined, d.price ?? null, d.active ?? null])
       .catch(e => { if (e.code === '23505') throw new HttpError(409, 'That SKU or size/colour already exists for this product'); throw e });
+    if (d.weight !== undefined && u.rows?.length !== 0 && await hasWeightColumns(db)) await db.query('UPDATE product_variants SET weight_grams = $3 WHERE id = $2 AND product_id = $1', [pid, vid, d.weight]);
     if (d.cost !== undefined && u.rows?.length !== 0 && await hasVariantCost(db)) await db.query('UPDATE product_variants SET cost_override = $3 WHERE id = $2 AND product_id = $1', [pid, vid, d.cost]);
     if (!u.rows.length) throw new HttpError(404, 'Size not found');
     await audit(db, req.user.id, 'pos.variant.edit', 'product', pid, { variant: vid, ...d });

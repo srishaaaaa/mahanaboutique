@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Reveal } from './Motion';
+import { api } from '../lib/api';
 
 const I = ({ children }) => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>;
 const Shield = () => <I><path d="M12 3 5 6v5c0 4.4 2.8 8.2 7 10 4.2-1.8 7-5.6 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></I>;
@@ -9,7 +11,10 @@ const User = () => <I><circle cx="12" cy="8.5" r="3.6" /><path d="M5 20c.9-3.6 3
 // Only statements that are true of how this store works. Shipping figures come from the database.
 export default function ServiceHighlights() {
   // No prices here: the shipping charge is shown in the bag before paying.
-  const shipText = 'Careful packing and delivery to your door, anywhere in Singapore. Shipping is shown in your bag before you pay.';
+  // The delivery line comes from the admin (Settings -> Delivery charge -> landing page line); delivery is charged by weight.
+  const [dinfo, setDinfo] = useState(null);
+  useEffect(() => { api('/delivery-info').then(setDinfo).catch(() => {}) }, []);
+  const shipText = dinfo?.landingText || 'Careful packing and delivery to your door, anywhere in Singapore. Shipping is shown in your bag before you pay.';
   const items = [
     [<Shield key="s" />, 'Secure payment', 'Pay safely online. Your payment is confirmed before your order is placed.'],
     [<Truck key="t" />, 'Delivery across Singapore', shipText],

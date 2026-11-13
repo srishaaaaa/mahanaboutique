@@ -1,57 +1,53 @@
 import { one } from '../db/index.js';
 const getSetting = async (db, key, fallback) => (await one(db, 'SELECT value FROM pos_settings WHERE key = $1', [key]))?.value ?? fallback;
 
-// Delivery charge = distance band (km from the shop to the customer's postal code) with a free-delivery threshold on the order value.
-// The rules live in Admin → POS Settings → Delivery rules; nothing here is hard-coded except the first-run defaults.
+// Delivery charge by WEIGHT (the model used in Shalistone): the owner defines delivery regions, and each region has weight tiers
+// (from grams, up to grams or open-ended, charge). The bag's total weight (each size's weight x quantity) picks the tier.
+// Everything is configured in Admin -> POS Settings -> "Delivery charge"; only first-run defaults live here. Money is in cents.
+export const DEFAULT_WEIGHT_GRAMS = 500; // a product or size with no weight counts as this (Shalistone does the same)
 export const DELIVERY_DEFAULTS = {
-  enabled: true, note: 'Delivered within 3 to 5 working days across Singapore. You will get a message when your order ships.', storePostal: '', freeOver: 15000, maxKm: 0, perKmBeyond: 0,
-  bands: [{ upToKm: 5, fee: 800 }, { upToKm: 10, fee: 1200 }, { upToKm: 20, fee: 1800 }],
-  orderTiers: [], // [{ minOrder, fee }] : an order of at least minOrder pays at most fee (e.g. bigger baskets ship cheaper)
+  enabled: true,
+  note: 'Delivered within 3 to 5 working days across Singapore. You will get a message when your order ships.',
+  landingText: 'Fast delivery across Singapore: get your order within 3 to 5 days.',
+  productLines: ['Standard delivery: 3 to 5 working days', 'Delivery is charged by the weight of your bag', 'Free delivery on large orders'],
+  freeOver: 15000, // order value at or above this ships free (0 = never)
+  defaultWeightGrams: DEFAULT_WEIGHT_GRAMS,
+  regions: [{ id: 'singapore', name: 'Singapore', active: true, tiers: [
+    { minGrams: 0, maxGrams: 1000, fee: 500 }, { minGrams: 1000, maxGrams: 3000, fee: 800 }, { minGrams: 3000, maxGrams: 5000, fee: 1200 }, { minGrams: 5000, maxGrams: null, fee: 1800 }] }],
 };
-export const loadRules = async db => ({ ...DELIVERY_DEFAULTS, ...(await getSetting(db, 'delivery_rules', {})) });
-
-const cache = new Map();
-// Singapore postal code -> coordinates through OneMap (public, no key). Cached for the life of the process; null when it cannot be found.
-export async function geocode(pin, fetcher = fetch) {
-  if (!/^\d{6}$/.test(pin || '')) return null;
-  if (cache.has(pin)) return cache.get(pin);
-  try {
-    const r = await fetcher(`https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${pin}&returnGeom=Y&getAddrDetails=N&pageNum=1`, { signal: AbortSignal.timeout(4000) });
-    const d = await r.json(); const x = d.results?.[0];
-    const v = x ? { lat: +x.LATITUDE, lng: +x.LONGITUDE } : null;
-    if (v) cache.set(pin, v); return v;
-  } catch { return null }
-}
-export const haversineKm = (a, b) => {
-  const R = 6371, rad = d => d * Math.PI / 180, dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-};
-
-// Pure rule maths (unit-tested): fee for a known distance (or null distance = unknown) and an order value, all money in cents.
-export function feeFor(rules, km, subtotal) {
-  if (!rules.enabled) return { amount: 0, free: true, km, reason: 'Delivery charges are switched off' };
-  if (rules.freeOver != null && rules.freeOver > 0 && subtotal >= rules.freeOver) return { amount: 0, free: true, km, reason: 'Free delivery on this order' };
-  const bands = [...rules.bands].sort((a, b) => a.upToKm - b.upToKm);
-  let fee;
-  if (km == null) fee = bands[0]?.fee ?? 0;
-  else {
-    const band = bands.find(b => km <= b.upToKm);
-    if (band) fee = band.fee;
-    else {
-      const last = bands.at(-1);
-      if (rules.maxKm > 0 && km > rules.maxKm) return { amount: null, km, reason: `We do not deliver beyond ${rules.maxKm} km` };
-      fee = (last?.fee ?? 0) + Math.round((km - (last?.upToKm ?? 0)) * (rules.perKmBeyond || 0));
-    }
-  }
-  const tier = [...(rules.orderTiers || [])].filter(t => subtotal >= t.minOrder).sort((a, b) => b.minOrder - a.minOrder)[0];
-  if (tier) fee = Math.min(fee, tier.fee);
-  return { amount: fee, free: fee === 0, km, reason: km == null ? 'Estimated: distance could not be worked out yet' : null };
+export async function loadRules(db) {
+  const saved = (await getSetting(db, 'delivery_rules', {})) || {};
+  const rules = { ...DELIVERY_DEFAULTS, ...saved };
+  if (!Array.isArray(saved.regions) || !saved.regions.length) rules.regions = DELIVERY_DEFAULTS.regions; // rules saved before weight pricing existed
+  return rules;
 }
 
-export async function deliveryFor(db, subtotal, pin) {
+// Shalistone's tier rule: tiers sorted by start weight; the first tier whose range holds the weight wins (max is exclusive, no max = open ended);
+// if none matches, the last tier's charge applies. A region with no tiers charges nothing.
+export function tierFee(region, grams) {
+  const tiers = [...(region?.tiers || [])].sort((a, b) => a.minGrams - b.minGrams);
+  if (!tiers.length) return 0;
+  for (const t of tiers) if (grams >= t.minGrams && (t.maxGrams == null || grams < t.maxGrams)) return t.fee;
+  return tiers.at(-1).fee;
+}
+
+// Total weight of a bag: sum of (size weight, else product weight, else the default) x quantity.
+export const bagWeight = (lines, rules = DELIVERY_DEFAULTS) => lines.reduce((s, l) => s + (Number(l.weight ?? rules.defaultWeightGrams ?? DEFAULT_WEIGHT_GRAMS) || 0) * l.qty, 0);
+
+export const activeRegions = rules => (rules.regions || []).filter(r => r.active !== false);
+
+// Pure rule maths (unit-tested): the delivery charge for a region, a total weight and an order value.
+export function feeFor(rules, regionId, grams, subtotal) {
+  const regions = activeRegions(rules), region = regions.find(r => r.id === regionId) ?? regions[0] ?? null;
+  const base = { grams, regionId: region?.id ?? null, regionName: region?.name ?? null };
+  if (!rules.enabled) return { ...base, amount: 0, free: true, reason: 'Delivery charges are switched off' };
+  if (rules.freeOver > 0 && subtotal >= rules.freeOver) return { ...base, amount: 0, free: true, reason: 'Free delivery on this order' };
+  if (!region) return { ...base, amount: 0, free: true, reason: 'No delivery region is set up yet' };
+  const amount = tierFee(region, grams);
+  return { ...base, amount, free: amount === 0, reason: null };
+}
+
+export async function deliveryFor(db, subtotal, { regionId, grams } = {}) {
   const rules = await loadRules(db);
-  let km = null;
-  if (pin && rules.storePostal) { const [a, b] = await Promise.all([geocode(rules.storePostal), geocode(pin)]); if (a && b) km = Math.round(haversineKm(a, b) * 10) / 10 }
-  return { ...feeFor(rules, km, subtotal), freeOver: rules.freeOver || null, policy: rules.note || '' };
+  return { ...feeFor(rules, regionId, grams ?? 0, subtotal), freeOver: rules.freeOver || null, policy: rules.note || '', regions: activeRegions(rules).map(r => ({ id: r.id, name: r.name })), rules };
 }

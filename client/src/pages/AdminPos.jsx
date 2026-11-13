@@ -667,44 +667,64 @@ function Customers({ manager, openInvoice }) {
 // ============================ birthdays ============================
 
 // ============================ delivery & GST settings ============================
-// Delivery charge rules for the online store: distance bands from the shop, free-delivery threshold, cheaper tiers for bigger orders.
+// Delivery charge rules for the online store, priced by WEIGHT (same model as Shalistone): delivery regions, each with weight tiers
+// (from grams, up to grams or no limit, charge). The bag's total weight picks the tier. Also the free-delivery threshold and the delivery copy
+// shown to customers (shipping note, landing-page line, product-page lines).
 function DeliveryRulesCard() {
   const { toast } = useApp();
   const [r, setR] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
-  useEffect(() => { api('/admin/pos/delivery-rules').then(x => setR({ ...x, bands: x.bands.map(b => ({ upToKm: String(b.upToKm), fee: rupees(b.fee) })), orderTiers: (x.orderTiers || []).map(t => ({ minOrder: rupees(t.minOrder), fee: rupees(t.fee) })), freeOver: rupees(x.freeOver || 0), perKmBeyond: rupees(x.perKmBeyond || 0), maxKm: String(x.maxKm || 0) })).catch(e => setErr(e.message)) }, []);
+  useEffect(() => {
+    api('/admin/pos/delivery-rules').then(x => setR({
+      ...x, freeOver: rupees(x.freeOver || 0), defaultWeightGrams: String(x.defaultWeightGrams ?? 500), productLines: (x.productLines || []).join('\n'),
+      regions: x.regions.map(g => ({ ...g, tiers: g.tiers.map(t => ({ minGrams: String(t.minGrams), maxGrams: t.maxGrams == null ? '' : String(t.maxGrams), fee: rupees(t.fee) })) })),
+    })).catch(e => setErr(e.message));
+  }, []);
   if (!r) return err ? <p className="dpos-err" role="alert">{err}</p> : null;
-  const band = (i, p) => setR({ ...r, bands: r.bands.map((b, n) => n === i ? { ...b, ...p } : b) });
-  const tier = (i, p) => setR({ ...r, orderTiers: r.orderTiers.map((b, n) => n === i ? { ...b, ...p } : b) });
+  const region = (i, p) => setR({ ...r, regions: r.regions.map((g, n) => n === i ? { ...g, ...p } : g) });
+  const tier = (i, j, p) => region(i, { tiers: r.regions[i].tiers.map((t, n) => n === j ? { ...t, ...p } : t) });
+  const addRegion = () => setR({ ...r, regions: [...r.regions, { id: 'region-' + Math.random().toString(36).slice(2, 7), name: '', active: true, tiers: [{ minGrams: '0', maxGrams: '', fee: '' }] }] });
   const save = async e => {
     e.preventDefault(); setBusy(true); setErr();
     try {
-      const body = { enabled: r.enabled, note: (r.note || '').trim(), storePostal: r.storePostal.trim(), freeOver: toPaise(r.freeOver), maxKm: Math.max(0, +r.maxKm || 0), perKmBeyond: toPaise(r.perKmBeyond),
-        bands: r.bands.filter(b => +b.upToKm > 0).map(b => ({ upToKm: +b.upToKm, fee: toPaise(b.fee) })), orderTiers: r.orderTiers.filter(t => toPaise(t.minOrder) > 0).map(t => ({ minOrder: toPaise(t.minOrder), fee: toPaise(t.fee) })) };
+      const body = {
+        enabled: r.enabled, note: (r.note || '').trim(), landingText: (r.landingText || '').trim(), freeOver: toPaise(r.freeOver), defaultWeightGrams: Math.max(0, parseInt(r.defaultWeightGrams, 10) || 0),
+        productLines: r.productLines.split('\n').map(l => l.trim()).filter(Boolean),
+        regions: r.regions.map(g => ({ id: g.id, name: g.name.trim(), active: g.active, tiers: g.tiers.map(t => ({ minGrams: Math.max(0, parseInt(t.minGrams, 10) || 0), maxGrams: t.maxGrams.trim() === '' ? null : parseInt(t.maxGrams, 10) || 0, fee: toPaise(t.fee) })) })),
+      };
       await api('/admin/pos/delivery-rules', { method: 'PUT', body }); toast('Delivery rules saved.');
     } catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
   };
   return (
     <form className="dpos-card" onSubmit={save} style={{ marginTop: 16 }}>
-      <h2><Icon n="truck" />Online delivery charge (by distance &amp; order)</h2>
+      <h2><Icon n="truck" />Delivery charge (by weight)</h2>
+      <p className="sub" style={{ marginBottom: 12 }}>The delivery charge is picked from the bag's total weight (each size's weight × quantity). Set each product's weight in Inventory → Edit product; a product with no weight counts as the default below.</p>
       <label style={{ display: 'flex', gap: 10, alignItems: 'center', margin: '4px 0 12px' }}><input type="checkbox" checked={r.enabled} onChange={e => setR({ ...r, enabled: e.target.checked })} /><span>Charge for delivery</span></label>
-      <label className="f" style={{ marginBottom: 12 }}>Shipping note shown to customers (bag, checkout)<textarea rows={2} maxLength={300} value={r.note || ''} onChange={e => setR({ ...r, note: e.target.value })} placeholder="e.g. Delivered within 3 to 5 working days across Singapore." /></label>
       <div className="dpos-grid">
-        <label className="f">Shop postal code (distance starts here)<input inputMode="numeric" maxLength={6} value={r.storePostal} onChange={e => setR({ ...r, storePostal: e.target.value.replace(/\D/g, '') })} placeholder="6 digits" /></label>
         <label className="f">Free delivery when the order is at least (S$, 0 = never)<input inputMode="decimal" value={r.freeOver} onChange={e => setR({ ...r, freeOver: e.target.value })} /></label>
-        <label className="f">Do not deliver beyond (km, 0 = no limit)<input inputMode="decimal" value={r.maxKm} onChange={e => setR({ ...r, maxKm: e.target.value })} /></label>
-        <label className="f">Extra per km beyond the last band (S$)<input inputMode="decimal" value={r.perKmBeyond} onChange={e => setR({ ...r, perKmBeyond: e.target.value })} /></label>
+        <label className="f">Weight counted for a product with none (grams)<input inputMode="numeric" value={r.defaultWeightGrams} onChange={e => setR({ ...r, defaultWeightGrams: e.target.value.replace(/\D/g, '') })} /></label>
       </div>
-      <p className="dpos-flabel">DISTANCE BANDS</p>
-      {r.bands.map((b, i) => (
-        <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}><span className="muted small">Up to</span><input aria-label="Up to km" style={{ maxWidth: 110 }} inputMode="decimal" value={b.upToKm} onChange={e => band(i, { upToKm: e.target.value })} /><span className="muted small">km → S$</span><input aria-label="Fee" style={{ maxWidth: 130 }} inputMode="decimal" value={b.fee} onChange={e => band(i, { fee: e.target.value })} />
-          <button type="button" className="dpos-btn ghost sm" aria-label="Remove band" disabled={r.bands.length < 2} onClick={() => setR({ ...r, bands: r.bands.filter((_, n) => n !== i) })}>✕</button></div>))}
-      <button type="button" className="dpos-btn ghost sm" onClick={() => setR({ ...r, bands: [...r.bands, { upToKm: '', fee: '' }] })}>+ Add band</button>
-      <p className="dpos-flabel">ORDER VALUE TIERS (bigger orders pay at most this)</p>
-      {r.orderTiers.map((t, i) => (
-        <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}><span className="muted small">Order of S$</span><input aria-label="Minimum order" style={{ maxWidth: 130 }} inputMode="decimal" value={t.minOrder} onChange={e => tier(i, { minOrder: e.target.value })} /><span className="muted small">or more → delivery at most S$</span><input aria-label="Fee" style={{ maxWidth: 130 }} inputMode="decimal" value={t.fee} onChange={e => tier(i, { fee: e.target.value })} />
-          <button type="button" className="dpos-btn ghost sm" aria-label="Remove tier" onClick={() => setR({ ...r, orderTiers: r.orderTiers.filter((_, n) => n !== i) })}>✕</button></div>))}
-      <button type="button" className="dpos-btn ghost sm" onClick={() => setR({ ...r, orderTiers: [...r.orderTiers, { minOrder: '', fee: '' }] })}>+ Add tier</button>
-      <p className="sub" style={{ marginTop: 10 }}>Distance is the straight line between the shop and the customer’s postal code. If it cannot be worked out, the first band applies.</p>
+      <p className="dpos-flabel">DELIVERY REGIONS &amp; WEIGHT TIERS</p>
+      {r.regions.map((g, i) => (
+        <div key={g.id} className="dpos-box" style={{ marginBottom: 12 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+            <input aria-label="Region name" placeholder="Region name, e.g. Singapore" style={{ maxWidth: 280 }} value={g.name} onChange={e => region(i, { name: e.target.value })} />
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={g.active} onChange={e => region(i, { active: e.target.checked })} /><span className="small">Active</span></label>
+            <button type="button" className="dpos-btn ghost sm" style={{ marginLeft: 'auto' }} disabled={r.regions.length < 2} onClick={() => setR({ ...r, regions: r.regions.filter((_, n) => n !== i) })}>Remove region</button>
+          </div>
+          {g.tiers.map((t, j) => (
+            <div key={j} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span className="muted small">From</span><input aria-label="From grams" style={{ maxWidth: 110 }} inputMode="numeric" value={t.minGrams} onChange={e => tier(i, j, { minGrams: e.target.value.replace(/\D/g, '') })} />
+              <span className="muted small">g, up to</span><input aria-label="Up to grams (blank = no limit)" style={{ maxWidth: 120 }} inputMode="numeric" placeholder="no limit" value={t.maxGrams} onChange={e => tier(i, j, { maxGrams: e.target.value.replace(/\D/g, '') })} />
+              <span className="muted small">g → S$</span><input aria-label="Charge" style={{ maxWidth: 110 }} inputMode="decimal" value={t.fee} onChange={e => tier(i, j, { fee: e.target.value })} />
+              <button type="button" className="dpos-btn ghost sm" aria-label="Remove tier" disabled={g.tiers.length < 2} onClick={() => region(i, { tiers: g.tiers.filter((_, n) => n !== j) })}>✕</button>
+            </div>))}
+          <button type="button" className="dpos-btn ghost sm" onClick={() => region(i, { tiers: [...g.tiers, { minGrams: g.tiers.length ? (g.tiers[g.tiers.length - 1].maxGrams || '') : '0', maxGrams: '', fee: '' }] })}>+ Add tier</button>
+        </div>))}
+      <button type="button" className="dpos-btn ghost sm" onClick={addRegion}>+ Add region</button>
+      <p className="dpos-flabel">WHAT CUSTOMERS SEE</p>
+      <label className="f">Shipping note (bag and checkout)<textarea rows={2} maxLength={300} value={r.note || ''} onChange={e => setR({ ...r, note: e.target.value })} placeholder="e.g. Delivered within 3 to 5 working days across Singapore." /></label>
+      <label className="f" style={{ marginTop: 10 }}>Landing page delivery line<textarea rows={2} maxLength={500} value={r.landingText || ''} onChange={e => setR({ ...r, landingText: e.target.value })} placeholder="e.g. Fast delivery: get your order within 3 to 5 days." /></label>
+      <label className="f" style={{ marginTop: 10 }}>Product page delivery lines (one per line)<textarea rows={3} value={r.productLines} onChange={e => setR({ ...r, productLines: e.target.value })} placeholder={'Standard delivery: 3 to 5 working days\nFree delivery over S$150'} /></label>
       <Err>{err}</Err>
       <div style={{ marginTop: 12 }}><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save delivery rules'}</button></div>
     </form>
