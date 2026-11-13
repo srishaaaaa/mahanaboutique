@@ -83,6 +83,9 @@ export default function Product() {
   const [color, setColor] = useState(null);
   const [size, setSize] = useState(null);
   const [added, setAdded] = useState(false);
+  // The delivery lines the owner writes in the admin (Settings -> Delivery charge); delivery is charged by weight.
+  const [dinfo, setDinfo] = useState(null);
+  useEffect(() => { api('/delivery-info').then(setDinfo).catch(() => {}) }, []);
 
   useEffect(() => {
     setP(null); setErr(null); setColor(null); setSize(null);
@@ -106,9 +109,6 @@ export default function Product() {
 
   const liked = wish.includes(p.slug);
   const label = !variant ? 'SELECT A SIZE' : variant.stock < 1 ? 'SOLD OUT' : added ? 'ADDED TO BAG ✓' : 'ADD TO BAG';
-  // The delivery lines the owner writes in the admin (Settings -> Delivery charge); delivery is charged by weight.
-  const [dinfo, setDinfo] = useState(null);
-  useEffect(() => { api('/delivery-info').then(setDinfo).catch(() => {}) }, []);
   const add = async () => {
     if (!variant || variant.stock < 1) return;
     if (await addToBag({ variantId: variant.id })) { setAdded(true); setTimeout(() => setAdded(false), 1800) }
