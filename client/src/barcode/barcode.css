@@ -1,0 +1,33 @@
+/* Barcode screens (ported from Mahalashmi). Everything is scoped under .bc; imported only by the lazy admin chunks that use barcodes. */
+.bc {
+  /* Mahana theme: the accent comes from the admin accent colour; the old black headers/buttons follow it */
+  --bc-ink: var(--d-acc, #1c284f);
+  --bc-ink-2: color-mix(in srgb, var(--bc-ink) 82%, #000);
+  --bc-gold: #e3b5a8;
+  --bc-gold-soft: #ead7d0;
+  --bc-gold-dark: #8f5a4a;
+  --bc-tint: color-mix(in srgb, var(--bc-ink) 7%, #fff);
+  --bc-line: color-mix(in srgb, var(--bc-ink) 22%, #fff);
+  --accent: var(--bc-gold);
+  --accent-a30: color-mix(in srgb, var(--bc-gold) 30%, transparent);
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #111;
+}
+
+/* a small scoped stand-in for Tailwind's preflight reset */
+.bc *, .bc *::before, .bc *::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb }
+.bc button, .bc input, .bc select, .bc textarea { font: inherit; color: inherit; margin: 0; letter-spacing: inherit }
+.bc button { background-color: transparent; background-image: none; cursor: pointer; padding: 0; text-transform: none; -webkit-appearance: button }
+.bc button:disabled { cursor: default }
+.bc h1, .bc h2, .bc h3, .bc h4, .bc h5, .bc h6, .bc p, .bc figure, .bc blockquote { margin: 0; font-size: inherit; font-weight: inherit; letter-spacing: inherit; text-transform: none }
+.bc ul, .bc ol { list-style: none; margin: 0; padding: 0 }
+.bc img, .bc svg, .bc video, .bc canvas { display: block; vertical-align: middle; max-width: 100% }
+.bc input::placeholder, .bc textarea::placeholder { opacity: 1; color: #9ca3af }
+.bc input[type='checkbox'], .bc input[type='radio'] { padding: 0; width: auto; accent-color: var(--bc-ink) }
+.bc table { border-collapse: collapse; text-indent: 0; border-color: inherit }
+.bc a { color: inherit; text-decoration: inherit }
+
+@tailwind base; /* with preflight off this only declares the --tw-* defaults that transform/ring/shadow utilities need */
+@tailwind utilities;

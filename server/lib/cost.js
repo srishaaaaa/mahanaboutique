@@ -32,3 +32,13 @@ export async function hasVariantCost(db) {
   vcKnown = !!(await one(db, `SELECT 1 AS x FROM information_schema.columns WHERE table_name = 'product_variants' AND column_name = 'cost_override'`));
   return vcKnown;
 }
+
+// product_variants.barcode arrives with migration 033; until then nothing shows a barcode.
+let bcKnown = false, bcAt = 0;
+export async function hasVariantBarcode(db) {
+  if (bcKnown) return true;
+  if (Date.now() - bcAt < 60_000) return false;
+  bcAt = Date.now();
+  bcKnown = !!(await one(db, `SELECT 1 AS x FROM information_schema.columns WHERE table_name = 'product_variants' AND column_name = 'barcode'`));
+  return bcKnown;
+}

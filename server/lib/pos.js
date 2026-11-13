@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { rows, one } from '../db/index.js';
 import { HttpError } from './http.js';
-import { hasCostColumns, hasDepositSplit, hasVariantCost } from './cost.js';
+import { hasCostColumns, hasDepositSplit, hasVariantCost, hasVariantBarcode } from './cost.js';
 import { audit } from './orders.js';
 import { returnedByItem, returnsForSale } from './returns.js';
 
@@ -476,7 +476,7 @@ export async function stockMovements(db, { from, to, q = '', type = 'all', limit
 
 // ---- products with their variants (inventory screen) ----
 export const listProducts = async (db, q = '', onlyId = null) => {
-  const costSql = (await hasCostColumns(db)) ? 'p.cost_price' : '0'; const vcost = (await hasVariantCost(db)) ? 'v.cost_override' : 'NULL';
+  const costSql = (await hasCostColumns(db)) ? 'p.cost_price' : '0'; const vcost = (await hasVariantCost(db)) ? 'v.cost_override' : 'NULL'; const vbar = (await hasVariantBarcode(db)) ? 'v.barcode' : 'NULL';
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   return rows(db, `
     SELECT p.id, p.slug, p.name, p.status, p.base_price AS price, ${costSql}::int AS "costPrice", p.tax_rate AS "taxRate", p.description, p.material, p.featured, p.is_sample AS "isSample", p.low_stock_alert AS "lowAlert", p.new_arrival AS "newArrival", p.best_seller AS "bestSeller",
@@ -484,10 +484,10 @@ export const listProducts = async (db, q = '', onlyId = null) => {
            c.name AS category, c.slug AS "categorySlug",
            (SELECT image_url FROM product_images i WHERE i.product_id = p.id ORDER BY i.display_order, i.id LIMIT 1) AS image,
            COALESCE((SELECT SUM(v.stock_quantity) FROM product_variants v WHERE v.product_id = p.id), 0)::int AS stock,
-           COALESCE((SELECT json_agg(json_build_object('id', v.id, 'sku', v.sku, 'size', v.size, 'color', v.color, 'stock', v.stock_quantity, 'price', COALESCE(v.price_override, p.base_price), 'priceOverride', v.price_override, 'costOverride', ${vcost}, 'cost', COALESCE(${vcost}, ${costSql}), 'active', v.active) ORDER BY v.id)
+           COALESCE((SELECT json_agg(json_build_object('id', v.id, 'sku', v.sku, 'size', v.size, 'color', v.color, 'stock', v.stock_quantity, 'price', COALESCE(v.price_override, p.base_price), 'priceOverride', v.price_override, 'costOverride', ${vcost}, 'barcode', ${vbar}, 'cost', COALESCE(${vcost}, ${costSql}), 'active', v.active) ORDER BY v.id)
                      FROM product_variants v WHERE v.product_id = p.id), '[]'::json) AS variants
     FROM products p LEFT JOIN categories c ON c.id = p.category_id
-    WHERE ($3::int IS NULL OR p.id = $3) AND ($1 = '' OR p.name ILIKE $2 OR c.name ILIKE $2 OR EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id AND v.sku ILIKE $2))
+    WHERE ($3::int IS NULL OR p.id = $3) AND ($1 = '' OR p.name ILIKE $2 OR c.name ILIKE $2 OR EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id AND (v.sku ILIKE $2${vbar === 'NULL' ? '' : ' OR v.barcode ILIKE $2'})))
     ORDER BY p.name, p.id LIMIT 400`, [q.trim(), like, onlyId]);
 };
 

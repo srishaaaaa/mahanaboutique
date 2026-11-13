@@ -64,3 +64,13 @@ test('barcodes: generate, assign, receive stock, reuse, duplicates, lookup fallb
   assert.equal((await stock('POST', `/admin/pos/barcodes/${reg.records[0].id}/deactivate`, {})).status, 403);
   assert.equal((await o('POST', `/admin/pos/barcodes/${reg.records[0].id}/deactivate`, {})).status, 200);
 });
+
+test('quick add from a scanned code creates the product, registers the barcode and takes opening stock', async () => {
+  const o = client(); await o('POST', '/auth/login', { email: 'owner@test.dev', password: 'OwnerPass123!' });
+  const r = await o('POST', '/admin/pos/barcodes/quick-add', { barcode: 'qa-777001', name: 'Scanned Dupatta', price: 4500, category: 'Dupattas', stock: 6 });
+  assert.equal(r.status, 201); assert.equal(r.body.stock, 6); assert.equal(r.body.price, 4500); assert.equal(r.body.sku, 'QA-777001');
+  assert.equal((await o('GET', '/admin/pos/barcodes/lookup?code=QA-777001')).body.name, 'Scanned Dupatta');
+  assert.equal((await o('POST', '/admin/pos/barcodes/quick-add', { barcode: 'QA-777001', name: 'Again', price: 100 })).status, 409);
+  const cashier = await role('bc-cashier2@test.dev', 'cashier');
+  assert.equal((await cashier('POST', '/admin/pos/barcodes/quick-add', { barcode: 'QA-777002', name: 'Nope', price: 100 })).status, 403);
+});

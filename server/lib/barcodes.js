@@ -100,3 +100,21 @@ export async function saveCustomSize(db, s) {
   return sizeOut(r);
 }
 export const deleteCustomSize = (db, id) => db.query('DELETE FROM barcode_custom_sizes WHERE id = $1', [id]);
+
+// A scanned code that is not in the catalogue: create the product (one "Default" size whose SKU is the code), register the barcode and receive the opening stock.
+export async function quickAddScanned(db, user, { barcode, name, price, category = '', stock = 0 }) {
+  const code = normalizeBarcode(barcode);
+  if (!validBarcode(code)) throw new HttpError(400, 'A barcode is 4 to 32 letters, numbers, - or _', 'bad_barcode');
+  if (await lookupBarcode(db, code)) throw new HttpError(409, `Barcode ${code} is already in the catalogue`, 'barcode_taken');
+  const slugBase = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'item';
+  const made = await db.tx(async t => {
+    const cat = category ? await one(t, 'SELECT id FROM categories WHERE lower(name) = lower($1)', [category]) : null;
+    let slug = slugBase;
+    for (let i = 2; await one(t, 'SELECT 1 AS x FROM products WHERE slug = $1', [slug]); i++) slug = `${slugBase}-${i}`;
+    const p = await one(t, `INSERT INTO products (slug, name, description, category_id, base_price, tax_rate, status) VALUES ($1,$2,'',$3,$4,9,'active') RETURNING id`, [slug, name, cat?.id ?? null, price]);
+    const v = await one(t, `INSERT INTO product_variants (product_id, sku, size, color, stock_quantity) VALUES ($1,$2,'Default','Default',0) RETURNING id`, [p.id, code]);
+    return { productId: p.id, variantId: v.id };
+  });
+  await receiveStockWithBarcode(db, user, { variantId: made.variantId, quantity: stock, customBarcode: code, note: 'Added from a scanned barcode' });
+  return lookupBarcode(db, code);
+}
