@@ -25,7 +25,7 @@ import StaffOnly from '../components/StaffOnly';
 const loadBarcode = () => import('../barcode/entry');
 const ScanBox = lazy(() => loadBarcode().then(m => ({ default: m.ScanBox })));
 const QuickAdd = lazy(() => loadBarcode().then(m => ({ default: m.QuickAdd })));
-const BarcodeLayer = lazy(() => loadBarcode().then(m => ({ default: m.BarcodeLayer })));
+const ScanRedirect = lazy(() => loadBarcode().then(m => ({ default: m.ScanRedirect })));
 
 // Mahana POS: the in-store billing module of the admin. Everything the screen shows comes from the API; prices, stock,
 // totals and invoice numbers are decided on the server (the totals here are only a live preview).
@@ -784,6 +784,31 @@ export default function AdminPos() {
   const stocker = !!user && ['owner', 'admin', 'inventory'].includes(user.role);
   const loadShop = useCallback(() => api('/admin/pos/shop').then(setShop).catch(e => setErr(e.message)), []);
   useEffect(() => { if (allowed) loadShop() }, [allowed, loadShop]);
+  // A keyboard-wedge barcode scanner read on any page other than Billing: offer to switch to Billing (the heavy barcode code loads only when this happens).
+  // Same detection as Mahalashmi's hook: keys < 45 ms apart, at least 4 characters, Enter within 150 ms. On Billing the scan box handles it itself.
+  const [scanned, setScanned] = useState(null);
+  useEffect(() => {
+    if (!allowed || tab === 'billing') return;
+    const buf = { code: '', last: 0, el: null };
+    const onKey = e => {
+      const now = Date.now(), diff = now - buf.last, t = e.target, isField = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      if (e.key === 'Enter') {
+        const code = buf.code.trim();
+        if (code.length >= 4 && diff < 150) {
+          e.preventDefault(); e.stopPropagation();
+          if (isField && buf.el && buf.el.value && buf.el.value.endsWith(code)) { buf.el.value = buf.el.value.slice(0, -code.length); buf.el.dispatchEvent(new Event('input', { bubbles: true })) }
+          buf.code = ''; buf.last = 0; buf.el = null; setScanned(code.toUpperCase()); return;
+        }
+        buf.code = ''; buf.last = 0; buf.el = null; return;
+      }
+      if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (diff > 45) { buf.code = e.key; buf.last = now; buf.el = isField ? t : null }
+        else { buf.code += e.key; buf.last = now; if (isField) buf.el = t }
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [allowed, tab]);
   useEffect(() => { document.documentElement.style.setProperty('--pos-accent', shop?.accent || ''); return () => document.documentElement.style.removeProperty('--pos-accent') }, [shop?.accent]);
   // The invoice is a page of its own (/invoice/<token>): print it, share it, copy its link.
   const [pv, setPv] = useState(null); // invoice preview window
@@ -822,7 +847,7 @@ export default function AdminPos() {
       <Err>{err}</Err>
       {body}
       {allowed && <LowStockAlert />}
-      <Suspense fallback={null}><BarcodeLayer onBilling={tab === 'billing'} goBilling={() => nav('/admin/billing')} shopName={shop?.name} /></Suspense>
+      {scanned && <Suspense fallback={null}><ScanRedirect code={scanned} goBilling={() => nav('/admin/billing')} onClose={() => setScanned(null)} /></Suspense>}
       {pv && <InvoicePreview token={pv.token} invoiceNo={pv.invoiceNo} onClose={() => setPv(null)} />}
       {done && <BillDone sale={done} shop={shop} onClose={() => setDone(null)} />}
       {advDone && <AdvanceDone adv={advDone} shop={shop} onClose={() => setAdvDone(null)} onView={() => { setAdvDone(null); nav('/admin/billing/advance') }} />}

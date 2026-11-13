@@ -1,5 +1,5 @@
 import './barcode.css'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CreateBarcodeModal } from './components/barcode/CreateBarcodeModal'
 import { BarcodePrintModal } from './components/barcode/BarcodePrintModal'
 import { BarcodeScannerInput, type ScannedItemPayload } from './components/pos/BarcodeScannerInput'
@@ -15,10 +15,17 @@ import { api } from '../lib/api'
 // Entry point for the barcode tools. Mahana's admin pages import this lazily, so none of it (jsbarcode, the camera decoder, Tailwind CSS)
 // loads until a barcode feature is used.
 export { setBrand, setProductRefresh, useHardwareBarcodeScanner, useNavigationStore, BarcodeRedirectDialog }
+
+// Labels and headings use the store name from Settings; fetched once when a barcode screen is first used.
+let brandLoaded = false
+function useShopBrand() {
+  useEffect(() => { if (brandLoaded) return; brandLoaded = true; void api('/admin/pos/shop').then((s: { name?: string }) => setBrand(s?.name)).catch(() => { brandLoaded = false }) }, [])
+}
 export type { ScannedItemPayload }
 
 /** The "Add barcode" workspace: pick items, set label counts, assign codes, update stock, then print. */
 export function BarcodeGenerator({ onClose, onSuccess, preselectedVariantId = null }: { onClose: () => void; onSuccess?: () => void; preselectedVariantId?: number | null }) {
+  useShopBrand()
   const [items, setItems] = useState<BarcodeItem[] | null>(null)
   useEffect(() => { void fetchBarcodeItems(true).then(setItems).catch(() => setItems([])) }, [])
   const products = useMemo(() => {
@@ -39,6 +46,7 @@ export function BarcodeGenerator({ onClose, onSuccess, preselectedVariantId = nu
 
 /** Reprint labels for one size that already has a barcode. `price` is in cents. */
 export function PrintLabels({ item, onClose }: { item: { name: string; variantName?: string; barcode: string; price: number; stock: number }; onClose: () => void }) {
+  useShopBrand()
   return (
     <BarcodePrintModal isOpen onClose={onClose} productName={item.name} variantName={item.variantName} barcodeValue={item.barcode} price={item.price / 100} defaultQuantity={Math.max(1, item.stock)} />
   )
@@ -52,17 +60,26 @@ export const scanLookup = (code: string) => api('/admin/pos/barcodes/lookup?code
  * Hardware-scanner reads that arrive while Billing is open are handed to `onCode` (the listener in BarcodeLayer stores them for it).
  */
 export function ScanBox({ onCode, ...props }: { onItemScanned: (item: ScannedItemPayload) => void; onNotFound?: (code: string) => void; clearSignal?: number; disabled?: boolean; onCode?: (code: string) => void }) {
+  useShopBrand()
   const external = useNavigationStore((s) => s.externalScannedCode)
   const clear = useNavigationStore((s) => s.setExternalScannedCode)
-  useEffect(() => { if (external) { clear(null); onCode?.(external) } }, [external, clear, onCode])
+  const handled = useRef<string | null>(null) // guards against React running the effect twice for one scan (StrictMode in development)
+  useEffect(() => {
+    if (!external) { handled.current = null; return }
+    if (handled.current === external) return
+    handled.current = external
+    clear(null)
+    onCode?.(external)
+  }, [external, clear, onCode])
   return <div className="bc"><BarcodeScannerInput {...props} /></div>
 }
 
-/** Always mounted in the admin: the keyboard-wedge scanner listener, plus the "scanned on another page" dialog. */
-export function BarcodeLayer({ onBilling, goBilling, shopName }: { onBilling: boolean; goBilling: () => void; shopName?: string }) {
-  useEffect(() => { setBrand(shopName) }, [shopName])
-  // On Billing the scan box's own listener adds the item (handling it here too would add it twice); elsewhere the dialog offers to switch to Billing.
-  useHardwareBarcodeScanner({ isBillingActive: onBilling, onScanDirect: () => {} })
+/** Shown when a scanner read arrives on another admin page (AdminPos detects the burst and loads this): offers to switch to Billing and add it. */
+export function ScanRedirect({ code, goBilling, onClose }: { code: string; goBilling: () => void; onClose: () => void }) {
+  const pending = useNavigationStore((s) => s.pendingBarcode)
+  const seen = useRef(false)
+  useEffect(() => { useNavigationStore.getState().setPendingBarcode(code) }, [code])
+  useEffect(() => { if (pending) seen.current = true; else if (seen.current) onClose() }, [pending, onClose])
   return <BarcodeRedirectDialog onNavigateToBilling={() => goBilling()} />
 }
 
