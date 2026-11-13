@@ -21,7 +21,7 @@
 .ms-rem small { font: 800 12px 'Poppins', sans-serif; letter-spacing: .1em } .ms-rem ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.7 }
 
 /* ======== Admin scale and proportions (final): the exact type sizes of the reference admin, roomy padding ======== */
-.dpos { --z: 1; zoom: var(--z); min-height: calc(100vh / var(--z)); width: 100%; max-width: 1760px; margin-left: auto; margin-right: auto; gap: 22px; padding: 18px clamp(10px, 1.4vw, 26px) 16px; font-size: 14.5px; line-height: 1.4 }
+.dpos { --z: .9; zoom: var(--z); min-height: calc(100vh / var(--z)); width: 100%; max-width: 1760px; margin-left: auto; margin-right: auto; gap: 22px; padding: 18px clamp(10px, 1.4vw, 26px) 16px; font-size: 14.5px; line-height: 1.4 }
 @media (min-width: 900px) { .dpos { grid-template-columns: 262px minmax(0, 1fr) } }
 .dpos-side { max-height: calc((100vh - 36px) / var(--z)); padding: 12px; gap: 3px; top: 18px }
 .dpos-main { gap: 18px; min-height: calc(100vh / var(--z) - 36px) }
@@ -181,6 +181,16 @@
 .cp-filters small { font-size: 9px; vertical-align: super; margin-left: 3px; opacity: .7 }
 .cp-sw { background: #f4f3f6 }
 .cp-go { border-radius: 14px; padding: 20px; letter-spacing: .06em }
+
+/* Coupon rows: code + status, then the offer, then the "used" line, then the action buttons together, all left-aligned in one column */
+.cp-list li { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "offer" "used" "act"; gap: 4px 0; align-items: start; justify-items: start }
+.cp-list li .cp-r1 { grid-area: head }
+.cp-list li .cp-d { grid-area: offer; margin: 0; padding: 0; background: none; border-radius: 0; font-size: 20px; display: block; text-align: left } .cp-list li .cp-d small { font-size: 14px }
+.cp-list li .cp-u { grid-area: used; margin: 0; line-height: 1.4; text-align: left }
+.cp-list li .cp-act { grid-area: act; grid-column: auto; grid-row: auto; margin: 8px 0 0; flex-wrap: wrap; justify-content: flex-start }
+
+/* Desktop admin is drawn at 90% so it looks right at the browser's own 100% zoom (the portal-level barcode pop-ups follow it; phones stay at 100%) */
+@media (min-width: 900px) { .bc-portal { zoom: .9 } }
 ```
 
 

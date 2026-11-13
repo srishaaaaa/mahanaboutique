@@ -7,5 +7,5 @@ import { createPortal } from 'react-dom'
  */
 export function ModalPortal({ children }: { children: ReactNode }) {
   if (typeof document === 'undefined') return <>{children}</>
-  return createPortal(<div className="bc">{children}</div>, document.body)
+  return createPortal(<div className="bc bc-portal">{children}</div>, document.body)
 }

@@ -6,7 +6,7 @@
  */
 module.exports = {
   content: ['./src/barcode/**/*.{ts,tsx}'],
-  important: '.bc',
+  important: '.bc.bc.bc', // tripled so these utilities beat the admin's own .dpos input rules (the scan box sits inside .dpos)
   corePlugins: { preflight: false },
   theme: {
     extend: {

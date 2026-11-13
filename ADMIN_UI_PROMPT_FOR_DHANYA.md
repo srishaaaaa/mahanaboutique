@@ -6,7 +6,7 @@ You are an AI coding agent working in the **Dhanya** codebase (React + Vite clie
 
 Rules that apply everywhere:
 - Everything is scoped under `.dpos` (page root) or `.dpos-modal` (pop-ups). No admin rule may leak to the public site, and no public rule may leak into admin.
-- Admin renders at **full scale (`--z: 1`)**: do **not** use `zoom`, `transform: scale` or a 65% page. The sizes below are real CSS pixels.
+- Desktop admin is drawn at **90% (`--z: .9`, CSS `zoom` on `.dpos`, set in the final block of `pos3.css`)** so it looks right at the browser's own 100% zoom; phones (< 900px) stay at 100%. Do not add any other scale hack; the sizes below are the CSS pixels *before* that 90%. Portal-level pop-ups outside `.dpos` carry the same 90% (`.bc-portal`).
 - Colours are tokens, never hard-coded in components: `--d-acc` (accent) comes from the store theme (`var(--pos-accent, #1c284f)`, Mahana = navy `#1c284f`). Active states, primary buttons, selected chips, totals and links use the accent. Dhanya must set its own `--pos-accent` and everything follows.
 - Money prints with the store currency symbol; the layout never depends on it.
 
