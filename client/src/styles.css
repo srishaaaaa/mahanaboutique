@@ -456,3 +456,6 @@ a.insta-tile:hover { transform: translateY(-6px) } .insta-tile img { width: 100%
 .map-here span::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; background: #090a0c; transform: translateX(-50%) rotate(45deg); border-radius: 2px }
 @keyframes map-hop { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-9px) } }
 @media (prefers-reduced-motion: reduce) { .map-here span { animation: none } }
+
+/* Storefront at 90% on desktop */
+@media (min-width: 900px) { html.site-90 { zoom: .9 } }
