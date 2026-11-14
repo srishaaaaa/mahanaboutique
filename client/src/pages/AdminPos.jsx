@@ -841,8 +841,10 @@ export default function AdminPos() {
 
   if (!authReady) return <div className="page-pad"><p className="muted">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (!allowed) return <StaffOnly />;
-  if (!(tab in TABS) || (TABS[tab] && !manager)) return <Navigate to="/admin/billing" replace />;
+  if (!allowed && !stocker) return <StaffOnly />;
+  // Inventory staff only have the Inventory page here; everything else sends them to their staff dashboard.
+  if (!allowed && tab !== 'inventory') return <Navigate to="/admin/staff" replace />;
+  if (!(tab in TABS) || (TABS[tab] && !manager && !(tab === 'inventory' && stocker))) return <Navigate to="/admin/billing" replace />;
 
   const onSale = sale => { setDone(sale); setTick(t => t + 1) };
   const onAdvance = adv => { setTick(t => t + 1); setAdvDone(adv) }; // the saved advance order is kept in Advance Orders; its receipt shows first

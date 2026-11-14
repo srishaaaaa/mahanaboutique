@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/App';
+import { useAccess } from '../lib/access';
 import '../pos.css';
 import '../pos2.css';
 import '../pos3.css';
@@ -64,7 +65,9 @@ export const NAV = [
     ['/admin/billing/birthdays', 'Date of Birth', 'cake', true], ['/admin/billing/expenses', 'Expenses', 'wallet', true]] },
   { group: 'Stitching', items: [['/admin/billing/stitching', 'Stitching Dashboard', 'scissors'], ['/admin/billing/stitching-orders', 'Stitching Orders', 'orders'], ['/admin/billing/measurements', 'Measurements', 'ruler'], ['/admin/billing/stitching-reports', 'Stitching Reports', 'chart', true]] },
   { group: 'Settings', items: [['/admin/billing/settings', 'POS Settings', 'gear', true], ['/admin/settings', 'Store Settings', 'gear', true]] },
+  { group: 'Staff', items: [['/admin/staff', 'Staff dashboard', 'user']] },
 ];
+export const ROLE_NAME = { owner: 'OWNER', admin: 'ADMIN', cashier: 'CASHIER', inventory: 'INVENTORY' };
 
 // Every admin page draws its own sidebar, so its scroll position is kept here: opening a panel near the bottom
 // no longer jumps the sidebar back to the top.
@@ -84,13 +87,17 @@ export default function AdminShell({ title, sub, actions, children }) {
   }, []);
   const { user } = useApp();
   const manager = !!user && ['owner', 'admin'].includes(user.role);
+  const access = useAccess(user); const here = useLocation().pathname.replace(/\/$/, '');
+  const show = (to, managerOnly) => to === '/admin/staff' || (access.allowed ? access.allowed.includes(to) : (!managerOnly || manager));
+  // a page the owner has hidden from this role: back to the staff dashboard
+  if (access.allowed && user && NAV.some(g => g.items.some(i => i[0] === here && i[0] !== '/admin/staff')) && !access.allowed.includes(here)) return <Navigate to="/admin/staff" replace />;
   const initial = (user?.name || user?.email || 'A').trim()[0].toUpperCase();
   return (
     <div className="dpos">
       <nav className="dpos-side" aria-label="Admin sections" ref={side} onScroll={e => { sideScroll.top = e.currentTarget.scrollTop; sideScroll.left = e.currentTarget.scrollLeft }}>
-        <div className="dpos-brand"><img src="/logo.png" alt="Mahana Boutique & Tailors" /><i>{manager ? 'ADMIN' : 'CASHIER'}</i></div>
+        <div className="dpos-brand"><img src="/logo.png" alt="Mahana Boutique & Tailors" /><i>{ROLE_NAME[user?.role] || 'STAFF'}</i></div>
         {NAV.map(g => {
-          const items = g.roles && !g.roles.includes(user?.role) ? [] : g.items.filter(i => !i[3] || manager);
+          const items = g.roles && !g.roles.includes(user?.role) ? [] : g.items.filter(i => show(i[0], i[3]));
           return items.length ? (
             <div key={g.group} style={{ display: 'contents' }}>
               <p className="dpos-grp">{g.group.toUpperCase()}</p>

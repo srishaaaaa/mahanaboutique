@@ -170,7 +170,7 @@ export function Account() {
           <p className="muted">{user.email}{data?.profile?.memberSince ? ` · Member since ${when(data.profile.memberSince)}` : ''}</p>
         </div>
         <div className="acc-hero-a">
-          {user.role !== 'customer' && <Link className="btn" to="/admin">STAFF DASHBOARD</Link>}
+          {user.role !== 'customer' && <Link className="btn" to="/admin/staff">STAFF DASHBOARD</Link>}
           <Link className="btn" to="/wishlist">WISHLIST ({wish.length})</Link>
         </div>
       </header>

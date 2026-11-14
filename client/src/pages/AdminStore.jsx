@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ExportCsv from '../components/ExportCsv';
 import { Link, Navigate } from 'react-router-dom';
 import { useApp } from '../context/App';
+import { StaffAccessCard } from './AdminStaff';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import AdminShell, { Icon } from '../components/AdminShell';
@@ -134,7 +135,7 @@ export function AdminUsers() {
 export function AdminSettings() {
   const gate = useGate();
   if (gate) return gate;
-  return <AdminShell title="Store settings" sub="Logo, boutique location, hours and Instagram shown on the homepage, footer and map."><LogoCard /><Card><StoreSettingsForm /></Card></AdminShell>;
+  return <AdminShell title="Store settings" sub="Logo, boutique location, hours and Instagram shown on the homepage, footer and map."><LogoCard /><Card><StoreSettingsForm /></Card><StaffAccessCard /></AdminShell>;
 }
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

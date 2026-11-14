@@ -24,6 +24,7 @@ import { About, Journal, NotFound, Policy } from './pages/Static';
 const lazyEl = (load, name) => { const C = lazy(() => load().then(m => ({ default: name ? m[name] : m.default }))); return <Suspense fallback={<div className="page-pad"><p className="muted">Loading…</p></div>}><C /></Suspense> };
 const store = () => import('./pages/AdminStore'), media = () => import('./pages/AdminMedia'), more = () => import('./pages/AdminMore');
 const A = {
+  staff: lazyEl(() => import('./pages/AdminStaff'), 'AdminStaff'),
   pos: lazyEl(() => import('./pages/AdminPos')), invoice: lazyEl(() => import('./pages/InvoicePage')), coupon: lazyEl(() => import('./pages/CouponPage')),
   orders: lazyEl(store, 'AdminOrders'), reviews: lazyEl(store, 'AdminReviews'), users: lazyEl(store, 'AdminUsers'), settings: lazyEl(store, 'AdminSettings'),
   categories: lazyEl(more, 'AdminCategories'), reels: lazyEl(more, 'AdminReels'),
@@ -31,7 +32,7 @@ const A = {
 };
 
 // The admin panel opens on Online orders for owners and admins; cashiers and inventory staff have no access to it, so they open Billing.
-function AdminHome() { const { user, authReady } = useApp(); if (!authReady) return null; return <Navigate to={user && ['owner', 'admin'].includes(user.role) ? '/admin/orders' : '/admin/billing'} replace /> }
+function AdminHome() { const { user, authReady } = useApp(); if (!authReady) return null; return <Navigate to={user && ['owner', 'admin'].includes(user.role) ? '/admin/orders' : '/admin/staff'} replace /> }
 
 export default function App() {
   const { entered, enter, setBagOpen, setSearchOpen, setMenuOpen, setQuick } = useApp();
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/register" element={<Auth mode="register" />} />
           <Route path="/account" element={<Account />} />
           <Route path="/admin" element={<AdminHome />} />
+          <Route path="/admin/staff" element={A.staff} />
           <Route path="/admin/orders" element={A.orders} />
           <Route path="/admin/reviews" element={A.reviews} />
           <Route path="/admin/users" element={A.users} />

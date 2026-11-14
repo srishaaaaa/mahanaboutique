@@ -561,3 +561,12 @@
 .dpos-ord td .dpos-tag { font-size: 10.5px; font-weight: 700; letter-spacing: .06em }
 .dpos-ord .dpos-rowact { flex-wrap: nowrap; justify-content: flex-end } .dpos-ord td.oid { white-space: nowrap } .dpos-ord .dpos-rowact .oh-fulfil { flex-wrap: nowrap; white-space: nowrap }
 .ra.ret { background: #fff3df; color: #a15c07 } .ra.edit { background: #e8edfb; color: #1c284f }
+
+/* Staff dashboard and Staff access settings */
+.sd-group { margin-bottom: 14px } .sd-h { margin: 0 0 12px; font-size: 11px; font-weight: 800; letter-spacing: .14em; color: #6d6a64 }
+.sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px }
+.sd-tile { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--d-line, #e3e2ef); border-radius: 14px; background: #fff; color: var(--d-ink, #1a1d2e); text-decoration: none; transition: transform .12s, box-shadow .12s }
+.sd-tile:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(28, 40, 79, .10) } .sd-tile b { font-size: 14px; font-weight: 600 }
+.sd-ic { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: #e8edfb; color: var(--d-acc, #1c284f) }
+.sd-access { margin-top: 16px } .sd-access h2 { margin: 0 0 4px; font-size: 18px }
+.sd-table td, .sd-table th { padding: 9px 12px } .sd-table .c { text-align: center } .sd-gr td { font-size: 11px; font-weight: 800; letter-spacing: .12em; color: #6d6a64; background: #f6f5fb }
