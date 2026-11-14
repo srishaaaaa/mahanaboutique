@@ -15,13 +15,15 @@ export default function admin({ db, auth }) {
   const staff = auth.role('owner', 'admin');
   const stock = auth.role('owner', 'admin', 'inventory');
 
-  // Staff access: which pages each role sees. Any staff member reads their own list; only the owner changes it.
+  // Staff access: which pages each role sees. Any staff member reads their own list; the owner and admins change it.
   r.get('/access', auth.role('owner', 'admin', 'cashier', 'inventory'), wrap(async (req, res) => {
     const cfg = await getAccess(db);
-    res.json({ role: req.user.role, allowed: allowedFor(req.user.role, cfg), ...(req.user.role === 'owner' ? { sections: SECTIONS, roles: ROLES, config: cfg } : {}) });
+    res.json({ role: req.user.role, allowed: allowedFor(req.user.role, cfg), ...(['owner', 'admin'].includes(req.user.role) ? { sections: SECTIONS, roles: ROLES, config: cfg } : {}) });
   }));
-  r.put('/access', auth.role('owner'), wrap(async (req, res) => {
-    const cfg = await saveAccess(db, z.record(z.string(), z.array(z.string().max(80)).max(60)).parse(req.body));
+  r.put('/access', auth.role('owner', 'admin'), wrap(async (req, res) => {
+    const body = z.record(z.string(), z.array(z.string().max(80)).max(60)).parse(req.body);
+    // admins set what cashiers and stock staff see; only the owner changes the Admin column (so an admin cannot lock themselves out)
+    const cfg = await saveAccess(db, req.user.role === 'owner' ? body : { ...body, admin: (await getAccess(db)).admin });
     await audit(db, req.user.id, 'staff.access', 'settings', 'role_access', {});
     res.json({ config: cfg });
   }));

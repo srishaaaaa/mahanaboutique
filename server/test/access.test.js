@@ -33,4 +33,10 @@ test('staff access: defaults per role, the owner configures within each role cei
   assert.equal(put.status, 200); assert.deepEqual(put.body.config.cashier, ['/admin/billing'], 'grants beyond a role ceiling are dropped');
   assert.deepEqual((await cash('GET', '/admin/access')).body.allowed, ['/admin/billing']);
   assert.ok((await o('GET', '/admin/access')).body.allowed.length > 10, 'the owner always sees everything');
+  // an admin may set the cashier and stock columns, but the Admin column stays as the owner left it
+  await o('POST', '/admin/users', { email: 'adm@test.dev', password: 'AdminPass12345!', name: 'Adm', role: 'admin' });
+  const adm = client(); await adm('POST', '/auth/login', { email: 'adm@test.dev', password: 'AdminPass12345!' });
+  const a = await adm('PUT', '/admin/access', { admin: [], cashier: ['/admin/billing', '/admin/billing/orders'], inventory: [] });
+  assert.equal(a.status, 200); assert.deepEqual(a.body.config.cashier, ['/admin/billing', '/admin/billing/orders']); assert.deepEqual(a.body.config.admin, ['/admin/orders'], 'an admin cannot change the Admin column');
+  assert.equal((await cash('PUT', '/admin/access', { cashier: [] })).status, 403);
 });
