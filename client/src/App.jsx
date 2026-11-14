@@ -43,9 +43,6 @@ export default function App() {
   // returning visitors see the name splash on each open/reload of the website (first-timers get the intro instead)
   const [splash] = useState(() => entered && site); // never for a reload inside the admin panel
 
-  // The storefront is shown at 90% on desktop (the admin panel scales itself); phones and tablets are untouched.
-  useEffect(() => { document.documentElement.classList.toggle('site-90', site); return () => document.documentElement.classList.remove('site-90') }, [site]);
-
   // Overlays never outlive a navigation.
   useEffect(() => { setBagOpen(false); setSearchOpen(false); setMenuOpen(false); setQuick(null) }, [location.pathname]); // eslint-disable-line
 
