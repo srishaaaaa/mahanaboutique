@@ -28,6 +28,8 @@ const Ico = ({ children, size = 17 }) => <svg width={size} height={size} viewBox
 const WaIcon = () => <Ico><path d="M20 12a8 8 0 0 1-11.9 7L4 20l1.1-4A8 8 0 1 1 20 12Z" /><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.2-1.7-1-.8.6a3.5 3.5 0 0 1-1.6-1.6l.6-.8-1-1.7Z" /></Ico>;
 const DocIcon = () => <Ico><path d="M6 3h9l4 4v14H6z" /><path d="M9 13h7M9 17h7" /></Ico>;
 const EyeIcon = () => <Ico><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></Ico>;
+const ReturnIcon = () => <Ico><path d="M9 14 4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></Ico>;
+const PencilIcon = () => <Ico><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></Ico>;
 const TrashIcon = () => <Ico><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6" /></Ico>;
 
 // ============================ order history ============================
@@ -140,8 +142,8 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                   <a className="ra wa" title="Send invoice on WhatsApp" aria-label="Send on WhatsApp" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
                   <a className="ra doc" title="Preview the invoice" aria-label="Preview invoice" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}><DocIcon /></a>
                   <button className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(r)}><EyeIcon /></button>
-                  <button className="ra" title="Return items" aria-label="Return items" disabled={r.status === 'voided'} onClick={() => setRetFor(r.invoiceNo)}>↩</button>
-                  {manager && <button className="ra" title="Edit this invoice" aria-label="Edit invoice" disabled={r.status === 'voided'} onClick={() => setEditFor(r.invoiceNo)}>✎</button>}
+                  <button className="ra ret" title="Return items" aria-label="Return items" disabled={r.status === 'voided'} onClick={() => setRetFor(r.invoiceNo)}><ReturnIcon /></button>
+                  {manager && <button className="ra edit" title="Edit this invoice" aria-label="Edit invoice" disabled={r.status === 'voided'} onClick={() => setEditFor(r.invoiceNo)}><PencilIcon /></button>}
                   {manager && <button className="ra del" title="Void this invoice" aria-label="Void invoice" disabled={r.status === 'voided'} onClick={() => voidIt(r)}><TrashIcon /></button>}
                 </div></td></tr>
               {openNo === r.invoiceNo && <tr className="dpos-xrow"><td colSpan={7}>{!detail ? <span className="muted">Loading…</span> : <div className="dpos-xsum"><BillSummary bill={detail} /></div>}</td></tr>}</Fragment>) })}</tbody></table></div>)}
