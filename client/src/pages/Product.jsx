@@ -75,6 +75,15 @@ function Accordion({ title, children, open = false }) {
   return <details className="acc" open={open}><summary>{title}</summary><div>{children}</div></details>;
 }
 
+const PDP_ICONS = {
+  truck: <><path d="M3 6h11v10H3z" /><path d="M14 10h4l3 3v3h-7" /><circle cx="7" cy="17.5" r="1.7" /><circle cx="17" cy="17.5" r="1.7" /></>,
+  scale: <><path d="M12 4v16M6 20h12M5 7h14" /><path d="M5 7l-2.5 6a3 3 0 0 0 5 0L5 7ZM19 7l-2.5 6a3 3 0 0 0 5 0L19 7Z" /></>,
+  receipt: <><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></>,
+  scissors: <><circle cx="6" cy="7" r="2.5" /><circle cx="6" cy="17" r="2.5" /><path d="M8 8.5 20 18M8 15.5 20 6" /></>,
+  chat: <path d="M20 12a8 8 0 0 1-11.9 7L4 20l1.1-4A8 8 0 1 1 20 12Z" />,
+};
+const PdpIcon = ({ n }) => <svg className="pdp-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{PDP_ICONS[n]}</svg>;
+
 export default function Product() {
   const { slug } = useParams();
   const { addToBag, wish, toggleWish, toast } = useApp();
@@ -146,11 +155,11 @@ export default function Product() {
           <section className="pdp-delivery" aria-labelledby="dr-h">
             <h3 id="dr-h">DELIVERY &amp; RETURNS</h3>
             <ul>
-              {dinfo?.productLines?.length ? dinfo.productLines.map(l => <li key={l}>{l}</li>) : <li>Delivery is charged by the weight of your bag{dinfo?.freeOver ? `, free on orders above ${inr(dinfo.freeOver)}` : ''}</li>}
-              {p.weightGrams ? <li>Weight of this piece: {p.weightGrams >= 1000 ? `${(p.weightGrams / 1000).toFixed(p.weightGrams % 1000 ? 2 : 0)} kg` : `${p.weightGrams} g`}</li> : null}
-              <li>{p.gst_rate > 0 ? `Price includes ${p.gst_rate}% GST, itemised at checkout and on your bill` : 'This piece carries no GST'}</li>
-              <li>Made-to-measure and altered garments are non-returnable</li>
-              <li>Questions about fit or fabric? Message us on WhatsApp before you order</li>
+              {dinfo?.productLines?.length ? dinfo.productLines.map(l => <li key={l}><PdpIcon n="truck" />{l}</li>) : <li><PdpIcon n="truck" />Delivery is charged by the weight of your bag{dinfo?.freeOver ? `, free on orders above ${inr(dinfo.freeOver)}` : ''}</li>}
+              {p.weightGrams ? <li><PdpIcon n="scale" />Weight of this piece: {p.weightGrams >= 1000 ? `${(p.weightGrams / 1000).toFixed(p.weightGrams % 1000 ? 2 : 0)} kg` : `${p.weightGrams} g`}</li> : null}
+              <li><PdpIcon n="receipt" />{p.gst_rate > 0 ? `Price includes ${p.gst_rate}% GST, itemised at checkout and on your bill` : 'This piece carries no GST'}</li>
+              <li><PdpIcon n="scissors" />Made-to-measure and altered garments are non-returnable</li>
+              <li><PdpIcon n="chat" />Questions about fit or fabric? Message us on WhatsApp before you order</li>
             </ul>
           </section>
           <Accordion title="Product details" open><div className="pdp-details">{(p.description || `${p.name}${p.category ? ` from our ${p.category} collection` : ''}. Full details for this piece will be added soon.`).split(/\n{2,}/).map((para, n) => <p key={n}>{boldParts(para)}</p>)}</div></Accordion>

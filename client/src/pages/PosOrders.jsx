@@ -58,7 +58,7 @@ function OrderQuick({ r, onClose, openInvoice, manager, onEdited }) {
 }
 
 // Fulfilment stages of a website order (Shalistone's pending -> packed -> shipped, plus delivered): a chip for the stage and the next step as a button.
-const FULFIL = { confirmed: ['PENDING', 'packed', 'Mark packed'], packed: ['PACKED', 'shipped', 'Mark shipped'], shipped: ['SHIPPED', 'delivered', 'Mark delivered'], delivered: ['DELIVERED', null, null], cancelled: ['CANCELLED', null, null] };
+const FULFIL = { pending: ['PENDING', 'packed', 'Mark packed'], paid: ['PENDING', 'packed', 'Mark packed'], confirmed: ['PENDING', 'packed', 'Mark packed'], packed: ['PACKED', 'shipped', 'Mark shipped'], shipped: ['SHIPPED', 'delivered', 'Mark delivered'], delivered: ['DELIVERED', null, null], cancelled: ['CANCELLED', null, null] };
 function FulfilControl({ r, onAdvance }) {
   const [label, next, btn] = FULFIL[r.webStatus] || [String(r.webStatus || '').toUpperCase(), null, null];
   if (r.status === 'voided') return <span className="oh-fs st-cancelled">CANCELLED</span>;
@@ -122,26 +122,6 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
             <li key={r.invoiceNo}><div className="oq-w"><b>{r.invoiceNo}</b><small>{r.customerName || 'Guest'} · {inr(r.total)}</small></div>
               <FulfilControl r={r} onAdvance={advance} />
               <a className="oh-btn inv" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}>Invoice</a></li>))}</ul></section>)}
-      {f.source === 'online' ? (
-        !rows ? <Empty>Loading…</Empty> : !rows.length ? <Empty>No online orders match.</Empty> : (
-          <ul className="oo-list">{page.map(r => { const dt = dtShort(r.createdAt); return (
-            <li key={r.invoiceNo} className={`oo-card ${r.status === 'voided' ? 'voided' : ''}`}>
-              <div className="oo-top"><div className="oo-id"><b>{r.invoiceNo}</b><span className="oo-tag">ONLINE</span></div>
-                <div className="oo-amt"><b>{inr(r.total)}</b><span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Cancelled' : 'Completed'}</span>{r.returnCount > 0 && <span className="dpos-pill bad">↩ Returned</span>}</div></div>
-              <p className="oo-name">{r.customerName || 'Guest'}</p>
-              <p className="oo-meta">{[r.customerPhone, r.webEmail, dt.d, dt.t, r.items ? `${r.items} item${r.items === 1 ? '' : 's'}` : null].filter(Boolean).join(' · ')}</p>
-              <div className="oo-foot oh-foot">
-                {manager ? <FulfilControl r={r} onAdvance={advance} /> : <span className={`oh-fs st-${r.webStatus}`}>{(FULFIL[r.webStatus] || [String(r.webStatus || '')])[0]}</span>}
-                <span className="oh-acts">
-                  <a className="oh-btn wa" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}`)} target="_blank" rel="noopener noreferrer"><WaIcon /> WhatsApp</a>
-                  <a className="oh-btn inv" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}><DocIcon /> Invoice</a>
-                  <button type="button" className="oh-btn plain" onClick={() => setQuick(r)}>Details</button>
-                  <button type="button" className="oh-btn plain" disabled={r.status === 'voided'} onClick={() => setRetFor(r.invoiceNo)}>↩ Return</button>
-                  {manager && <button type="button" className="oh-btn plain" disabled={r.status === 'voided'} onClick={() => setEditFor(r.invoiceNo)}>✎ Edit</button>}
-                </span>
-              </div>
-            </li>) })}</ul>)
-      ) : (
       <section className="dpos-card dpos-ordcard">
         {!rows ? <Empty>Loading…</Empty> : !rows.length ? <Empty>No orders match.</Empty> : (
           <div className="dpos-tw"><table className="dpos-ord"><thead><tr><th>Order ID</th><th>Date &amp; time</th><th>Customer name</th><th>Mobile number</th><th>Source</th><th>Total due</th><th className="r">Status</th></tr></thead>
@@ -156,6 +136,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                 <td className="r"><div className="dpos-rowact">
                   <span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Void' : 'Completed'}</span>
                   {r.returnCount > 0 && <span className="dpos-pill bad" title="A return invoice was made against this bill">↩ Returned</span>}
+                  {r.webOrderId && r.status !== 'voided' && (manager ? <FulfilControl r={r} onAdvance={advance} /> : null)}
                   <a className="ra wa" title="Send invoice on WhatsApp" aria-label="Send on WhatsApp" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
                   <a className="ra doc" title="Preview the invoice" aria-label="Preview invoice" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice(r.invoiceNo, r) } }}><DocIcon /></a>
                   <button className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(r)}><EyeIcon /></button>
@@ -164,7 +145,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                   {manager && <button className="ra del" title="Void this invoice" aria-label="Void invoice" disabled={r.status === 'voided'} onClick={() => voidIt(r)}><TrashIcon /></button>}
                 </div></td></tr>
               {openNo === r.invoiceNo && <tr className="dpos-xrow"><td colSpan={7}>{!detail ? <span className="muted">Loading…</span> : <div className="dpos-xsum"><BillSummary bill={detail} /></div>}</td></tr>}</Fragment>) })}</tbody></table></div>)}
-      </section>)}
+      </section>
       {sorted && sorted.length > shown && <button type="button" className="dpos-btn outline" style={{ margin: '10px auto', display: 'flex' }} onClick={() => setShown(x => x + 20)}>Show more ({sorted.length - shown} remaining)</button>}
       {retFor && <ReturnModal invoiceNo={retFor} onClose={() => setRetFor(null)} onDone={() => { setN(x => x + 1); onChanged?.() }} />}
       {editFor && <EditSaleModal invoiceNo={editFor} onClose={() => setEditFor(null)} onSaved={() => { setN(x => x + 1); onChanged?.() }} />}
