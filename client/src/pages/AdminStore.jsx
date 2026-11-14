@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ExportCsv from '../components/ExportCsv';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
+import { useAccess } from '../lib/access';
 import { useApp } from '../context/App';
 import { StaffAccessCard } from './AdminStaff';
 import { api } from '../lib/api';
@@ -17,10 +18,11 @@ const STATUSES = ['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'can
 const when = d => new Date(d).toLocaleDateString('en-SG');
 
 function useGate() {
-  const { user, authReady } = useApp();
+  const { user, authReady } = useApp(); const access = useAccess(user); const here = useLocation().pathname.replace(/\/$/, '');
   if (!authReady) return <div className="page-pad"><p className="muted">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (!['owner', 'admin'].includes(user.role)) return <StaffOnly />;
+  // cashiers and stock staff open it only if the owner / an admin has given them this page (Staff dashboard: who sees what)
+  if (!['owner', 'admin'].includes(user.role)) { if (!['cashier', 'inventory'].includes(user.role) || (access.loaded && !access.can(here))) return <StaffOnly />; if (!access.loaded) return <div className="page-pad"><p className="muted">Loading…</p></div> }
   return null;
 }
 const Card = ({ children }) => <section className="dpos-card">{children}</section>;

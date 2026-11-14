@@ -44,7 +44,7 @@ export function StaffAccessCard() {
   return (
     <section className="dpos-card sd-access">
       <h2><Icon n="users" size={18} /> Staff dashboard: who sees what</h2>
-      <p className="muted small">Choose which pages each kind of staff member sees in the admin sidebar. The owner always sees everything. A page appears only if that kind of staff can use it.</p>
+      <p className="muted small">Choose which pages each kind of staff member sees in the admin sidebar. The owner always sees everything. Tick a page to give that kind of staff the page and its data; untick it to take it away. Users, Sample data and both Settings pages stay with admins.</p>
       {err && <p className="dpos-err" role="alert">{err}</p>}
       {!cfg ? <p className="muted">Loading…</p> : (
         <div className="dpos-tw"><table className="sd-table"><thead><tr><th>Page</th>{d.roles.map(r => <th key={r} className="c">{ROLE_LABEL[r]}</th>)}</tr></thead>

@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'node:crypto';
 import { HttpError } from './http.js';
 import { one } from '../db/index.js';
+import { grants } from './access.js';
 
 export const SESSION_COOKIE = 'dhanya_session';
 export const CART_COOKIE = 'dhanya_cart';
@@ -35,7 +36,11 @@ export function makeAuth({ db, cfg }) {
     try { req.user = await load(req) } catch (e) { return next(e) }
     next(req.user ? undefined : new HttpError(401, 'Please sign in'));
   };
-  const role = (...roles) => [required, (req, _res, next) => next(roles.includes(req.user.role) ? undefined : new HttpError(403, 'Forbidden'))];
+  // A route passes for its listed roles, and also for a staff role the owner / an admin has given the page behind that route (Staff dashboard: who sees what).
+  const role = (...roles) => [required, async (req, _res, next) => {
+    if (roles.includes(req.user.role)) return next();
+    try { return next(await grants(db, req.user.role, req.originalUrl) ? undefined : new HttpError(403, 'Forbidden')) } catch (e) { return next(e) }
+  }];
   return { issue, clear, optional, required, role };
 }
 

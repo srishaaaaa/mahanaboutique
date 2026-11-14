@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
+import { useAccess } from '../lib/access';
 import { useApp } from '../context/App';
 import { api, uploadMedia } from '../lib/api';
 import AdminShell, { Icon } from '../components/AdminShell';
@@ -8,10 +9,11 @@ import StaffOnly from '../components/StaffOnly';
 
 // Categories ("Taxonomy") and Instagram Reels panels, in the shared admin layout. Authorization is enforced by the API.
 function useGate() {
-  const { user, authReady } = useApp();
+  const { user, authReady } = useApp(); const access = useAccess(user); const here = useLocation().pathname.replace(/\/$/, '');
   if (!authReady) return <div className="page-pad"><p className="muted">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (!['owner', 'admin'].includes(user.role)) return <StaffOnly />;
+  // cashiers and stock staff open it only if the owner / an admin has given them this page (Staff dashboard: who sees what)
+  if (!['owner', 'admin'].includes(user.role)) { if (!['cashier', 'inventory'].includes(user.role) || (access.loaded && !access.can(here))) return <StaffOnly />; if (!access.loaded) return <div className="page-pad"><p className="muted">Loading…</p></div> }
   return null;
 }
 const Err = ({ children }) => children ? <p className="dpos-err" role="alert">{children}</p> : null;

@@ -20,6 +20,7 @@ import PosBirthdays from './PosBirthdays';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
 import { Chips, PeriodFilter, inPeriod, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
 import StaffOnly from '../components/StaffOnly';
+import { useAccess } from '../lib/access';
 
 // Barcode tools (scan box, hardware scanner, quick add) load only when needed; they bring their own scoped styles.
 const loadBarcode = () => import('../barcode/entry');
@@ -804,9 +805,11 @@ export default function AdminPos() {
   const { tab = 'billing' } = useParams();
   const nav = useNavigate();
   const [shop, setShop] = useState(null); const [done, setDone] = useState(null); const [advDone, setAdvDone] = useState(null); const [tick, setTick] = useState(0); const [err, setErr] = useState();
-  const allowed = user && ['owner', 'admin', 'cashier'].includes(user.role);
+  const access = useAccess(user); const tabPath = '/admin/billing' + (tab === 'billing' ? '' : '/' + tab);
+  // the owner / an admin can give any role any of these pages (Store settings -> Staff dashboard: who sees what)
+  const allowed = user && (['owner', 'admin', 'cashier'].includes(user.role) || (user.role === 'inventory' && !!access.allowed?.includes('/admin/billing')));
   const manager = !!user && ['owner', 'admin'].includes(user.role);
-  const stocker = !!user && ['owner', 'admin', 'inventory'].includes(user.role);
+  const stocker = !!user && (['owner', 'admin', 'inventory'].includes(user.role) || !!access.allowed?.includes('/admin/billing/inventory'));
   const loadShop = useCallback(() => api('/admin/pos/shop').then(setShop).catch(e => setErr(e.message)), []);
   useEffect(() => { if (allowed) loadShop() }, [allowed, loadShop]);
   // A keyboard-wedge barcode scanner read on any page other than Billing: offer to switch to Billing (the heavy barcode code loads only when this happens).
@@ -841,10 +844,10 @@ export default function AdminPos() {
 
   if (!authReady) return <div className="page-pad"><p className="muted">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (!allowed && !stocker) return <StaffOnly />;
-  // Inventory staff only have the Inventory page here; everything else sends them to their staff dashboard.
-  if (!allowed && tab !== 'inventory') return <Navigate to="/admin/staff" replace />;
-  if (!(tab in TABS) || (TABS[tab] && !manager && !(tab === 'inventory' && stocker))) return <Navigate to="/admin/billing" replace />;
+  if (!['owner', 'admin', 'cashier', 'inventory'].includes(user.role)) return <StaffOnly />;
+  if (!(tab in TABS)) return <Navigate to="/admin/staff" replace />;
+  // a page the owner / an admin has not given this role: back to the staff dashboard
+  if (!manager) { if (!access.loaded) return <div className="page-pad"><p className="muted">Loading…</p></div>; if (!access.can(tabPath)) return <Navigate to="/admin/staff" replace /> }
 
   const onSale = sale => { setDone(sale); setTick(t => t + 1) };
   const onAdvance = adv => { setTick(t => t + 1); setAdvDone(adv) }; // the saved advance order is kept in Advance Orders; its receipt shows first

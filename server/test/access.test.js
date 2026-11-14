@@ -28,10 +28,21 @@ test('staff access: defaults per role, the owner configures within each role cei
   assert.ok((await cash('GET', '/admin/access')).body.allowed.includes('/admin/billing'));
   assert.equal((await cash('GET', '/admin/access')).body.sections, undefined, 'only the owner sees the configuration');
   assert.equal((await cash('PUT', '/admin/access', { cashier: ['/admin/billing'] })).status, 403);
-  // the owner tries to give cashiers Analytics and Inventory, which are above their ceiling
-  const put = await o('PUT', '/admin/access', { cashier: ['/admin/billing', '/admin/billing/analytics', '/admin/billing/inventory'], inventory: ['/admin/billing/inventory'], admin: ['/admin/orders'] });
-  assert.equal(put.status, 200); assert.deepEqual(put.body.config.cashier, ['/admin/billing'], 'grants beyond a role ceiling are dropped');
-  assert.deepEqual((await cash('GET', '/admin/access')).body.allowed, ['/admin/billing']);
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date());
+  const rep = `/admin/pos/reports?from=${today}&to=${today}`;
+  assert.equal((await cash('GET', rep)).status, 403, 'analytics is not a cashier page by default');
+  // the owner gives cashiers Analytics (the server follows), and tries Users, which can never be handed out
+  const put = await o('PUT', '/admin/access', { cashier: ['/admin/billing', '/admin/billing/analytics', '/admin/users'], inventory: ['/admin/billing/inventory', '/admin/billing'], admin: ['/admin/orders'] });
+  assert.equal(put.status, 200); assert.deepEqual(put.body.config.cashier, ['/admin/billing', '/admin/billing/analytics'], 'Users cannot be granted');
+  assert.deepEqual((await cash('GET', '/admin/access')).body.allowed, ['/admin/billing', '/admin/billing/analytics']);
+  assert.equal((await cash('GET', rep)).status, 200, 'the granted page opens its data');
+  assert.equal((await cash('GET', '/admin/users')).status, 403, 'an ungranted page stays closed');
+  assert.equal((await cash('PATCH', '/admin/users/1/role', { role: 'owner' })).status, 403);
+  assert.equal((await inv('GET', '/admin/pos/shop')).status, 200, 'stock staff given Billing can use the billing routes');
+  assert.equal((await inv('GET', rep)).status, 403);
+  // taking it back closes it again
+  await o('PUT', '/admin/access', { cashier: ['/admin/billing'], inventory: ['/admin/billing/inventory'], admin: ['/admin/orders'] });
+  assert.equal((await cash('GET', rep)).status, 403);
   assert.ok((await o('GET', '/admin/access')).body.allowed.length > 10, 'the owner always sees everything');
   // an admin sets all three columns, just like the owner
   await o('POST', '/admin/users', { email: 'adm@test.dev', password: 'AdminPass12345!', name: 'Adm', role: 'admin' });
