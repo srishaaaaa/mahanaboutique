@@ -21,9 +21,8 @@ export default function admin({ db, auth }) {
     res.json({ role: req.user.role, allowed: allowedFor(req.user.role, cfg), ...(['owner', 'admin'].includes(req.user.role) ? { sections: SECTIONS, roles: ROLES, config: cfg } : {}) });
   }));
   r.put('/access', auth.role('owner', 'admin'), wrap(async (req, res) => {
-    const body = z.record(z.string(), z.array(z.string().max(80)).max(60)).parse(req.body);
-    // admins set what cashiers and stock staff see; only the owner changes the Admin column (so an admin cannot lock themselves out)
-    const cfg = await saveAccess(db, req.user.role === 'owner' ? body : { ...body, admin: (await getAccess(db)).admin });
+    // the owner and admins set all three columns (the owner always sees everything, so nobody can be locked out of this setting)
+    const cfg = await saveAccess(db, z.record(z.string(), z.array(z.string().max(80)).max(60)).parse(req.body));
     await audit(db, req.user.id, 'staff.access', 'settings', 'role_access', {});
     res.json({ config: cfg });
   }));
@@ -206,7 +205,7 @@ export default function admin({ db, auth }) {
   // Users & roles. Everyone staff can see accounts; only an owner can change a role (never their own, never another owner's).
   r.get('/users', staff, wrap(async (_req, res) => res.json(await rows(db,
     `SELECT id, email, full_name AS name, role, created_at FROM profiles ORDER BY (role = 'customer'), id LIMIT 500`))));
-  r.post('/users', auth.role('owner'), wrap(async (req, res) => {
+  r.post('/users', auth.role('owner', 'admin'), wrap(async (req, res) => {
     const d = z.object({ name: z.string().trim().max(120).default(''), email: z.string().trim().email().max(200), password: z.string().min(8).max(200),
       role: z.enum(['customer', 'cashier', 'inventory', 'admin']) }).parse(req.body);
     if (await one(db, 'SELECT 1 AS x FROM profiles WHERE lower(email) = lower($1)', [d.email])) throw new HttpError(409, 'That email is already registered', 'email_taken');
@@ -214,7 +213,7 @@ export default function admin({ db, auth }) {
     await audit(db, req.user.id, 'user.create', 'user', u.id, { role: d.role });
     res.status(201).json({ id: u.id });
   }));
-  r.patch('/users/:id/role', auth.role('owner'), wrap(async (req, res) => {
+  r.patch('/users/:id/role', auth.role('owner', 'admin'), wrap(async (req, res) => {
     const { role } = z.object({ role: z.enum(['customer', 'cashier', 'inventory', 'admin']) }).parse(req.body);
     const id = z.coerce.number().int().parse(req.params.id);
     if (id === req.user.id) throw new HttpError(400, 'You cannot change your own role');

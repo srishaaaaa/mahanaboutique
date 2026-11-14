@@ -111,11 +111,11 @@ export function AdminUsers() {
   const load = () => api('/admin/users').then(setList).catch(x => setE(x.message));
   useEffect(() => { if (!gate) load() }, [gate]); // eslint-disable-line react-hooks/exhaustive-deps
   if (gate) return gate;
-  const isOwner = user.role === 'owner';
+  const isOwner = ['owner', 'admin'].includes(user.role); // owner and admin can do the same here
   const shown = (list || []).filter(u => (!q.trim() || `${u.name} ${u.email}`.toLowerCase().includes(q.trim().toLowerCase())) && inPeriod(u.created_at, per) && (role === 'all' || (role === 'staff' ? ['cashier', 'inventory'].includes(u.role) : role === 'admin' ? ['admin', 'owner'].includes(u.role) : u.role === 'customer')));
   const setRole = async (u, r) => { try { await api(`/admin/users/${u.id}/role`, { method: 'PATCH', body: { role: r } }); setList(l => l.map(x => x.id === u.id ? { ...x, role: r } : x)); toast(`${u.email} is now ${ROLE_LABEL[r] || r}`) } catch (x) { setE(x.message) } };
   return (
-    <AdminShell title="Users & Roles" sub="Roles: Admin manages the store, Staff bills or handles stock, Customer has no admin access. Only the owner adds users and changes roles."
+    <AdminShell title="Users & Roles" sub="Roles: Admin manages the store, Staff bills or handles stock, Customer has no admin access. The owner and admins add users and change roles."
 >
       {e && <p role="alert" className="dpos-err">{e}</p>}
       <div className="dpos-bar-tools"><input type="search" style={{ maxWidth: 260 }} value={q} onChange={ev => setQ(ev.target.value)} placeholder="Search users…" aria-label="Search users" />{isOwner && <button className="dpos-btn" onClick={() => setAdd(true)}><Icon n="plus" size={16} />Add user</button>}<Chips label="Show" value={role} onChange={setRole_} options={[['all', 'Everyone'], ['admin', 'Admins'], ['staff', 'Staff'], ['customer', 'Customers']]} /><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="users" header={['Name', 'Email', 'Role', 'Joined']} rows={shown.map(u => [u.name || '', u.email, u.role, String(u.created_at).slice(0, 10)])} /></div>

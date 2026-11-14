@@ -92,10 +92,10 @@ export function LoginPasswordCard() {
 
 const ROLES = [['admin', 'Admin', 'Everything, including settings and reports'], ['cashier', 'Cashier', 'Billing, advance orders, order history, customers'], ['inventory', 'Stock keeper', 'Inventory and stock adjustments']];
 
-// Staff accounts for the POS. Only the owner can add staff or change a role.
+// Staff accounts for the POS. The owner and admins can add staff or change a role.
 export function StaffAccessCard() {
   const { user, toast } = useApp();
-  const owner = user?.role === 'owner';
+  const owner = ['owner', 'admin'].includes(user?.role); // owner and admin are the same here
   const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [nw, setNw] = useState({ name: '', email: '', password: '', role: 'cashier' }); const [busy, setBusy] = useState(false);
   const load = useCallback(() => api('/admin/users').then(r => setRows(r.filter(u => u.role !== 'customer'))).catch(e => setErr(e.message)), []);
   useEffect(() => { load() }, [load]);

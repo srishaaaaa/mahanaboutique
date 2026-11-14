@@ -36,7 +36,6 @@ export function StaffAccessCard() {
   const [d, setD] = useState(null); const [cfg, setCfg] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
   useEffect(() => { api('/admin/access').then(x => { setD(x); setCfg(x.config) }).catch(e => setErr(e.message)) }, []);
   if (!['owner', 'admin'].includes(user?.role)) return null;
-  const isOwner = user.role === 'owner';
   const toggle = (role, path) => setCfg(c => ({ ...c, [role]: c[role].includes(path) ? c[role].filter(p => p !== path) : [...c[role], path] }));
   const save = async () => {
     setBusy(true); setErr();
@@ -45,14 +44,14 @@ export function StaffAccessCard() {
   return (
     <section className="dpos-card sd-access">
       <h2><Icon n="users" size={18} /> Staff dashboard: who sees what</h2>
-      <p className="muted small">Choose which pages each kind of staff member sees in the admin sidebar. The owner always sees everything. A page appears only if that kind of staff can use it.{isOwner ? '' : ' Only the owner can change the Admin column.'}</p>
+      <p className="muted small">Choose which pages each kind of staff member sees in the admin sidebar. The owner always sees everything. A page appears only if that kind of staff can use it.</p>
       {err && <p className="dpos-err" role="alert">{err}</p>}
       {!cfg ? <p className="muted">Loading…</p> : (
         <div className="dpos-tw"><table className="sd-table"><thead><tr><th>Page</th>{d.roles.map(r => <th key={r} className="c">{ROLE_LABEL[r]}</th>)}</tr></thead>
           <tbody>{d.sections.map(g => [
             <tr key={g.group} className="sd-gr"><td colSpan={d.roles.length + 1}>{g.group.toUpperCase()}</td></tr>,
             ...g.items.map(i => <tr key={i.path}><td>{i.label}</td>{d.roles.map(r => <td key={r} className="c">{i.max.includes(r)
-              ? <input type="checkbox" aria-label={`${ROLE_LABEL[r]} can open ${i.label}`} checked={cfg[r].includes(i.path)} disabled={r === 'admin' && !isOwner} onChange={() => toggle(r, i.path)} />
+              ? <input type="checkbox" aria-label={`${ROLE_LABEL[r]} can open ${i.label}`} checked={cfg[r].includes(i.path)} onChange={() => toggle(r, i.path)} />
               : <span className="muted" title="This role cannot use this page">—</span>}</td>)}</tr>)])}</tbody></table></div>)}
       <div style={{ marginTop: 14 }}><button type="button" className="dpos-btn" disabled={busy || !cfg} onClick={save}>{busy ? 'Saving…' : 'Save'}</button></div>
     </section>
