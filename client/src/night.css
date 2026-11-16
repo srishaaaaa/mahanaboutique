@@ -1730,3 +1730,35 @@ html body .wb, html body .wb-hero { padding: 0 }
 .wb-badge i { width: 14px; height: 14px }
 .wb-orn svg { width: 20px; height: 14px }
 .wb-trust { padding: 10px 18px; border: 1px solid rgba(59, 42, 48, .12); border-radius: 999px; background: rgba(255, 246, 238, .78); backdrop-filter: blur(6px); width: auto; max-width: 92% }
+
+/* the woman fills the open space between the copy and the flowers: centred in it, a little larger */
+.wb-photo { right: 23%; bottom: -7%; height: 103%; max-width: 54% }
+@media (max-width: 1300px) { .wb-photo { right: 17%; height: 100%; max-width: 56% } }
+@media (max-width: 900px) { .wb-photo { right: 0; left: 0; max-width: 78%; height: 64%; bottom: -2% } }
+
+/* smaller copy: headline, description, line, buttons and label */
+.wb-t { font-size: clamp(30px, 3.3vw, 62px); line-height: 1.04 }
+.wb-desc { font-size: clamp(12px, .95vw, 16px); line-height: 1.6 }
+.wb-sub { font-size: clamp(8.5px, .66vw, 11px) }
+.wb-badge { font-size: clamp(8.5px, .66vw, 10.5px); padding: 5px 14px 5px 5px }
+.wb-badge i { width: 12px; height: 12px }
+.wb-btn { font-size: clamp(9px, .68vw, 11px); padding: clamp(7px, .6vw, 10px) clamp(8px, .6vw, 10px) clamp(7px, .6vw, 10px) clamp(18px, 1.7vw, 28px); gap: 12px }
+.wb-btn b { width: clamp(24px, 1.9vw, 30px); height: clamp(24px, 1.9vw, 30px); font-size: 12px }
+.wb-link { font-size: clamp(9px, .68vw, 11px); padding-bottom: 4px }
+.wb-copy { gap: clamp(8px, .9vw, 14px) }
+.wb-orn { width: min(220px, 60%) }
+
+/* Richer banner: a gold arch frames the woman, a slowly turning seal and three glass shortcut cards fill the open middle */
+.wb-arch { position: absolute; z-index: 0; right: 23%; bottom: 0; height: 94%; width: auto; max-width: 50%; color: #c9897a; opacity: .55; pointer-events: none }
+.wb-seal { position: absolute; z-index: 2; right: 12%; bottom: 14%; width: clamp(84px, 7.4vw, 128px); height: auto; color: #8a5a52; opacity: .85; animation: wb-turn 26s linear infinite; pointer-events: none }
+.wb-seal-t { font: 600 9.4px/1 'Archivo', system-ui, sans-serif; letter-spacing: .24em; fill: currentColor }
+@keyframes wb-turn { to { transform: rotate(360deg) } }
+.wb-cards { position: absolute; z-index: 2; left: clamp(360px, 31vw, 640px); top: 50%; translate: 0 -46%; display: grid; gap: clamp(10px, 1.1vw, 18px); width: clamp(190px, 16vw, 270px) }
+.wb-card { display: flex; align-items: center; gap: 12px; padding: clamp(10px, .9vw, 14px) clamp(12px, 1.1vw, 18px); border: 1px solid rgba(255, 255, 255, .7); border-radius: 18px; background: linear-gradient(135deg, rgba(255, 255, 255, .72), rgba(255, 240, 230, .5)); backdrop-filter: blur(10px); box-shadow: 0 14px 34px rgba(150, 90, 70, .16); color: #3b2330; text-decoration: none; animation: wb-bob 6s ease-in-out infinite; animation-delay: calc(var(--i) * -2s); transition: box-shadow .3s }
+.wb-card:nth-child(2) { margin-left: clamp(14px, 2vw, 34px) } .wb-card:hover { box-shadow: 0 18px 40px rgba(150, 90, 70, .28) }
+.wb-card-i { display: grid; place-items: center; flex: none; width: clamp(32px, 2.6vw, 40px); height: clamp(32px, 2.6vw, 40px); border-radius: 50%; background: linear-gradient(135deg, #f0c9b8, #d99a88); color: #3b2330 } .wb-card-i svg { width: 17px; height: 17px }
+.wb-card b { display: block; font: 700 clamp(11px, .88vw, 14px)/1.2 'Cormorant Garamond', 'Playfair Display', serif; letter-spacing: .02em } .wb-card small { display: block; margin-top: 2px; font: 400 clamp(9px, .7vw, 11px)/1.3 'Archivo', system-ui, sans-serif; color: #6a5358 }
+@keyframes wb-bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+@media (max-width: 1100px) { .wb-cards, .wb-seal { display: none } }
+@media (max-width: 900px) { .wb-arch { right: 0; left: 0; margin: 0 auto; max-width: 80%; height: 64% } }
+@media (prefers-reduced-motion: reduce) { .wb-seal, .wb-card { animation: none } }
