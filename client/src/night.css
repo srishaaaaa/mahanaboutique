@@ -1592,3 +1592,7 @@
 .home > .nx-trend .nt-grid { align-items: start }
 .home > .nx-trend .nt-grid > li { margin-top: 0 !important; translate: none !important }
 .wb-in { aspect-ratio: 16 / 8.9 }
+/* Wedding Chapter banner: Mahana navy behind the photo and under the gradient */
+.wb-in { background: radial-gradient(70% 90% at 50% 30%, #2d3e76 0, #1c284f 62%, #101936 100%) }
+.wb-in::after { background: linear-gradient(180deg, transparent 42%, rgba(16, 25, 54, .55) 76%, rgba(12, 18, 42, .9) 100%) }
+.wb-btn:hover { color: #1c284f }
