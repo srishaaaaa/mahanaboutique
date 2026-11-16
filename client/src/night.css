@@ -1664,3 +1664,41 @@
 .wb-bloom { position: absolute; z-index: 0; right: 2%; top: 6%; width: 52%; height: 84%; background: radial-gradient(48% 52% at 62% 42%, rgba(255, 222, 170, .34), rgba(255, 222, 170, .1) 55%, transparent 75%); filter: blur(10px); pointer-events: none }
 .wb-grade { position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: multiply; background: radial-gradient(70% 90% at 84% 36%, rgba(255, 240, 220, 0) 0, rgba(78, 52, 34, .2) 70%, rgba(48, 30, 20, .42) 100%), linear-gradient(0deg, rgba(58, 38, 26, .34), transparent 38%) }
 @media (prefers-reduced-motion: reduce) { .wb-shadow { transform: none } }
+
+/* Floral studio opening section, edge to edge: watercolour scene, the model standing at the right from the bottom edge, copy at the left */
+html body .wb, html body .wb-hero { padding: 0 }
+.wb-in { max-width: none; width: 100%; border-radius: 0; box-shadow: none; height: min(100svh, 980px); min-height: 620px; background: #fbeedd }
+.wb-in::before, .wb-in::after { display: none }
+.wb-bg { object-position: 50% 50%; transform: translate3d(calc(var(--mx) * -10px), calc(var(--my) * -6px), 0) scale(1.05) }
+.wb-photo { top: auto; bottom: 0; right: 9%; left: auto; width: auto; height: 94%; max-width: 44%; object-fit: contain; object-position: 50% 100%; -webkit-mask-image: none; mask-image: none;
+  filter: drop-shadow(0 20px 28px rgba(90, 56, 40, .3)) drop-shadow(0 0 2px rgba(90, 56, 40, .3)) saturate(1.02) }
+.wb-copy { left: clamp(28px, 6vw, 120px); top: 50%; translate: 0 -50%; width: min(46%, 640px); padding-top: clamp(40px, 5vw, 80px); justify-items: start; text-align: left; gap: clamp(10px, 1.2vw, 20px); color: #3b2a30 }
+.wb-badge { display: inline-flex; align-items: center; gap: 10px; padding: 6px 18px 6px 6px; border: 1px solid rgba(59, 42, 48, .32); border-radius: 999px; background: rgba(255, 255, 255, .55); font: 700 clamp(10px, .8vw, 12px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .2em; color: #3b2a30 }
+.wb-badge i { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #e8b6a4, #c9897a) }
+.wb-t { font: 500 clamp(40px, 5.6vw, 104px)/1.02 'Cormorant Garamond', 'Playfair Display', Georgia, serif; text-transform: none; letter-spacing: .005em; color: #3b2330; text-shadow: none }
+.wb-t::first-line { color: #3b2330 }
+.wb-orn { display: flex; align-items: center; gap: 12px; width: min(300px, 70%); color: #c08a7c } .wb-orn i { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(192, 138, 124, .8)) } .wb-orn i:last-child { background: linear-gradient(90deg, rgba(192, 138, 124, .8), transparent) }
+.wb-desc { margin: 0; max-width: 34ch; font: 400 clamp(14px, 1.25vw, 21px)/1.6 'Archivo', system-ui, sans-serif; color: #5a4549 }
+.wb-sub { margin: 0; max-width: none; font: 700 clamp(10px, .82vw, 13px)/1.4 'Archivo', system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; white-space: normal; color: #3b2a30 }
+.wb-acts { display: flex; align-items: center; gap: clamp(18px, 2vw, 34px); flex-wrap: wrap; margin-top: clamp(4px, .8vw, 12px) }
+.wb-btn { display: inline-flex; align-items: center; gap: 16px; margin: 0; padding: clamp(10px, .9vw, 14px) clamp(10px, .9vw, 14px) clamp(10px, .9vw, 14px) clamp(24px, 2.4vw, 40px); border: 0; border-radius: 999px; background: linear-gradient(135deg, #f0c9b8, #d99a88); color: #3b2330; font: 700 clamp(10px, .85vw, 13px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .2em; box-shadow: 0 14px 30px rgba(180, 100, 84, .32); text-transform: uppercase }
+.wb-btn b { display: grid; place-items: center; width: clamp(34px, 3vw, 46px); height: clamp(34px, 3vw, 46px); border-radius: 50%; background: #3b2330; color: #fff2e6; font-size: 16px }
+.wb-btn:hover { background: linear-gradient(135deg, #f4d4c5, #e0a493); color: #3b2330; transform: translateY(-2px) }
+.wb-link { padding-bottom: 5px; border-bottom: 1.5px solid #3b2330; color: #3b2330; font: 800 clamp(10px, .85vw, 13px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .2em }
+.wb-trust { border-top-color: rgba(59, 42, 48, .28) } .wb-trust li { color: #3b2a30 } .wb-trust svg { color: #b3635c }
+.wb-petals i { background: radial-gradient(circle at 30% 30%, #ffe9e2, #f0a99f 70%); box-shadow: 0 0 5px rgba(240, 169, 159, .45) }
+@media (max-width: 900px) { .wb-in { height: auto; min-height: 0; display: grid; padding-top: 96px } .wb-photo { position: relative; order: 2; right: auto; width: 78%; max-width: none; height: auto; margin: 0 auto -1px } .wb-copy { position: relative; order: 1; top: auto; left: auto; translate: none; width: auto; padding: 14px 22px 0 } .wb-trust { display: none } .wb-t { font-size: clamp(38px, 10vw, 64px) } }
+
+/* the scene includes the model: it breathes slowly and drifts with the pointer; copy and promises are kept clear of the flowers */
+.wb-bg { object-position: 62% 50%; animation: wb-breathe 14s ease-in-out infinite }
+@keyframes wb-breathe { 0%, 100% { scale: 1 } 50% { scale: 1.035 } }
+.wb-copy { left: clamp(36px, 8.5vw, 170px) }
+.wb-trust { left: clamp(36px, 8.5vw, 170px); width: min(40%, 620px); gap: clamp(14px, 1.8vw, 30px) }
+@media (prefers-reduced-motion: reduce) { .wb-bg { animation: none } }
+.wb-bg { object-position: 58% 0%; scale: 1 }
+.wb-in { height: min(100svh, 940px) }
+.wb-t { font-size: clamp(36px, 4.5vw, 84px); white-space: nowrap }
+.wb-copy { width: min(48%, 720px) }
+@media (max-width: 900px) { .wb-t { white-space: normal } }
+.wb-t { white-space: pre-line; font-size: clamp(36px, 4.4vw, 82px) }
+.wb-copy { width: min(40%, 640px) }

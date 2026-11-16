@@ -165,7 +165,7 @@ export function AdminStorefront() {
               onUpload={f => run('textile', async () => { const up = await uploadImage(f); const next = { ...b, textileImage: up.url }; await saveBranding(next); setB(next) }, 'Textile photo updated.')}
               onReset={() => run('textile', async () => { const next = { ...b, textileImage: null, textileAlt: '' }; await saveBranding(next); setB(next) }, 'Textile photo removed.')} />
             <Slot title="Banner background" accept="image/jpeg,image/png,image/webp" busy={busy === 'bannerbg'} value={b.bannerBg} fallback="/images/banner-bg.jpg" pos={b.bannerBgPos} onPos={v => run('bannerbg', async () => { const next = { ...b, bannerBgPos: v }; await saveBranding(next); setB(next) }, 'Position saved.')}
-              hint="The scene behind the model at the top of the homepage. A wide photograph (about 2000 px or more) works best; it fills the whole banner edge to edge. If it already includes the model, remove the Banner photo below so she is not shown twice."
+              hint="The scene behind the model at the top of the homepage. A wide photograph (about 2000 px or more) works best; it fills the whole banner edge to edge. If the picture already includes the model, leave the Banner photo below empty so she is not shown twice."
               onUpload={f => run('bannerbg', async () => { const up = await uploadImage(f); const next = { ...b, bannerBg: up.url }; await saveBranding(next); setB(next) }, 'Banner background updated.')}
               onReset={() => run('bannerbg', async () => { const next = { ...b, bannerBg: null, bannerBgPos: null }; await saveBranding(next); setB(next) }, 'Banner background reset.')} />
             <Slot title="Banner photo (model)" accept="image/jpeg,image/png,image/webp" busy={busy === 'editorial'} value={b.editorialImage} fallback="" pos={b.editorialPos} onPos={v => run('editorial', async () => { const next = { ...b, editorialPos: v }; await saveBranding(next); setB(next) }, 'Position saved.')} alt={b.editorialAlt} onAlt={v => setB({ ...b, editorialAlt: v })}
@@ -305,7 +305,7 @@ const TEXT_GROUPS = [
   ['Shop Story', [['storyTitle', 'Title'], ['story', 'Story (one paragraph per box)', 'paras']]],
   ['Trending collections', [['trendingEyebrow', 'Small label'], ['trendingTitle', 'Title'], ['trendingSub', 'Line under the title']]],
   ['Best sellers', [['bestEyebrow', 'Small label'], ['bestTitle', 'Title'], ['bestSub', 'Line under the title']]],
-  ['Homepage banner (full-width photo)', [['bannerTitle', 'Title (press Enter for a new line)', 'area'], ['bannerSub', 'Line under the title (press Enter for a new line)', 'area'], ['bannerCta', 'Button'], ['bannerAlt', 'Description of the photo (for screen readers)', 'area']]],
+  ['Homepage banner (full-width photo)', [['bannerEyebrow', 'Small label'], ['bannerTitle', 'Title (press Enter for a new line)', 'area'], ['bannerDesc', 'Description', 'area'], ['bannerSub', 'Line under the description'], ['bannerCta', 'Main button'], ['bannerCta2', 'Second link'], ['bannerAlt', 'Description of the photo (for screen readers)', 'area']]],
   ['Inside MAHANA BOUTIQUE & TAILORS (reels & photos)', [['instaTitle', 'Title'], ['instaSub', 'Line under the title', 'area']]],
   ['Enquiry / contact', [['contactEyebrow', 'Small label'], ['contactTitle', 'Title (press Enter for a new line)', 'area'], ['contactSub', 'Line under the title', 'area']]],
   ['About page', [['aboutTitle', 'Title (press Enter for a new line)', 'area'], ['aboutLead', 'Main line', 'area'], ['aboutSub', 'Second line', 'area']]],
