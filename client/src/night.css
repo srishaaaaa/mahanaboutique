@@ -1607,3 +1607,15 @@
 /* the banner photo has a transparent background: no blending needed, the models stand straight on the navy */
 .wb-in > img { mix-blend-mode: normal; -webkit-mask-image: none; mask-image: none; object-position: 50% 100% }
 .wb-in::after { background: linear-gradient(180deg, transparent 52%, rgba(16, 25, 54, .5) 80%, rgba(12, 18, 42, .85) 100%) }
+
+/* Banner depth: a warm glow behind the models, fine arches, a faint lattice and soft lights; the models are shadowed, tinted and faded into it */
+.wb-in { background:
+    radial-gradient(34% 52% at 50% 33%, rgba(222, 170, 148, .34), rgba(201, 137, 122, .12) 48%, transparent 72%),
+    radial-gradient(70% 38% at 50% 104%, rgba(231, 196, 150, .22), transparent 72%),
+    radial-gradient(90% 120% at 50% 20%, #2f4283 0, #1d2b5c 55%, #0f1735 100%) }
+.wb-deco { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none }
+.wb-in > img { z-index: 1; filter: drop-shadow(0 0 22px rgba(10, 16, 40, .6)) drop-shadow(0 26px 34px rgba(8, 12, 32, .5)) saturate(1.04) contrast(1.03);
+  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 66%, transparent 99%); mask-image: linear-gradient(180deg, #000 0, #000 66%, transparent 99%) }
+.wb-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: soft-light; background: radial-gradient(60% 70% at 50% 40%, rgba(120, 140, 230, .22), rgba(30, 44, 110, .38)) }
+.wb-in::after { z-index: 1 }
+.wb-copy, .wb-in::before { z-index: 3 }
