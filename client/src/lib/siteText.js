@@ -6,7 +6,7 @@ export const TEXT_DEFAULTS = {
   storyTitle: 'Shop Story', story: brand.story,
   trendingEyebrow: 'TRENDING NOW', trendingTitle: 'TRENDING COLLECTIONS', trendingSub: 'Handpicked pieces everyone is loving right now.',
   bestEyebrow: 'BEST SELLERS', bestTitle: 'BEST SELLERS', bestSub: 'The pieces our customers keep coming back for.',
-  bannerEyebrow: 'MAHANA BOUTIQUE & TAILORS', bannerTitle: 'ETHNIC WEAR', bannerCta: 'EXPLORE NOW', bannerAlt: 'Three models in embroidered anarkali suits in plum, olive and navy',
+  bannerTitle: 'ETHNIC\nWEAR', bannerSub: 'EMBROIDERED SAREES, LEHENGAS & SUITS\nFOR EVERY OCCASION', bannerCta: 'SHOP NOW', bannerAlt: 'Three models in embroidered anarkali suits in plum, olive and navy',
   worldEyebrow: 'COLLECTIONS', worldTitle: 'CHOOSE YOUR WORLD.',
   instaTitle: 'INSIDE MAHANA BOUTIQUE & TAILORS', instaSub: 'Discover our boutique, explore our collections, and experience the beauty of traditional Indian wear.',
   contactEyebrow: 'GET IN TOUCH', contactTitle: 'ENQUIRE WITH\nMAHANA BOUTIQUE & TAILORS.', contactSub: 'Looking for something special, or a custom design? Tell us what you need and we will get back to you.',
