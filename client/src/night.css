@@ -1619,3 +1619,8 @@
 .wb-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: soft-light; background: radial-gradient(60% 70% at 50% 40%, rgba(120, 140, 230, .22), rgba(30, 44, 110, .38)) }
 .wb-in::after { z-index: 1 }
 .wb-copy, .wb-in::before { z-index: 3 }
+
+/* a blurred, brightened copy sits just behind the models so their edges melt into the glow; haze over the outer edges and base */
+.wb-in > img.wb-glow { z-index: 0; filter: blur(22px) brightness(1.35) saturate(1.15); opacity: .5; transform: scale(1.025); mix-blend-mode: screen; -webkit-mask-image: none; mask-image: none }
+.wb-in > img:not(.wb-glow) { z-index: 1; filter: drop-shadow(0 0 14px rgba(36, 54, 122, .55)) drop-shadow(0 24px 30px rgba(8, 12, 32, .45)) saturate(1.03) }
+.wb-in::after { background: linear-gradient(90deg, rgba(14, 22, 56, .55), transparent 22%, transparent 78%, rgba(14, 22, 56, .55)), linear-gradient(180deg, transparent 52%, rgba(16, 25, 54, .5) 80%, rgba(12, 18, 42, .88) 100%) }

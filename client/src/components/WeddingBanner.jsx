@@ -31,6 +31,7 @@ export default function WeddingBanner() {
               <circle cx="640" cy="90" r="12" opacity=".12" /><circle cx="1010" cy="70" r="16" opacity=".12" /><circle cx="60" cy="380" r="12" opacity=".14" /><circle cx="1545" cy="420" r="14" opacity=".14" />
             </g>
           </svg>
+          <img className="wb-glow" src={b.editorialImage || DEFAULT_PHOTO} alt="" aria-hidden="true" />
           <img src={b.editorialImage || DEFAULT_PHOTO} style={b.editorialPos ? { objectPosition: b.editorialPos } : undefined} alt={b.editorialAlt || t.bannerAlt} loading="lazy" width="1307" height="1200" />
           <span className="wb-tint" aria-hidden="true" />
           <div className="wb-copy">
