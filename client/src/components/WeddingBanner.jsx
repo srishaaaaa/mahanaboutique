@@ -5,10 +5,10 @@ import { useSiteText } from '../lib/siteText';
 import { Reveal } from './Motion';
 
 const DEFAULT_BG = '/images/banner-bg.jpg'; // the scene, until a background is set in the admin
+const DEFAULT_MODEL = '/images/banner-model.webp'; // the model (a cut-out), until one is set in the admin
 
-// Homepage opening section, edge to edge. Admin -> Storefront images has two slots: "Banner background" (the scene)
-// and "Banner photo (model)" (a cut-out standing on it). The model moves in 3D with the pointer and floats gently, petals drift
-// through the scene. Left: label, headline, line, description, two buttons and the promises. Wording: Admin -> Site text.
+// Homepage opening section, edge to edge. The picture is the one set in Admin -> Storefront images -> "Banner background"
+// (the woman is part of it); it breathes slowly and drifts with the pointer, and petals fall through it. Left: label, headline, line, description, two buttons and the promises. Wording: Admin -> Site text.
 const Ico = ({ children }) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>;
 const TRUST = [
   ['PREMIUM QUALITY', <Ico key="s"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7Z" /></Ico>],
@@ -22,8 +22,8 @@ export default function WeddingBanner({ hero = false }) {
   const t = useSiteText();
   const b = site.branding || {};
   const box = useRef(null);
+  const model = b.bannerModel || DEFAULT_MODEL;
   const Title = hero ? 'h1' : 'h2'; // as the opening section its title is the page's main heading
-  const model = b.editorialImage || null; // optional: a cut-out model standing on the scene (the default scene already includes her)
   const move = e => {
     const el = box.current; if (!el || e.pointerType === 'touch') return;
     const r = el.getBoundingClientRect();
@@ -37,7 +37,7 @@ export default function WeddingBanner({ hero = false }) {
         <div className="wb-in" ref={box} onPointerMove={move} onPointerLeave={leave}>
           <img className="wb-bg" src={b.bannerBg || DEFAULT_BG} style={b.bannerBgPos ? { objectPosition: b.bannerBgPos } : undefined} alt="" aria-hidden="true" />
           <span className="wb-petals" aria-hidden="true">{PETALS.map((p, i) => <i key={i} style={{ left: p.left + '%', width: p.size, height: p.size * 0.62, animationDelay: p.delay + 's', animationDuration: p.dur + 's', '--sway': p.sway + 'px' }} />)}</span>
-          {model && <img className="wb-photo" src={model} style={b.editorialPos ? { objectPosition: b.editorialPos } : undefined} alt={b.editorialAlt || t.bannerAlt} width="796" height="1536" />}
+          <img className="wb-photo" src={model} style={b.bannerModelPos ? { objectPosition: b.bannerModelPos } : undefined} alt={t.bannerAlt} width="796" height="1536" />
           <div className="wb-copy">
             <span className="wb-badge"><i aria-hidden="true" />{t.bannerEyebrow}</span>
             <Title id="wb-h" className="wb-t">{t.bannerTitle}</Title>

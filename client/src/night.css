@@ -1702,3 +1702,31 @@ html body .wb, html body .wb-hero { padding: 0 }
 @media (max-width: 900px) { .wb-t { white-space: normal } }
 .wb-t { white-space: pre-line; font-size: clamp(36px, 4.4vw, 82px) }
 .wb-copy { width: min(40%, 640px) }
+
+/* She comes down into the frame: the scene starts below the menu, its cream top fades into the page colour, and the model is a touch larger so she overlaps the lower edge like the reference */
+.wb-in { background: #f9e9d9 }
+.wb-bg { top: clamp(64px, 7.5vw, 124px); height: calc(100% - clamp(64px, 7.5vw, 124px)); object-position: 60% 100%; transform-origin: 62% 100%;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 100%); mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 100%) }
+.wb-in { height: min(100svh, 980px) }
+.wb-bg { object-position: 58% 0%; transform-origin: 60% 0% }
+
+/* Model standing on the floral scene: lower in the frame (head clear of the menu), a touch larger, overlapping the lower edge; she drifts in 3D with the pointer */
+.wb-bg { top: 0; height: 100%; object-position: 50% 50%; -webkit-mask-image: none; mask-image: none; animation: none; transform: translate3d(calc(var(--mx) * -10px), calc(var(--my) * -6px), 0) scale(1.05) }
+.wb-photo { display: block; position: absolute; z-index: 1; left: auto; top: auto; right: 10%; bottom: -4%; width: auto; height: 90%; max-width: 46%; object-fit: contain; object-position: 50% 100%; -webkit-mask-image: none; mask-image: none;
+  transform-origin: 60% 100%; transform: translate3d(calc(var(--mx) * 22px), calc(var(--my) * 10px), 0) rotateY(calc(var(--mx) * 4deg)); transition: transform .3s ease-out; animation: wb-float 7s ease-in-out infinite;
+  filter: drop-shadow(0 22px 30px rgba(110, 60, 44, .32)) drop-shadow(0 0 2px rgba(110, 60, 44, .28)) saturate(1.02) }
+@media (max-width: 900px) { .wb-photo { right: 0; left: 0; margin: 0 auto; max-width: 78%; height: 64%; bottom: -2% } }
+@media (prefers-reduced-motion: reduce) { .wb-photo { animation: none; transform: none } }
+.wb-photo { right: 16%; bottom: -5%; height: 98%; max-width: 50% }
+
+/* background stands still; only the woman is live (floats and turns slightly with the pointer) */
+.wb-bg { transform: none !important; animation: none !important; transition: none }
+.wb-copy { transform: none !important }
+/* smaller icons */
+.wb-trust svg { width: 15px; height: 15px }
+.wb-trust li { gap: 8px; font-size: clamp(8.5px, .68vw, 11px) }
+.wb-trust { gap: clamp(14px, 1.6vw, 26px) }
+.wb-btn b { width: clamp(28px, 2.3vw, 36px); height: clamp(28px, 2.3vw, 36px); font-size: 13px }
+.wb-badge i { width: 14px; height: 14px }
+.wb-orn svg { width: 20px; height: 14px }
+.wb-trust { padding: 10px 18px; border: 1px solid rgba(59, 42, 48, .12); border-radius: 999px; background: rgba(255, 246, 238, .78); backdrop-filter: blur(6px); width: auto; max-width: 92% }
