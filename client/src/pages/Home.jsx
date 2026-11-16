@@ -6,7 +6,7 @@ import BoutiqueHero from '../components/hero/BoutiqueHero';
 import FeaturedCollections from '../components/FeaturedCollections';
 import Ticker from '../components/Ticker';
 import FlagShelf from '../components/FlagShelf';
-import EditorialSection from '../components/EditorialSection';
+import WeddingBanner from '../components/WeddingBanner';
 import CategoryCircles from '../components/CategoryCircles';
 import CustomerReviews from '../components/CustomerReviews';
 import EnquirySection from '../components/EnquirySection';
@@ -76,8 +76,8 @@ export default function Home() {
       <BoutiqueHero />
       <Ticker />
       <FeaturedCollections />
-      <FlagShelf flag="best" id="best-sellers" eyebrow="CUSTOMER FAVOURITES" title="BEST SELLERS" sub="The pieces our customers love most." />
-      <EditorialSection />
+      <FlagShelf flag="best" id="best-sellers" />
+      <WeddingBanner />
       <CategoryCircles />
       <Details />
       <ServiceHighlights />

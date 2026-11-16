@@ -5,6 +5,8 @@ import { brand } from '../config/content';
 export const TEXT_DEFAULTS = {
   storyTitle: 'Shop Story', story: brand.story,
   trendingEyebrow: 'TRENDING NOW', trendingTitle: 'TRENDING COLLECTIONS', trendingSub: 'Handpicked pieces everyone is loving right now.',
+  bestEyebrow: 'BEST SELLERS', bestTitle: 'BEST SELLERS', bestSub: 'The pieces our customers keep coming back for.',
+  bannerTitle: 'THE WEDDING CHAPTER', bannerCta: 'EXPLORE NOW', bannerAlt: 'Bridal lehengas and sarees for every wedding celebration',
   worldEyebrow: 'COLLECTIONS', worldTitle: 'CHOOSE YOUR WORLD.',
   instaTitle: 'INSIDE MAHANA BOUTIQUE & TAILORS', instaSub: 'Discover our boutique, explore our collections, and experience the beauty of traditional Indian wear.',
   contactEyebrow: 'GET IN TOUCH', contactTitle: 'ENQUIRE WITH\nMAHANA BOUTIQUE & TAILORS.', contactSub: 'Looking for something special, or a custom design? Tell us what you need and we will get back to you.',

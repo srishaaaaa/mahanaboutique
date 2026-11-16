@@ -4,9 +4,12 @@ import { apiRetry } from '../lib/api';
 import { Reveal } from './Motion';
 import { Eyebrow, Divider } from './NightParts';
 import { Item } from './FeaturedCollections';
+import { useSiteText } from '../lib/siteText';
 
 // Home shelf for products flagged in Admin → Inventory → Edit product: "New Arrival" or "Best Sellers" (first 4, newest first). Hidden when none are flagged.
-export default function FlagShelf({ flag, id, eyebrow, title, sub }) {
+export default function FlagShelf({ flag, id }) {
+  const t = useSiteText();
+  const eyebrow = t.bestEyebrow, title = t.bestTitle, sub = t.bestSub;
   const [items, setItems] = useState(null);
   useEffect(() => { let dead = false; apiRetry(`/products?flag=${flag}&sort=newest&limit=4`).then(d => !dead && setItems(d.items)).catch(() => !dead && setItems([])); return () => { dead = true } }, [flag]);
   if (!items?.length) return null;

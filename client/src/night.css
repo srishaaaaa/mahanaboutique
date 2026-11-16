@@ -1334,7 +1334,7 @@
 
 /* less empty space left and right: wider containers and boxes, smaller side gutters */
 .nx-in, .nf-in, .catalog .cat-hero-in { max-width: 2400px }
-.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in) { max-width: 2400px; width: calc(100% - 2 * clamp(14px, 2.4vw, 34px)) }
+.home > :is(.nx-ed, .nx-story) :is(.ne-in, .ny-in) { max-width: 2400px; width: calc(100% - 2 * clamp(18px, 5.4vw, 100px)) }
 .home .ni-reels, .home .ni-mosaic, .home .ni-bh { max-width: 1500px }
 .about2 .ab-hero, .ab-stats, .sec-head, .ab-cats, .ab-steps-grid, .ab-traits ul { max-width: 1760px }
 
@@ -1552,3 +1552,43 @@
 
 .rs-name b img { display: block; width: clamp(300px, 40vw, 580px); height: auto }
 .rs-emblem { margin-bottom: 18px }
+
+
+/* Trending collections and Best sellers: spacing, type and cards as in the reference */
+.home > .nx-trend { background: #f5ebdd; padding: clamp(56px, 5.5vw, 96px) 0 clamp(60px, 6vw, 110px) }
+.home > .nx-trend::before, .home > .nx-trend::after { display: none }
+.home > .nx-trend .nx-in { max-width: 2400px; padding-inline: clamp(20px, 5.8vw, 140px) }
+.home > .nx-trend .nx-head { margin-bottom: clamp(26px, 2.6vw, 44px); align-items: flex-end }
+.home > .nx-trend .nx-div { display: none }
+.home > .nx-trend .nx-eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: #5b0a5e; font: 700 12px/1 'Archivo', system-ui, sans-serif; letter-spacing: .34em; text-transform: uppercase }
+.home > .nx-trend .nx-eyebrow i { width: 15px; height: 15px; border-radius: 0; box-shadow: none; background: #c79a43; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%) }
+.home > .nx-trend .nx-h { margin: clamp(8px, .9vw, 14px) 0 0; font: 800 clamp(38px, 5.7vw, 108px)/1 'Playfair Display', Georgia, serif; letter-spacing: -.012em; text-transform: uppercase; color: #1f1416 }
+.home > .nx-trend .nx-sub { margin: clamp(14px, 1.5vw, 26px) 0 0; max-width: none; font: 400 clamp(15px, 1.05vw, 19px)/1.5 'Archivo', system-ui, sans-serif; color: #5c4d4f }
+.home > .nx-trend .nx-more { padding-bottom: 4px; border-bottom: 1.5px solid #5b0a5e; color: #5b0a5e; font: 800 12px/1 'Archivo', system-ui, sans-serif; letter-spacing: .24em; white-space: nowrap }
+.home > .nx-trend .nt-grid { gap: clamp(16px, 1.75vw, 32px) }
+.home > .nx-trend .nt-item { padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; transform: none }
+.home > .nx-trend .nt-item:hover { box-shadow: none; border: 0 }
+.home > .nx-trend .nt-photo { aspect-ratio: 3 / 4; border-radius: 24px; background: #e8d8c4; box-shadow: none }
+.home > .nx-trend .nt-photo::after, .home > .nx-trend .nt-no { display: none }
+.home > .nx-trend .nt-heart { top: 14px; right: 14px; width: 42px; height: 42px; border: 0; background: #fff; color: #5b0a5e; box-shadow: 0 2px 10px rgba(31, 20, 22, .12) }
+.home > .nx-trend .nt-heart.on { background: #fff; color: #5b0a5e }
+.home > .nx-trend .nt-meta { padding: 16px 4px 0 }
+.home > .nx-trend .nt-name { font: 500 clamp(17px, 1.3vw, 22px)/1.3 'Playfair Display', Georgia, serif; color: #1f1416 }
+.home > .nx-trend .nt-mat { font: 600 11px 'Archivo', system-ui, sans-serif; letter-spacing: .2em; color: #7a6a6c }
+.home > .nx-trend .nt-enq { color: #5b0a5e; border-bottom-color: #5b0a5e }
+.home > .nx-trend .nt-enq:hover { color: #1f1416 }
+@media (max-width: 900px) { .home > .nx-trend .nt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) } .home > .nx-trend .nx-more { margin-top: 6px } }
+
+/* The Wedding Chapter: a full-width photograph with a centred title and an outlined button */
+.wb { padding: clamp(36px, 4.5vw, 84px) clamp(18px, 5.4vw, 100px); background: transparent }
+.wb-in { position: relative; max-width: 2400px; margin: 0 auto; aspect-ratio: 16 / 8.6; overflow: hidden; border-radius: 6px; background: radial-gradient(70% 90% at 50% 30%, #7a2a2a, #3a0f14 70%) }
+.wb-in > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22% }
+.wb-in::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 42%, rgba(58, 14, 20, .55) 76%, rgba(46, 10, 16, .88) 100%) }
+.wb-copy { position: absolute; z-index: 2; left: 0; right: 0; bottom: clamp(26px, 6.5%, 72px); display: grid; justify-items: center; gap: clamp(14px, 1.6vw, 28px); text-align: center; color: #fff }
+.wb-t { margin: 0; font: 500 clamp(22px, 3.2vw, 60px)/1.1 'Poppins', 'Archivo', system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; text-shadow: 0 2px 22px rgba(0, 0, 0, .35) }
+.wb-btn { display: inline-block; padding: clamp(9px, .8vw, 14px) clamp(20px, 2vw, 38px); border: 1px solid rgba(255, 255, 255, .85); color: #fff; font: 600 clamp(9px, .72vw, 12px)/1 'Poppins', system-ui, sans-serif; letter-spacing: .22em; text-transform: uppercase; transition: background .3s, color .3s }
+.wb-btn:hover { background: #fff; color: #3a0f14 }
+@media (max-width: 700px) { .wb-in { aspect-ratio: 4 / 5 } .wb-t { font-size: clamp(20px, 7vw, 30px) } }
+.home > .nx-trend .nt-grid { align-items: start }
+.home > .nx-trend .nt-grid > li { margin-top: 0 !important; translate: none !important }
+.wb-in { aspect-ratio: 16 / 8.9 }
