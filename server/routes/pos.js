@@ -10,7 +10,7 @@ import { capFlags } from '../lib/catalog.js';
 import { loadRules } from '../lib/delivery.js';
 import { syncWebOrders } from '../lib/webSales.js';
 import { listMeasurementBills, setTailoringStatus, listStitchingOrders, stitchingOverview } from '../lib/measurements.js';
-import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, birthdays, couponProblem, couponAccessProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
+import { stockMovements, adjustStock, createAdvance, finalizeAdvance, getAdvance, listAdvances, setAdvanceStatus, shopInfo, couponProblem, couponAccessProblem, createSale, getSale, getSetting, listCustomers, listExpenses, listProducts, listSales, normPhone, putSetting, report, searchVariants, voidSale } from '../lib/pos.js';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
 const paise = z.number().int().min(0).max(100_000_000);
@@ -93,9 +93,6 @@ const advanceBody = z.object({
 const id = z.coerce.number().int().positive();
 
 const SETTINGS_DEFAULT = settingsBody.parse({});
-const DEFAULT_BDAY = { offers: [{ id: 'o1', text: '10% off on your next purchase' }], selected: 'o1',
-  message: 'Hi {name}! 🎂 Happy Birthday!\n\nHere\'s a special treat from {shop}:\n🎁 {offer}\n\nVisit us in store or call {phone}.\nFollow us on Instagram @{instagram}\n\n– {shop}' };
-const bdayBody = z.object({ offers: z.array(z.object({ id: text(20).min(1), text: text(120).min(1) })).max(20), selected: text(20).default(''), message: text(1000).min(1) });
 const DEFAULT_EXPENSE_CATEGORIES = ['Electricity', 'Marketing', 'Miscellaneous', 'Packing', 'Rent', 'Repairs & Maintenance', 'Salaries', 'Stationery', 'Tea & Snacks', 'Transport'];
 
 // Mahana POS API. Roles are enforced here on the server (and re-read from the database on every request by auth.role):
@@ -334,15 +331,6 @@ export default function pos({ db, auth }) {
     const d = await db.query('DELETE FROM pos_customers WHERE id = $1 RETURNING id', [id.parse(req.params.id)]);
     if (!d.rows.length) throw new HttpError(404, 'Customer not found');
     res.json({ ok: true });
-  }));
-  r.get('/pos/birthday-offer', manager, wrap(async (_req, res) => res.json({ ...DEFAULT_BDAY, ...(await getSetting(db, 'birthday_offer', {})) })));
-  r.put('/pos/birthday-offer', manager, wrap(async (req, res) => {
-    const v = bdayBody.parse(req.body); if (v.selected && !v.offers.some(o => o.id === v.selected)) v.selected = v.offers[0]?.id ?? '';
-    await putSetting(db, 'birthday_offer', v); await audit(db, req.user.id, 'pos.birthday_offer', 'pos_settings', 'birthday_offer'); res.json(v);
-  }));
-  r.get('/pos/birthdays', manager, wrap(async (req, res) => {
-    const { days } = z.object({ days: z.coerce.number().int().min(1).max(366).default(30) }).parse(req.query);
-    res.json(await birthdays(db, days));
   }));
 
   r.get('/pos/stock/movements', stockers, wrap(async (req, res) => {

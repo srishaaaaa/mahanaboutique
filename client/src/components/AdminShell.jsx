@@ -62,7 +62,7 @@ export const NAV = [
   { group: 'Retail billing', items: [
     ['/admin/billing', 'Billing', 'billing'], ['/admin/billing/analytics', 'POS Analytics', 'chart', true], ['/admin/billing/advance', 'Advance Orders', 'clock'], ['/admin/billing/orders', 'Order History', 'orders'],
     ['/admin/billing/inventory', 'Inventory', 'box', true], ['/admin/billing/customers', 'Customers', 'user'], ['/admin/billing/coupons', 'Coupons', 'tag', true],
-    ['/admin/billing/birthdays', 'Date of Birth', 'cake', true], ['/admin/billing/expenses', 'Expenses', 'wallet', true]] },
+    ['/admin/billing/expenses', 'Expenses', 'wallet', true]] },
   { group: 'Stitching', items: [['/admin/billing/stitching', 'Stitching Dashboard', 'scissors'], ['/admin/billing/stitching-orders', 'Stitching Orders', 'orders'], ['/admin/billing/measurements', 'Measurements', 'ruler'], ['/admin/billing/stitching-reports', 'Stitching Reports', 'chart', true]] },
   { group: 'Settings', items: [['/admin/billing/settings', 'POS Settings', 'gear', true], ['/admin/settings', 'Store Settings', 'gear', true]] },
   { group: 'Staff', items: [['/admin/staff', 'Staff dashboard', 'user']] },

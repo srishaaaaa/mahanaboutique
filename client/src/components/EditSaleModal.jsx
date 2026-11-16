@@ -15,7 +15,7 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
   useEffect(() => {
     api('/admin/pos/sales/' + encodeURIComponent(invoiceNo)).then(x => {
       const s = x.sale || x; setSale(s);
-      setF({ name: s.customerName || '', phone: s.customerPhone || '', address: s.customerAddress || '', notes: s.notes || '', delivery: rupees(s.deliveryFee || 0), dType: s.discountType || 'fixed', dValue: s.discountType === 'percent' ? String(s.discountValue) : rupees(s.discountValue || 0) });
+      setF({ name: s.customerName || '', phone: s.customerPhone || '', notes: s.notes || '', delivery: rupees(s.deliveryFee || 0), dType: s.discountType || 'fixed', dValue: s.discountType === 'percent' ? String(s.discountValue) : rupees(s.discountValue || 0) });
       setLines(s.items.map(i => ({ id: i.id, name: i.name, variant: i.variant, qty: i.quantity, price: rupees(i.unitPrice), taxRate: i.taxRate, remove: false, goods: !!i.sku })));
       setPay({ ...blankPay(), mode: ['cash', 'upi', 'card'].includes(s.paymentMode) ? s.paymentMode : 'cash' });
     }).catch(e => setErr(e.message));
@@ -41,7 +41,7 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
     if (moved && parts.problem) return setErr(parts.problem);
     setBusy(true);
     const items = lines.map(l => { const o = sale.items.find(i => i.id === l.id); return l.remove ? { id: l.id, remove: true } : { id: l.id, ...(l.qty !== o.quantity ? { qty: l.qty } : {}), ...(toPaise(l.price) !== o.unitPrice ? { price: toPaise(l.price) } : {}) } }).filter(i => i.remove || i.qty != null || i.price != null);
-    const body = { reason: reason.trim(), customerName: f.name.trim(), customerPhone: f.phone.trim(), customerAddress: f.address.trim(), notes: f.notes.trim() || null,
+    const body = { reason: reason.trim(), customerName: f.name.trim(), customerPhone: f.phone.trim(), notes: f.notes.trim() || null,
       ...(items.length ? { items } : {}), ...(toPaise(f.delivery) !== (sale.deliveryFee || 0) ? { deliveryFee: toPaise(f.delivery) } : {}),
       ...(!couponed && (f.dType !== sale.discountType || (f.dType === 'percent' ? Math.round(+f.dValue || 0) : toPaise(f.dValue)) !== sale.discountValue) ? { discountType: f.dType, discountValue: f.dType === 'percent' ? Math.round(+f.dValue || 0) : toPaise(f.dValue) } : {}),
       ...(moved ? { payment: { mode: parts.mode, ...(parts.split ? { split: parts.split } : {}) } } : {}) };
@@ -57,7 +57,6 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
           <label className="f">Customer name<input value={f.name} onChange={e => setF({ ...f, name: e.target.value })} maxLength={120} /></label>
           <label className="f">Mobile number<input value={f.phone} inputMode="tel" onChange={e => setF({ ...f, phone: e.target.value })} /></label>
         </div>
-        <label className="f">Address<input value={f.address} onChange={e => setF({ ...f, address: e.target.value })} maxLength={300} /></label>
         <label className="f">Note on the bill<input value={f.notes} onChange={e => setF({ ...f, notes: e.target.value })} maxLength={500} /></label>
         <div className="dpos-tw"><table><thead><tr><th>Item</th><th className="r">Qty</th><th className="r">Price (S$)</th><th className="r">Amount</th><th /></tr></thead>
           <tbody>{lines.map((l, i) => (

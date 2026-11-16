@@ -174,7 +174,7 @@ test('wholesale channel: separate DW series, free-text lines, no stock effect, s
   assert.ok((await owner('GET', '/admin/pos/sales')).body.every(s => s.invoiceNo.startsWith('INV-')));
 });
 
-test('coupons: validated server-side, usage counted, restored on void; free-text retail line; birthdays; settings', async () => {
+test('coupons: validated server-side, usage counted, restored on void; free-text retail line; settings', async () => {
   const owner = client(); await owner('POST', '/auth/login', { email: 'owner@test.dev', password: 'OwnerPass123!' });
   assert.equal((await owner('POST', '/admin/pos/coupons', { code: 'WELCOME10', discountType: 'percent', discountValue: 10, usageLimit: 1 })).status, 201);
   assert.equal((await owner('POST', '/admin/pos/coupons', { code: 'welcome10', discountType: 'percent', discountValue: 10 })).status, 409);
@@ -189,10 +189,6 @@ test('coupons: validated server-side, usage counted, restored on void; free-text
   await owner('POST', `/admin/pos/sales/${a.body.invoiceNo}/void`, { reason: 'Test void' });
   assert.equal((await mk({ couponCode: 'WELCOME10' })).status, 201, 'void frees the coupon use');
 
-  const near = new Date(Date.now() + 5 * 86400000 + 5.5 * 3600000).toISOString().slice(5, 10);
-  await mk({ customerName: 'Soon', customerPhone: '9000011111', customerDob: `1985-${near}` });
-  const bd = (await owner('GET', '/admin/pos/birthdays?days=30')).body;
-  assert.ok(bd.some(b => b.phone === '9000011111' && b.daysAway >= 4 && b.daysAway <= 6), JSON.stringify(bd));
 
   assert.equal((await owner('PUT', '/admin/pos/settings', { gstin: 'short' })).status, 400);
   assert.equal((await owner('PUT', '/admin/pos/settings', { gstin: '33ABCDE1234F1Z5', showGstRetail: true, deliveryPresets: [{ name: 'Local', fee: 5000 }] })).status, 200);

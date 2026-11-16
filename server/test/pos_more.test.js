@@ -63,7 +63,7 @@ test('expenses: manager only, validated, deletable', async () => {
   assert.equal((await o('DELETE', `/admin/pos/expenses/${id}`)).status, 200); assert.equal((await o('DELETE', `/admin/pos/expenses/${id}`)).status, 404);
 });
 
-test('customers: cashier can add, only a manager can edit/delete; duplicates by mobile are refused; birthdays come from saved dates', async () => {
+test('customers: cashier can add, only a manager can edit/delete; duplicates by mobile are refused', async () => {
   const o = await owner(), cashier = await asRole('cust-cashier@test.dev', 'cashier');
   const near = new Date(Date.now() + 3 * 86400000 + 5.5 * 3600000).toISOString().slice(5, 10);
   const add = await cashier('POST', '/admin/pos/customers', { name: 'Birthday Soon', phone: '98 000 11122', dob: `1992-${near}` });
@@ -72,7 +72,6 @@ test('customers: cashier can add, only a manager can edit/delete; duplicates by 
   assert.equal((await cashier('PATCH', `/admin/pos/customers/${add.body.id}`, { name: 'Hacked', phone: '9800011122' })).status, 403);
   assert.equal((await cashier('DELETE', `/admin/pos/customers/${add.body.id}`)).status, 403);
   assert.equal((await o('POST', '/admin/pos/customers', { name: 'No phone', phone: 'abc' })).status, 400);
-  assert.ok((await o('GET', '/admin/pos/birthdays?days=30')).body.some(b => b.phone === '9800011122' && b.daysAway >= 2 && b.daysAway <= 4));
   assert.equal((await o('PATCH', `/admin/pos/customers/${add.body.id}`, { name: 'Renamed', phone: '9800011122', dob: null })).status, 200);
   const row = (await o('GET', '/admin/pos/customers?q=9800011122')).body[0]; assert.equal(row.name, 'Renamed'); assert.equal(row.bills, 0);
   assert.equal((await o('DELETE', `/admin/pos/customers/${add.body.id}`)).status, 200);

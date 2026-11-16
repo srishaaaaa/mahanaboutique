@@ -6,7 +6,7 @@ import { one } from '../db/index.js';
 const A = ['admin'], ALLR = ['admin', 'cashier', 'inventory'];
 export const SECTIONS = [
   ['Online store', [['/admin/orders', 'Online orders', ALLR], ['/admin/reviews', 'Reviews', ALLR], ['/admin/categories', 'Categories', ALLR], ['/admin/trending', 'Trending', ALLR], ['/admin/site-text', 'Site text', ALLR], ['/admin/storefront', 'Storefront images', ALLR], ['/admin/reels', 'Reels & Gallery', ALLR], ['/admin/enquiries', 'Enquiries', ALLR], ['/admin/users', 'Users', A], ['/admin/sample', 'Sample data', A]]],
-  ['Retail billing', [['/admin/billing', 'Billing', ALLR], ['/admin/billing/analytics', 'POS Analytics', ALLR], ['/admin/billing/advance', 'Advance Orders', ALLR], ['/admin/billing/orders', 'Order History', ALLR], ['/admin/billing/inventory', 'Inventory', ALLR], ['/admin/billing/customers', 'Customers', ALLR], ['/admin/billing/coupons', 'Coupons', ALLR], ['/admin/billing/birthdays', 'Date of Birth', ALLR], ['/admin/billing/expenses', 'Expenses', ALLR]]],
+  ['Retail billing', [['/admin/billing', 'Billing', ALLR], ['/admin/billing/analytics', 'POS Analytics', ALLR], ['/admin/billing/advance', 'Advance Orders', ALLR], ['/admin/billing/orders', 'Order History', ALLR], ['/admin/billing/inventory', 'Inventory', ALLR], ['/admin/billing/customers', 'Customers', ALLR], ['/admin/billing/coupons', 'Coupons', ALLR], ['/admin/billing/expenses', 'Expenses', ALLR]]],
   ['Stitching', [['/admin/billing/stitching', 'Stitching Dashboard', ALLR], ['/admin/billing/stitching-orders', 'Stitching Orders', ALLR], ['/admin/billing/measurements', 'Measurements', ALLR], ['/admin/billing/stitching-reports', 'Stitching Reports', ALLR]]],
   ['Settings', [['/admin/billing/settings', 'POS Settings', A], ['/admin/settings', 'Store Settings', A]]],
 ].map(([group, items]) => ({ group, items: items.map(([path, label, max]) => ({ path, label, max })) }));
@@ -46,7 +46,6 @@ const ROUTES = [
   [/^\/pos\/(expenses|expense-categories)/, [B + '/expenses']],
   [/^\/pos\/coupons\/check/, [...BILL, B + '/coupons']],
   [/^\/pos\/coupons/, [B + '/coupons']],
-  [/^\/pos\/(birthdays|birthday-offer)/, [B + '/birthdays']],
   [/^\/pos\/customers\/lookup/, [...BILL, B + '/customers']],
   [/^\/pos\/customers/, [B + '/customers', ...BILL]],
   [/^\/pos\/(settings|delivery-rules)/, [B + '/settings']],

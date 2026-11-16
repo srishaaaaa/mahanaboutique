@@ -16,7 +16,6 @@ import CatalogPicker from '../components/CatalogPicker';
 import PosMeasurements from './PosMeasurements';
 import { StitchingDashboard, StitchingOrders, StitchingReports } from './PosStitching';
 import { InvoicePreview } from './InvoicePage';
-import PosBirthdays from './PosBirthdays';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
 import { Chips, PeriodFilter, inPeriod, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
 import StaffOnly from '../components/StaffOnly';
@@ -38,7 +37,7 @@ const k = p => p >= 100000000 ? `S$${(p / 100000000).toFixed(1).replace(/\.0$/, 
 const MODES = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']];
 const MODE_LABEL = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, inventory: true, customers: false, coupons: true, birthdays: true, expenses: true, settings: true };
+const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, inventory: true, customers: false, coupons: true, expenses: true, settings: true };
 
 // ---- live preview of the bill (the server recomputes everything on checkout) ----
 function preview(lines, { isGst, gstRate, discountType, discountValue, deliveryFee }) {
@@ -122,7 +121,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   const [flash, setFlash] = useState(null); const flashT = useRef();
   const [measureFor, setMeasureFor] = useState(null); // key of the service line whose Measurements window is open
   const [wsItems, setWsItems] = useState([]);
-  const [cust, setCust] = useState({ name: '', phone: '', dob: '', address: '' }); const [billDate, setBillDate] = useState(todayStr()); const [source, setSource] = useState('offline');
+  const [cust, setCust] = useState({ name: '', phone: '' }); const [billDate, setBillDate] = useState(todayStr()); const [source, setSource] = useState('offline');
   const [isGst, setIsGst] = useState(false); const gstTouched = useRef(false); const [gstRate, setGstRate] = useState('item');
   const [disc, setDisc] = useState({ type: 'fixed', value: '' });
   const [coupon, setCoupon] = useState(null); const [couponIn, setCouponIn] = useState(''); const [couponMsg, setCouponMsg] = useState();
@@ -168,7 +167,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   const body = useMemo(() => ({
     channel, source: ws ? 'offline' : source, billDate,
     items: priced.map(l => l.custom ? { name: l.name.trim(), price: l.price, qty: l.qty, taxRate: l.taxRate, ...(l.service && l.measure ? { measure: l.measure } : {}) } : { variantId: l.variantId, qty: l.qty }),
-    customerName: cust.name.trim(), customerPhone: cust.phone.trim(), customerAddress: cust.address.trim(), ...(cust.dob && !ws ? { customerDob: cust.dob } : {}),
+    customerName: cust.name.trim(), customerPhone: cust.phone.trim(),
     isGst, ...(flat != null ? { gstRate: flat } : {}), ...(coupon ? { couponCode: coupon.code } : { discountType: disc.type, discountValue }), deliveryFee,
     paymentMode: mode, ...(mode === 'cash' ? { cashTendered: tenderedP } : {}),
     ...(mode === 'split' ? { payments: splitNet } : {}),
@@ -180,7 +179,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
 
   const lookup = async (phone = cust.phone) => {
     if (phone.replace(/\D/g, '').length < 8) return;
-    try { const c = await api('/admin/pos/customers/lookup?phone=' + encodeURIComponent(phone)); if (c) setCust(x => ({ ...x, name: x.name || c.name, address: x.address || c.address || '', dob: x.dob || c.dob || '' })) } catch { /* optional convenience */ }
+    try { const c = await api('/admin/pos/customers/lookup?phone=' + encodeURIComponent(phone)); if (c) setCust(x => ({ ...x, name: x.name || c.name })) } catch { /* optional convenience */ }
   };
   // Shows that the piece went onto the bill: a toast, a pulse on its row and the item count beside "Current order".
   const add = v => { setFlash(v.variantId); clearTimeout(flashT.current); flashT.current = setTimeout(() => setFlash(null), 1600); say(`${v.name}${v.size && v.size !== 'Default' ? ` (${v.size})` : ''} added to the bill`); addLine(v) };
@@ -227,7 +226,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
     catch (e) { setCoupon(null); setCouponMsg({ ok: false, t: e.message }) }
   };
   const clearOrder = () => {
-    setLines(ws ? [blankCustom()] : []); setCust({ name: '', phone: '', dob: '', address: '' }); setBillDate(todayStr()); setSource('offline'); setDisc({ type: 'fixed', value: '' }); setCoupon(null); setCouponIn(''); setCouponMsg();
+    setLines(ws ? [blankCustom()] : []); setCust({ name: '', phone: '' }); setBillDate(todayStr()); setSource('offline'); setDisc({ type: 'fixed', value: '' }); setCoupon(null); setCouponIn(''); setCouponMsg();
     setDelivery(''); setTendered(''); setSplit({ cash: '', upi: '', card: '' }); touched.current.clear(); setRef(''); setNotes(''); key.current = null; setErr();
   };
 
@@ -254,7 +253,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   // Save as advance order: books the items at today's prices with a deposit; stock is taken and the bill is made when the customer collects.
   const saveAdvance = async ({ deposit, depositMode, depositSplit, deliveryDate, notes: n }) => {
     const note = [n, notes.trim()].filter(Boolean).join(' · ');
-    const adv = await api('/admin/pos/advances', { method: 'POST', body: { items: body.items, ...(body.customerDob ? { customerDob: body.customerDob } : {}), customerName: body.customerName, customerPhone: body.customerPhone, customerAddress: body.customerAddress,
+    const adv = await api('/admin/pos/advances', { method: 'POST', body: { items: body.items, customerName: body.customerName, customerPhone: body.customerPhone,
       isGst, ...(flat != null ? { gstRate: flat } : {}), discountType, discountValue, deliveryFee, deposit, depositMode, ...(depositSplit ? { depositSplit } : {}), ...(deliveryDate ? { deliveryDate } : {}), ...(note ? { notes: note } : {}) } });
     setAdvOpen(false); clearOrder(); onAdvance(adv);
   };
@@ -296,9 +295,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
             <label className="f">Customer name<input value={cust.name} onChange={e => setCust({ ...cust, name: e.target.value })} placeholder="Walk-in customer" autoComplete="off" /></label>
             <label className="f">Mobile number (WhatsApp)<input value={cust.phone} inputMode="tel" onChange={e => setCust({ ...cust, phone: e.target.value })} onBlur={() => lookup()} onChange={e => { setCust({ ...cust, phone: e.target.value }); if (e.target.value.replace(/\D/g, '').length >= 10) lookup(e.target.value) }} placeholder="Enter 10-digit number" autoComplete="off" /></label>
             <label className="f">Bill date · custom / past<input type="date" max={todayStr()} value={billDate} onChange={e => setBillDate(e.target.value || todayStr())} /></label>
-            {!ws && <label className="f">Date of birth (for birthday offers)<input type="date" max={todayStr()} value={cust.dob} onChange={e => setCust({ ...cust, dob: e.target.value })} />{cust.dob && cust.phone.replace(/\D/g, '').length < 10 && <small className="dpos-warn">Add the 10-digit mobile number too, so the birthday is saved to the Date of Birth panel.</small>}</label>}
           </div>
-          <label className="f" style={{ marginTop: 14 }}>Customer address (optional)<input value={cust.address} maxLength={300} onChange={e => setCust({ ...cust, address: e.target.value })} placeholder="Enter full address" /></label>
         </section>
 
         
@@ -589,20 +586,19 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
   );
 }
 
-// ============================ customers (name, mobile, date of birth) ============================
+// ============================ customers (name, mobile) ============================
 function CustomerModal({ c, onClose, onDone }) {
-  const [f, setF] = useState({ name: c?.name || '', phone: c?.phone || '', dob: c?.dob || '', notes: c?.notes || '' }); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
+  const [f, setF] = useState({ name: c?.name || '', phone: c?.phone || '', notes: c?.notes || '' }); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
   const submit = async e => {
     e.preventDefault(); setBusy(true); setErr();
-    try { await api(c ? `/admin/pos/customers/${c.id}` : '/admin/pos/customers', { method: c ? 'PATCH' : 'POST', body: { name: f.name.trim(), phone: f.phone.trim(), dob: f.dob || null, notes: f.notes.trim() || null } }); onDone(); onClose() }
+    try { await api(c ? `/admin/pos/customers/${c.id}` : '/admin/pos/customers', { method: c ? 'PATCH' : 'POST', body: { name: f.name.trim(), phone: f.phone.trim(), notes: f.notes.trim() || null } }); onDone(); onClose() }
     catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
   };
   return (
-    <Modal title={c ? 'Edit customer' : 'Add customer'} sub="Name, mobile and date of birth for birthday offers" onClose={onClose}>
+    <Modal title={c ? 'Edit customer' : 'Add customer'} sub="Name and mobile number" onClose={onClose}>
       <form onSubmit={submit} style={{ display: 'grid', gap: 14 }}>
         <label className="f">Customer name<input autoFocus value={f.name} onChange={e => setF({ ...f, name: e.target.value })} maxLength={120} /></label>
         <label className="f">Mobile number<input required inputMode="tel" value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} placeholder="10-digit number" /></label>
-        <label className="f">Date of birth<input type="date" max={todayStr()} value={f.dob} onChange={e => setF({ ...f, dob: e.target.value })} /></label>
         <label className="f">Notes (optional)<input value={f.notes} maxLength={300} onChange={e => setF({ ...f, notes: e.target.value })} /></label>
         <Err>{err}</Err>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}><button type="button" className="dpos-btn ghost" onClick={onClose}>Cancel</button><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save customer'}</button></div>
@@ -616,14 +612,12 @@ function CustomerHistory({ c, onClose, openInvoice, onEdit }) {
   useEffect(() => { api(`/admin/pos/customers/${c.id}/history`).then(setH).catch(e => setErr(e.message)) }, [c.id]);
   const when = t => new Date(t).toLocaleDateString('en-SG', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
   return (
-    <Modal title={c.name || c.phone} sub={`${c.phone}${c.dob ? ' · born ' + dmy(c.dob) : ''}`} wide onClose={onClose}
+    <Modal title={c.name || c.phone} sub={c.phone} wide onClose={onClose}
       footer={<>{onEdit && <button type="button" className="dpos-btn ghost" onClick={onEdit}>Edit details</button>}<button type="button" className="dpos-btn" onClick={onClose}>Close</button></>}>
       {err ? <p className="dpos-err" role="alert">{err}</p> : !h ? <p className="muted">Loading…</p> : (
         <div style={{ display: 'grid', gap: 14 }}>
           <div className="dpos-grid">
             <div><p className="muted small">Mobile</p><b>{h.customer.phone}</b></div>
-            <div><p className="muted small">Date of birth</p><b>{h.customer.dob ? dmy(h.customer.dob) : '—'}</b></div>
-            <div><p className="muted small">Address</p><b>{h.address || '—'}</b></div>
             <div><p className="muted small">Notes</p><b>{h.customer.notes || '—'}</b></div>
           </div>
           <div className="dpos-grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))' }}>
@@ -653,12 +647,12 @@ function Customers({ manager, openInvoice }) {
   return (
     <>
       <div className="dpos-bar-tools"><input type="search" style={{ maxWidth: 320 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search name or mobile…" aria-label="Search customers" />
-        {manager && <PeriodFilter value={per} onChange={setPer} />}<ExportCsv name="customers" header={['Name', 'Mobile', 'Date of birth', 'Bills', 'Spent (S$)', 'Notes']} rows={shown.map(c => [c.name, c.phone, c.dob || '', c.bills, (c.spent / 100).toFixed(2), c.notes || ''])} /><button className="dpos-btn" onClick={() => setModal({})}><Icon n="plus" size={16} />Add customer</button></div>
+        {manager && <PeriodFilter value={per} onChange={setPer} />}<ExportCsv name="customers" header={['Name', 'Mobile', 'Bills', 'Spent (S$)', 'Notes']} rows={shown.map(c => [c.name, c.phone, c.bills, (c.spent / 100).toFixed(2), c.notes || ''])} /><button className="dpos-btn" onClick={() => setModal({})}><Icon n="plus" size={16} />Add customer</button></div>
       <Err>{err}</Err>
       <section className="dpos-card">
         {!rows ? <Empty>Loading…</Empty> : !shown.length ? <Empty>No customers yet. They are added automatically when you bill with a mobile number.</Empty> : (
-          <div className="dpos-tw"><table><thead><tr><th>Name</th><th>Mobile</th><th>Date of birth</th><th className="r">Bills</th><th className="r">Spent</th><th /></tr></thead>
-            <tbody>{shown.map(c => <tr key={c.id} className="click" tabIndex={0} onClick={() => setView(c)} onKeyDown={e => e.key === 'Enter' && setView(c)}><td><b>{c.name || '—'}</b></td><td>{c.phone}</td><td>{c.dob ? dmy(c.dob) : <span className="muted">—</span>}</td><td className="r">{c.bills}</td><td className="r">{inr(c.spent)}</td>
+          <div className="dpos-tw"><table><thead><tr><th>Name</th><th>Mobile</th><th className="r">Bills</th><th className="r">Spent</th><th /></tr></thead>
+            <tbody>{shown.map(c => <tr key={c.id} className="click" tabIndex={0} onClick={() => setView(c)} onKeyDown={e => e.key === 'Enter' && setView(c)}><td><b>{c.name || '—'}</b></td><td>{c.phone}</td><td className="r">{c.bills}</td><td className="r">{inr(c.spent)}</td>
               <td className="r" style={{ whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}><button className="dpos-btn ghost sm" onClick={() => setView(c)}>View</button>{manager && <> <button className="dpos-btn ghost sm" onClick={() => setModal(c)}>Edit</button> <button className="dpos-btn danger sm" onClick={() => del(c)}>Delete</button></>}</td></tr>)}</tbody></table></div>)}
       </section>
       {view && <CustomerHistory c={view} openInvoice={openInvoice} onClose={() => setView(null)} onEdit={manager ? () => { setModal(view); setView(null) } : null} />}
@@ -862,13 +856,13 @@ export default function AdminPos() {
     'stitching-orders': <StitchingOrders openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} />,
     'stitching-reports': <StitchingReports />,
     orders: <OrderHistory manager={manager} tick={tick} openInvoice={openInvoice} onChanged={() => setTick(t => t + 1)} />,
-    inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />, birthdays: <PosBirthdays shop={shop} CustomerModal={CustomerModal} />,
+    inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />,
     expenses: <PosExpenses />, settings: <Settings onSaved={loadShop} />,
   }[tab];
   const sub = {
     stitching: 'Stitching work at a glance: what is due, what is late and what it earned', 'stitching-orders': 'Every bill with stitching and every open advance order, with due dates and status', 'stitching-reports': 'Stitching revenue by garment and by day',
     billing: 'Quick invoice generator · stock synced with the online store · for in-store (offline) and online-order billing', analytics: 'Real-time store & channel insights', advance: 'Orders booked with a deposit, billed when the customer collects', orders: 'Manage and track past invoices',
-    inventory: 'Manage products and stock — add, edit and adjust', customers: 'Customer details with date of birth', coupons: 'Create discount codes and send them to customers on WhatsApp. Applies to the product subtotal only.', birthdays: 'Customers to wish and reward',
+    inventory: 'Manage products and stock — add, edit and adjust', customers: 'Customer details', coupons: 'Create discount codes and send them to customers on WhatsApp. Applies to the product subtotal only.',
     expenses: 'Record spending by category and see your real net profit', settings: 'POS logo, shop details on bills, GST number and delivery quick picks',
   }[tab];
   const title = { billing: 'POS Billing Panel', analytics: 'POS Analytics', orders: 'Order History', measurements: 'Measurements', stitching: 'Stitching Dashboard', 'stitching-orders': 'Stitching Orders', 'stitching-reports': 'Stitching Reports', inventory: 'Inventory', advance: 'Advance Orders', customers: 'Customers', coupons: 'Coupon Management', birthdays: 'Date of Birth', expenses: 'Expense Tracker', settings: 'Settings' }[tab];

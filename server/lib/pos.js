@@ -403,22 +403,6 @@ export const listExpenses = (db, from, to) => rows(db, `SELECT id, title, catego
 export const getSetting = async (db, key, fallback) => (await one(db, 'SELECT value FROM pos_settings WHERE key = $1', [key]))?.value ?? fallback;
 export const putSetting = (db, key, value) => db.query('INSERT INTO pos_settings (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = now()', [key, JSON.stringify(value)]);
 
-// Customers whose birthday falls within the next `days` days, for birthday offers (from the Customers list).
-export function birthdays(db, days = 30) {
-  const today = `(now() AT TIME ZONE '${TZ}')::date`;
-  // Day is clamped to the month's real length, so only a 29 Feb birthday moves (to 28 Feb in non-leap years).
-  const nb = y => {
-    const yr = `EXTRACT(year FROM ${today})::int + ${y}`, mo = 'EXTRACT(month FROM dob)::int';
-    return `make_date(${yr}, ${mo}, LEAST(EXTRACT(day FROM dob)::int, EXTRACT(day FROM (make_date(${yr}, ${mo}, 1) + interval '1 month' - interval '1 day'))::int))`;
-  };
-  return rows(db, `
-    WITH nxt AS (
-      SELECT phone, name, dob, CASE WHEN ${nb(0)} >= ${today} THEN ${nb(0)} ELSE ${nb(1)} END AS next_birthday FROM pos_customers WHERE dob IS NOT NULL
-    )
-    SELECT phone, name, dob::text AS dob, next_birthday::text AS "nextBirthday", (next_birthday - ${today})::int AS "daysAway"
-    FROM nxt WHERE next_birthday - ${today} <= $1 ORDER BY next_birthday, name`, [days]);
-}
-
 // ---- customers ----
 export const listCustomers = (db, q = '') => {
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
