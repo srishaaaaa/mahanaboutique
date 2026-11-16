@@ -42,10 +42,8 @@ export default function WeddingBanner({ hero = false }) {
         <div className="wb-in" ref={box} onPointerMove={move} onPointerLeave={leave}>
           <img className="wb-bg" src={b.bannerBg || DEFAULT_BG} style={b.bannerBgPos ? { objectPosition: b.bannerBgPos } : undefined} alt="" aria-hidden="true" />
           <span className="wb-petals" aria-hidden="true">{PETALS.map((p, i) => <i key={i} style={{ left: p.left + '%', width: p.size, height: p.size * 0.62, animationDelay: p.delay + 's', animationDuration: p.dur + 's', '--sway': p.sway + 'px' }} />)}</span>
-          <svg className="wb-arch" viewBox="0 0 400 600" preserveAspectRatio="xMidYMax meet" aria-hidden="true" fill="none" stroke="currentColor">
-            <path d="M20 600V230C20 110 100 30 200 30s180 80 180 200v370" strokeWidth="1.6" /><path d="M48 600V236C48 128 118 58 200 58s152 70 152 178v364" strokeWidth="1" opacity=".6" /><path d="M76 600V242c0-96 56-158 124-158s124 62 124 158v358" strokeWidth=".8" opacity=".4" />
-            <circle cx="200" cy="30" r="5" fill="currentColor" stroke="none" opacity=".8" />
-          </svg>
+          <span className="wb-mark" aria-hidden="true">Mahana</span>
+          <svg className="wb-sparks" viewBox="0 0 600 600" aria-hidden="true" fill="currentColor"><g>{[[60,90,1],[180,40,.6],[320,120,.8],[470,60,.7],[540,210,1.1],[110,230,.7],[250,300,1],[420,330,.6],[70,420,.9],[200,520,.7],[360,470,1],[520,520,.6],[300,580,.8]].map(([x,y,k],i)=><path key={i} d="M0-9L2.4-2.4L9 0L2.4 2.4L0 9L-2.4 2.4L-9 0L-2.4-2.4Z" transform={`translate(${x} ${y}) scale(${k})`} opacity={.35+(i%3)*.2} />)}</g></svg>
           <svg className="wb-seal" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="wb-seal-p" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1-88 0" /></defs>
             <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth=".8" opacity=".5" /><circle cx="60" cy="60" r="30" fill="none" stroke="currentColor" strokeWidth=".8" opacity=".35" />
             <text className="wb-seal-t"><textPath href="#wb-seal-p" startOffset="0" textLength="272" lengthAdjust="spacing">HANDCRAFTED • MAHANA • SINGAPORE • </textPath></text>
