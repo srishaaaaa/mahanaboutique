@@ -9,7 +9,7 @@ const PinIco = () => <Ico><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12
 const ClockIco = () => <Ico><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></Ico>;
 const PhoneIco = () => <Ico><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" /></Ico>;
 
-function openState(store) {
+export function openState(store) {
   const h = store?.hours; if (!h) return null;
   let now;
   try { now = new Date(new Date().toLocaleString('en-US', { timeZone: store.timeZone })) } catch { now = new Date() }
@@ -34,7 +34,7 @@ export default function StoreLocationMap() {
   const tel = store?.phone && `tel:${store.phone.replace(/[^+\d]/g, '')}`;
 
   return (
-    <section className="nx nx-map" aria-labelledby="st-h">
+    <section className="nx nx-map" id="map" aria-labelledby="st-h">
       <div className="nx-in">
         <div className={`nm-frame ${configured ? '' : 'is-empty'}`}>
           <div className="nm-map">

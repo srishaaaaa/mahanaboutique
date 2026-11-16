@@ -1868,3 +1868,83 @@ html body .wb, html body .wb-hero { padding: 0 }
 .home > .nx-eq .nq-card { padding: clamp(18px, 2vw, 32px) }
 @media (min-width: 901px) { .wb-cards { left: max(27vw, 500px); width: clamp(170px, 13vw, 230px) } .wb-vert { display: none } }
 @media (max-width: 1500px) { .wb-cards { display: none } }
+
+/* fills the gap between the cards and her: a turning seal, a fine line and a story card, centred in the gap and aligned with the cards */
+.wb-side { display: none }
+@media (min-width: 1700px) {
+  .wb-side { display: grid; justify-items: center; gap: 14px; position: absolute; z-index: 2; top: 50%; translate: 0 -50%; left: calc(max(27vw, 500px) + clamp(170px, 13vw, 230px) + clamp(36px, 3.6vw, 70px)); width: clamp(150px, 11vw, 210px) }
+  .wb-seal2 { width: clamp(84px, 6.4vw, 116px); height: auto; color: #8a5a52; opacity: .85; animation: wb-turn 26s linear infinite }
+  .wb-side-line { width: 1px; height: clamp(40px, 5vh, 64px); background: linear-gradient(180deg, rgba(201, 137, 122, .8), transparent) }
+  .wb-visit { display: grid; gap: 4px; padding: clamp(12px, 1vw, 16px) clamp(14px, 1.2vw, 20px); border: 1px solid rgba(255, 255, 255, .7); border-radius: 18px; background: linear-gradient(135deg, rgba(255, 255, 255, .72), rgba(255, 240, 230, .5)); backdrop-filter: blur(10px); box-shadow: 0 14px 34px rgba(150, 90, 70, .16); text-align: center; text-decoration: none; color: #3b2330 }
+  .wb-visit small { font: 700 9px/1 'Archivo', system-ui, sans-serif; letter-spacing: .24em; color: #b3635c }
+  .wb-visit b { font: 600 clamp(13px, 1vw, 17px)/1.25 'Cormorant Garamond', 'Playfair Display', serif }
+  .wb-visit span { font: 700 10px/1 'Archivo', system-ui, sans-serif; letter-spacing: .14em; color: #3b2330; margin-top: 4px }
+}
+@media (prefers-reduced-motion: reduce) { .wb-seal2 { animation: none } }
+
+/* gap beside the woman: a featured piece from the catalogue (live photo, name, price), centred in the gap and level with the cards */
+.wb-side { display: none !important }
+.wb-feat { display: none }
+@media (min-width: 1700px) {
+  .wb-feat { display: grid; gap: 6px; position: absolute; z-index: 2; top: 50%; translate: 0 -50%; left: calc(max(27vw, 500px) + clamp(170px, 13vw, 230px) + clamp(30px, 3vw, 56px)); width: clamp(150px, 11vw, 205px); padding: 10px 10px 14px; border: 1px solid rgba(255, 255, 255, .75); border-radius: 22px; background: linear-gradient(160deg, rgba(255, 255, 255, .8), rgba(255, 240, 230, .55)); backdrop-filter: blur(10px); box-shadow: 0 18px 40px rgba(150, 90, 70, .2); text-decoration: none; color: #3b2330; animation: wb-bob 6s ease-in-out infinite; animation-delay: -1s }
+  .wb-feat-ph { display: block; aspect-ratio: 4 / 5; border-radius: 15px; overflow: hidden; background: #ecd8c8 } .wb-feat-ph > * { width: 100%; height: 100%; object-fit: cover; display: block }
+  .wb-feat small { margin-top: 4px; padding: 0 4px; font: 700 8.5px/1 'Archivo', system-ui, sans-serif; letter-spacing: .24em; color: #b3635c }
+  .wb-feat b { padding: 0 4px; font: 600 clamp(13px, 1vw, 17px)/1.25 'Cormorant Garamond', 'Playfair Display', serif; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+  .wb-feat-p { padding: 0 4px; font: 800 12px/1 'Archivo', system-ui, sans-serif; letter-spacing: .06em; color: #3b2330 } .wb-feat-p i { font-style: normal; margin-left: 4px }
+}
+@media (prefers-reduced-motion: reduce) { .wb-feat { animation: none } }
+
+/* gap beside the woman: live boutique details (open/closed, hours, address, phone) */
+.wb-feat { display: none !important }
+.wb-visit { display: none }
+@media (min-width: 1700px) {
+  .wb-visit { display: grid; gap: 7px; position: absolute; z-index: 2; top: 50%; translate: 0 -50%; left: calc(max(27vw, 500px) + clamp(170px, 13vw, 230px) + clamp(30px, 3vw, 56px)); width: clamp(160px, 12vw, 215px); padding: clamp(14px, 1.2vw, 20px); border: 1px solid rgba(255, 255, 255, .75); border-radius: 22px; background: linear-gradient(160deg, rgba(255, 255, 255, .8), rgba(255, 240, 230, .55)); backdrop-filter: blur(10px); box-shadow: 0 18px 40px rgba(150, 90, 70, .2); text-decoration: none; color: #3b2330; animation: wb-bob 6s ease-in-out infinite; animation-delay: -1s }
+  .wb-visit small { font: 700 8.5px/1 'Archivo', system-ui, sans-serif; letter-spacing: .24em; color: #b3635c }
+  .wb-visit b { display: flex; align-items: center; gap: 8px; font: 600 clamp(14px, 1.05vw, 18px)/1.2 'Cormorant Garamond', 'Playfair Display', serif }
+  .wb-visit b i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #b9806f } .wb-visit b.open i { background: #2f9e6b; box-shadow: 0 0 0 4px rgba(47, 158, 107, .18) }
+  .wb-visit span { font: 400 clamp(10.5px, .78vw, 12.5px)/1.4 'Archivo', system-ui, sans-serif; color: #5a4549 } .wb-visit-tel { font-weight: 700 !important; color: #3b2330 !important }
+  .wb-visit em { margin-top: 4px; padding-top: 9px; border-top: 1px solid rgba(201, 137, 122, .35); font: 700 9.5px/1 'Archivo', system-ui, sans-serif; letter-spacing: .14em; font-style: normal; color: #3b2330 }
+}
+@media (prefers-reduced-motion: reduce) { .wb-visit { animation: none } }
+.wb-visit span { letter-spacing: 0 !important; text-transform: none }
+.wb-visit-tel { letter-spacing: .02em !important }
+
+/* No cards beside her. Instead: a halo of warm light behind her head, fine light rays, drifting gold dust, a soft rim light on her edge */
+.wb-visit, .wb-feat, .wb-side { display: none !important }
+.wb-aura { display: none }
+@media (min-width: 901px) {
+  .wb-aura { display: block; position: absolute; z-index: 0; right: 6%; top: 6%; width: 52%; height: 94%; pointer-events: none }
+  .wb-halo { position: absolute; left: 50%; top: 4%; width: 78%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 236, 214, .95) 0, rgba(255, 220, 190, .55) 36%, rgba(255, 210, 180, 0) 70%); animation: wb-halo 7s ease-in-out infinite }
+  .wb-halo::after { content: ''; position: absolute; inset: 9%; border-radius: 50%; border: 1px solid rgba(201, 137, 122, .38); box-shadow: 0 0 0 14px rgba(201, 137, 122, .07), 0 0 40px rgba(255, 214, 180, .5) inset }
+  .wb-rays { position: absolute; left: 50%; top: 0; width: 120%; height: 70%; translate: -50% 0; background: repeating-conic-gradient(from 200deg at 50% 22%, rgba(255, 233, 205, .34) 0 3deg, transparent 3deg 14deg); -webkit-mask-image: radial-gradient(60% 70% at 50% 22%, #000, transparent 72%); mask-image: radial-gradient(60% 70% at 50% 22%, #000, transparent 72%); opacity: .7 }
+  .wb-aura i { position: absolute; width: 7px; height: 7px; background: #e9bf8a; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: wb-dust 5.5s ease-in-out infinite; animation-delay: var(--d, 0s); filter: drop-shadow(0 0 4px rgba(233, 191, 138, .9)) }
+  .wb-aura i:nth-child(odd) { width: 11px; height: 11px }
+  .wb-photo { filter: drop-shadow(-3px 0 6px rgba(255, 228, 196, .9)) drop-shadow(0 0 2px rgba(255, 214, 170, .7)) drop-shadow(0 22px 28px rgba(110, 60, 44, .3)) saturate(1.04) contrast(1.02) }
+}
+@keyframes wb-halo { 0%, 100% { opacity: .85; scale: 1 } 50% { opacity: 1; scale: 1.04 } }
+@keyframes wb-dust { 0%, 100% { opacity: .15; transform: translateY(0) scale(.7) } 50% { opacity: 1; transform: translateY(-14px) scale(1.15) } }
+@media (prefers-reduced-motion: reduce) { .wb-halo, .wb-aura i { animation: none } }
+
+/* halo aligned to her head: the aura sits in the same box as the photo; the ring is centred on her head, with a second orbit ring and a gold crescent */
+@media (min-width: 901px) {
+  .wb-aura { right: 13%; left: auto; top: clamp(96px, 7.6vw, 128px); bottom: 0; height: auto; width: min(45%, calc((100svh - 140px) * .88)) }
+  .wb-halo { left: 36%; top: -4%; width: 86%; translate: -50% 0 }
+  .wb-halo::after { inset: 12% }
+  .wb-halo::before { content: ''; position: absolute; inset: -5%; border-radius: 50%; border: 1px dashed rgba(201, 137, 122, .4); animation: wb-turn 60s linear infinite }
+  .wb-rays { left: 36% }
+}
+
+@media (min-width: 901px) { .wb-crescent { position: absolute; left: -9%; top: 14%; width: 14%; height: auto; color: #c9897a; opacity: .6 } }
+@media (prefers-reduced-motion: reduce) { .wb-halo::before { animation: none } }
+
+/* a single circle; instead, gold paisley and lotus motifs float gently beside her */
+.wb-halo::before { display: none }
+.wb-crescent { display: none }
+@media (min-width: 901px) {
+  .wb-motif { position: absolute; color: #c79a62; opacity: .75; filter: drop-shadow(0 0 5px rgba(233, 191, 138, .55)); animation: wb-drift 8s ease-in-out infinite }
+  .wb-motif.m1 { left: -4%; top: 26%; width: clamp(26px, 2.3vw, 44px); rotate: -24deg }
+  .wb-motif.m2 { left: 2%; top: 52%; width: clamp(18px, 1.6vw, 30px); rotate: 18deg; animation-delay: -2.6s }
+  .wb-motif.m3 { right: -1%; top: 40%; width: clamp(30px, 2.8vw, 52px); animation-delay: -4.8s; color: #c9897a }
+}
+@keyframes wb-drift { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
+@media (prefers-reduced-motion: reduce) { .wb-motif { animation: none } }

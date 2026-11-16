@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/App';
 import { useSiteText } from '../lib/siteText';
 import { Reveal } from './Motion';
+import { openState } from './StoreLocationMap';
 
 const DEFAULT_BG = '/images/banner-bg.jpg'; // the scene, until a background is set in the admin
 const DEFAULT_MODEL = '/images/banner-model.webp'; // the model (a cut-out), until one is set in the admin
@@ -28,6 +29,7 @@ export default function WeddingBanner({ hero = false }) {
   const b = site.branding || {};
   const box = useRef(null);
   const model = b.bannerModel || DEFAULT_MODEL;
+  const store = site.store; const state = openState(store); const line1 = store?.address?.[0];
   const Title = hero ? 'h1' : 'h2'; // as the opening section its title is the page's main heading
   const move = e => {
     const el = box.current; if (!el || e.pointerType === 'touch') return;
@@ -48,6 +50,12 @@ export default function WeddingBanner({ hero = false }) {
             <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth=".8" opacity=".5" /><circle cx="60" cy="60" r="30" fill="none" stroke="currentColor" strokeWidth=".8" opacity=".35" />
             <text className="wb-seal-t"><textPath href="#wb-seal-p" startOffset="0" textLength="272" lengthAdjust="spacing">HANDCRAFTED • MAHANA • SINGAPORE • </textPath></text>
             <path d="M60 46 69 60 60 74 51 60Z" fill="currentColor" opacity=".7" /></svg>
+          <div className="wb-aura" aria-hidden="true">
+            <span className="wb-halo" /><span className="wb-rays" /><svg className="wb-motif m1" viewBox="0 0 40 56" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M20 3c11 6 17 17 15 30-2 11-10 19-19 19-9 0-14-7-13-15 1-9 8-12 11-19 1-3 3-4 6-15Z" /><path d="M20 14c6 4 9 11 7 18s-8 10-13 8" opacity=".6" /><circle cx="19" cy="34" r="3" fill="currentColor" stroke="none" opacity=".6" /></svg>
+            <svg className="wb-motif m2" viewBox="0 0 40 56" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M20 3c11 6 17 17 15 30-2 11-10 19-19 19-9 0-14-7-13-15 1-9 8-12 11-19 1-3 3-4 6-15Z" /><path d="M20 14c6 4 9 11 7 18s-8 10-13 8" opacity=".6" /><circle cx="19" cy="34" r="3" fill="currentColor" stroke="none" opacity=".6" /></svg>
+            <svg className="wb-motif m3" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.1"><path d="M32 52c-14-4-22-14-22-24 8 0 14 4 16 10 1-14 4-24 6-30 2 6 5 16 6 30 2-6 8-10 16-10 0 10-8 20-22 24Z" /><path d="M32 52V30" opacity=".6" /><path d="M20 40c4 1 8 0 12-4M44 40c-4 1-8 0-12-4" opacity=".5" /></svg>
+            <i style={{ left: '8%', top: '22%', '--d': '0s' }} /><i style={{ left: '88%', top: '30%', '--d': '-1.2s' }} /><i style={{ left: '4%', top: '58%', '--d': '-2.4s' }} /><i style={{ left: '94%', top: '62%', '--d': '-3.1s' }} /><i style={{ left: '16%', top: '8%', '--d': '-4s' }} /><i style={{ left: '80%', top: '12%', '--d': '-0.6s' }} /><i style={{ left: '12%', top: '80%', '--d': '-1.8s' }} /><i style={{ left: '90%', top: '86%', '--d': '-2.9s' }} />
+          </div>
           <img className="wb-photo" src={model} style={b.bannerModelPos ? { objectPosition: b.bannerModelPos } : undefined} alt={t.bannerAlt} width="796" height="1536" />
           <div className="wb-copy">
             <span className="wb-badge"><i aria-hidden="true" />{t.bannerEyebrow}</span>
@@ -62,6 +70,16 @@ export default function WeddingBanner({ hero = false }) {
           </div>
           <span className="wb-glow" aria-hidden="true" />
           <span className="wb-vert" aria-hidden="true">SAREES &nbsp;·&nbsp; LEHENGAS &nbsp;·&nbsp; ANARKALIS &nbsp;·&nbsp; SUITS</span>
+          {store && (state || line1) && (
+            <Link to="/#map" className="wb-visit" data-cursor="VISIT" aria-label="Visit the boutique">
+              <small>VISIT THE BOUTIQUE</small>
+              {state && <b className={state.open ? 'open' : ''}><i aria-hidden="true" />{state.text}</b>}
+              {store.hours?.label && <span>{store.hours.label}</span>}
+              {line1 && <span>{line1}</span>}
+              {store.phone && <span className="wb-visit-tel">{store.phone}</span>}
+              <em>Get directions →</em>
+            </Link>
+          )}
           <div className="wb-cards">{CARDS.map(([h, sub, to, icon], i) => <Link key={h} to={to} className="wb-card" style={{ '--i': i }}><span className="wb-card-i">{icon}</span><span><b>{h}</b><small>{sub}</small></span></Link>)}</div>
           <ul className="wb-trust">{TRUST.map(([label, icon]) => <li key={label}>{icon}<span>{label}</span></li>)}</ul>
         </div>
