@@ -1814,3 +1814,18 @@ html body .wb, html body .wb-hero { padding: 0 }
   .wb-cards { left: clamp(330px, 26vw, 520px) }
 }
 .wb-arch { display: none !important }
+
+/* One screen, like the reference: the banner ends exactly where the first screen ends, with the running band along the bottom edge */
+@media (min-width: 901px) {
+  .wb-in { height: max(560px, calc(100svh - 52px)) }
+  .wb-photo { width: min(43%, calc((100svh - 150px) * .82)); right: 8% }
+}
+.home > .tk { padding: 0; height: 52px; display: flex; align-items: center; background: #0d0d10 !important; border: 0 !important; box-shadow: none !important; margin: 0 }
+.home > .tk .tk-run li { font: 700 clamp(10.5px, .78vw, 13px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .24em; gap: 26px; padding-right: 26px; color: #f4efe8 }
+.home > .tk .tk-run i { color: #e2b7a8; font-size: .9em }
+/* the cards never touch the copy: they start right of the widest line, and give way on narrower windows */
+.wb-cards { left: max(26vw, 480px); width: clamp(180px, 14.5vw, 250px) }
+@media (max-width: 1360px) { .wb-cards { display: none } }
+/* the running band stays Mahana blue */
+.home > .tk { background: linear-gradient(90deg, #1c284f, #2d3e76 50%, #1c284f) !important }
+.home > .tk .tk-run i { color: #efc3b3 }
