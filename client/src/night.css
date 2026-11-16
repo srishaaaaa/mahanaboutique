@@ -1603,3 +1603,7 @@
 .wb-in::before { content: ''; position: absolute; inset: clamp(10px, 1.1vw, 20px); z-index: 3; pointer-events: none; border: 1px solid rgba(231, 196, 150, .38); border-radius: 3px }
 .wb-eb { font: 600 clamp(9px, .75vw, 12px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .42em; padding-left: .42em; color: #e7c496 }
 .wb-in::after { background: radial-gradient(ellipse 11% 13% at 91.5% 11%, rgba(26, 38, 80, .95), transparent), linear-gradient(180deg, transparent 42%, rgba(16, 25, 54, .55) 76%, rgba(12, 18, 42, .9) 100%) }
+
+/* the banner photo has a transparent background: no blending needed, the models stand straight on the navy */
+.wb-in > img { mix-blend-mode: normal; -webkit-mask-image: none; mask-image: none; object-position: 50% 100% }
+.wb-in::after { background: linear-gradient(180deg, transparent 52%, rgba(16, 25, 54, .5) 80%, rgba(12, 18, 42, .85) 100%) }

@@ -301,7 +301,7 @@ const TEXT_GROUPS = [
   ['Shop Story', [['storyTitle', 'Title'], ['story', 'Story (one paragraph per box)', 'paras']]],
   ['Trending collections', [['trendingEyebrow', 'Small label'], ['trendingTitle', 'Title'], ['trendingSub', 'Line under the title']]],
   ['Best sellers', [['bestEyebrow', 'Small label'], ['bestTitle', 'Title'], ['bestSub', 'Line under the title']]],
-  ['Wedding banner (full-width photo)', [['bannerEyebrow', 'Small label above the title'], ['bannerTitle', 'Title on the photo'], ['bannerCta', 'Button'], ['bannerAlt', 'Description of the photo (for screen readers)', 'area']]],
+  ['Homepage banner (full-width photo)', [['bannerEyebrow', 'Small label above the title'], ['bannerTitle', 'Title on the photo'], ['bannerCta', 'Button'], ['bannerAlt', 'Description of the photo (for screen readers)', 'area']]],
   ['Inside MAHANA BOUTIQUE & TAILORS (reels & photos)', [['instaTitle', 'Title'], ['instaSub', 'Line under the title', 'area']]],
   ['Enquiry / contact', [['contactEyebrow', 'Small label'], ['contactTitle', 'Title (press Enter for a new line)', 'area'], ['contactSub', 'Line under the title', 'area']]],
   ['About page', [['aboutTitle', 'Title (press Enter for a new line)', 'area'], ['aboutLead', 'Main line', 'area'], ['aboutSub', 'Second line', 'area']]],
