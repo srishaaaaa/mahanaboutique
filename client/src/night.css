@@ -1624,3 +1624,24 @@
 .wb-in > img.wb-glow { z-index: 0; filter: blur(22px) brightness(1.35) saturate(1.15); opacity: .5; transform: scale(1.025); mix-blend-mode: screen; -webkit-mask-image: none; mask-image: none }
 .wb-in > img:not(.wb-glow) { z-index: 1; filter: drop-shadow(0 0 14px rgba(36, 54, 122, .55)) drop-shadow(0 24px 30px rgba(8, 12, 32, .45)) saturate(1.03) }
 .wb-in::after { background: linear-gradient(90deg, rgba(14, 22, 56, .55), transparent 22%, transparent 78%, rgba(14, 22, 56, .55)), linear-gradient(180deg, transparent 52%, rgba(16, 25, 54, .5) 80%, rgba(12, 18, 42, .88) 100%) }
+
+/* The banner as the homepage's opening section: it clears the floating menu and fills the first screen */
+.wb-hero { padding-top: clamp(96px, 8.2vw, 132px); padding-bottom: clamp(24px, 2.6vw, 48px) }
+.wb-hero .wb-in { aspect-ratio: auto; height: min(calc(100svh - clamp(96px, 8.2vw, 132px) - 36px), 900px); min-height: 480px }
+@media (max-width: 700px) { .wb-hero .wb-in { height: min(calc(100svh - 110px), 640px); min-height: 420px } }
+
+/* richer blue: violet and teal glows over the navy, a warm halo behind the models, no flat areas */
+.wb-in { background:
+    radial-gradient(34% 52% at 50% 33%, rgba(222, 170, 148, .34), rgba(201, 137, 122, .12) 48%, transparent 72%),
+    radial-gradient(45% 60% at 8% 25%, rgba(98, 84, 196, .42), transparent 70%),
+    radial-gradient(45% 60% at 92% 70%, rgba(34, 120, 170, .34), transparent 70%),
+    radial-gradient(70% 38% at 50% 104%, rgba(231, 196, 150, .22), transparent 72%),
+    radial-gradient(90% 120% at 50% 20%, #34498f 0, #1d2b5c 55%, #0f1735 100%) }
+
+/* Palace backdrop: warm sandstone light instead of blue; the models get warm shadows and a warm base fade */
+.wb-in { background: radial-gradient(60% 70% at 50% 38%, #e3c8a6, #b38d6a 55%, #6d4c39 100%) }
+.wb-in > img.wb-glow { opacity: .3; filter: blur(22px) brightness(1.25) saturate(1.1); mix-blend-mode: soft-light }
+.wb-in > img:not(.wb-glow) { filter: drop-shadow(0 0 12px rgba(70, 42, 24, .45)) drop-shadow(0 24px 30px rgba(34, 18, 10, .5)) saturate(1.03) }
+.wb-tint { mix-blend-mode: soft-light; background: radial-gradient(60% 70% at 50% 40%, rgba(255, 214, 160, .22), rgba(96, 52, 28, .3)) }
+.wb-in::after { background: linear-gradient(90deg, rgba(48, 26, 14, .5), transparent 20%, transparent 80%, rgba(48, 26, 14, .5)), linear-gradient(180deg, transparent 50%, rgba(46, 26, 16, .55) 78%, rgba(34, 18, 10, .92) 100%) }
+.wb-eb { color: #f1d3a0 }

@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/App';
 import { Magnetic, Reveal } from '../components/Motion';
-import BoutiqueHero from '../components/hero/BoutiqueHero';
 import FeaturedCollections from '../components/FeaturedCollections';
 import Ticker from '../components/Ticker';
 import FlagShelf from '../components/FlagShelf';
@@ -73,11 +72,10 @@ export default function Home() {
   return (
     <div className="home">
       <HomeFx />
-      <BoutiqueHero />
+      <WeddingBanner hero />
       <Ticker />
       <FeaturedCollections />
       <FlagShelf flag="best" id="best-sellers" />
-      <WeddingBanner />
       <CategoryCircles />
       <Details />
       <ServiceHighlights />
