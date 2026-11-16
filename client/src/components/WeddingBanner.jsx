@@ -60,6 +60,8 @@ export default function WeddingBanner({ hero = false }) {
               <Link className="wb-link" to="/#enquiry" data-cursor="ENQUIRE">{t.bannerCta2}</Link>
             </div>
           </div>
+          <span className="wb-glow" aria-hidden="true" />
+          <span className="wb-vert" aria-hidden="true">SAREES &nbsp;·&nbsp; LEHENGAS &nbsp;·&nbsp; ANARKALIS &nbsp;·&nbsp; SUITS</span>
           <div className="wb-cards">{CARDS.map(([h, sub, to, icon], i) => <Link key={h} to={to} className="wb-card" style={{ '--i': i }}><span className="wb-card-i">{icon}</span><span><b>{h}</b><small>{sub}</small></span></Link>)}</div>
           <ul className="wb-trust">{TRUST.map(([label, icon]) => <li key={label}>{icon}<span>{label}</span></li>)}</ul>
         </div>
