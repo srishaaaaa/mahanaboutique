@@ -1611,3 +1611,12 @@
   .wb-in::after { background: linear-gradient(0deg, rgba(10, 7, 5, .7), transparent 55%) }
   .wb-copy { top: auto; bottom: 6%; left: 0; right: 0; translate: none; width: auto; padding: 0 18px }
 }
+
+/* the photo is a standing cut-out: shown whole at the right, with a warm light behind her and a soft shadow beneath */
+.wb-photo { width: 72%; object-fit: contain; object-position: 78% 100%; filter: drop-shadow(0 0 18px rgba(0, 0, 0, .35)) drop-shadow(0 22px 26px rgba(0, 0, 0, .5)) saturate(1.03) }
+.wb-in { background:
+    radial-gradient(30% 58% at 71% 44%, rgba(226, 190, 152, .36), transparent 74%),
+    radial-gradient(70% 22% at 74% 100%, rgba(255, 224, 186, .12), transparent 70%),
+    linear-gradient(90deg, transparent 58%, rgba(128, 98, 74, .26) 76%, rgba(74, 54, 42, .34) 92%, transparent 100%),
+    linear-gradient(0deg, rgba(10, 7, 5, .7), transparent 30%),
+    linear-gradient(95deg, #17110e 0%, #241a15 34%, #3a2c23 62%, #4d3b2e 100%) }
