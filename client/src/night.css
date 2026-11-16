@@ -1596,3 +1596,10 @@
 .wb-in { background: radial-gradient(70% 90% at 50% 30%, #2d3e76 0, #1c284f 62%, #101936 100%) }
 .wb-in::after { background: linear-gradient(180deg, transparent 42%, rgba(16, 25, 54, .55) 76%, rgba(12, 18, 42, .9) 100%) }
 .wb-btn:hover { color: #1c284f }
+
+/* Wedding Chapter: the three models stand on the navy; the photo's black sides melt into it, with a fine gold frame */
+.wb-in { aspect-ratio: 16 / 8.6 }
+.wb-in > img { object-fit: contain; object-position: 50% 0; mix-blend-mode: lighten; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%) }
+.wb-in::before { content: ''; position: absolute; inset: clamp(10px, 1.1vw, 20px); z-index: 3; pointer-events: none; border: 1px solid rgba(231, 196, 150, .38); border-radius: 3px }
+.wb-eb { font: 600 clamp(9px, .75vw, 12px)/1 'Archivo', system-ui, sans-serif; letter-spacing: .42em; padding-left: .42em; color: #e7c496 }
+.wb-in::after { background: radial-gradient(ellipse 11% 13% at 91.5% 11%, rgba(26, 38, 80, .95), transparent), linear-gradient(180deg, transparent 42%, rgba(16, 25, 54, .55) 76%, rgba(12, 18, 42, .9) 100%) }
