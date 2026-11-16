@@ -58,7 +58,7 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
           <label className="f">Mobile number<input value={f.phone} inputMode="tel" onChange={e => setF({ ...f, phone: e.target.value })} /></label>
         </div>
         <label className="f">Note on the bill<input value={f.notes} onChange={e => setF({ ...f, notes: e.target.value })} maxLength={500} /></label>
-        <div className="dpos-tw"><table><thead><tr><th>Item</th><th className="r">Qty</th><th className="r">Price (S$)</th><th className="r">Amount</th><th /></tr></thead>
+        <div className="dpos-tw"><table><thead><tr><th>Item</th><th className="r">Qty</th><th className="r">Price ($)</th><th className="r">Amount</th><th /></tr></thead>
           <tbody>{lines.map((l, i) => (
             <tr key={l.id} style={l.remove ? { opacity: .45, textDecoration: 'line-through' } : null}>
               <td><b>{l.name}</b>{l.variant?.size ? <span className="muted small"> ({l.variant.size}{l.variant.color && l.variant.color !== 'Default' ? `, ${l.variant.color}` : ''})</span> : null}</td>
@@ -68,9 +68,9 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
               <td className="r"><button type="button" className="dpos-btn ghost sm" disabled={locked || (!l.remove && lines.filter(x => !x.remove).length < 2)} onClick={() => setL(i, { remove: !l.remove })}>{l.remove ? 'Undo' : 'Remove'}</button></td></tr>))}</tbody></table></div>
         <div className="dpos-grid">
           <label className="f">Discount {couponed ? `(coupon ${sale.couponCode}, fixed)` : ''}<div style={{ display: 'flex', gap: 8 }}>
-            <select aria-label="Discount type" value={f.dType} disabled={locked || couponed} onChange={e => setF({ ...f, dType: e.target.value })}><option value="fixed">S$</option><option value="percent">%</option></select>
+            <select aria-label="Discount type" value={f.dType} disabled={locked || couponed} onChange={e => setF({ ...f, dType: e.target.value })}><option value="fixed">$</option><option value="percent">%</option></select>
             <input inputMode="decimal" value={couponed ? rupees(sale.discount) : f.dValue} disabled={locked || couponed} onChange={e => setF({ ...f, dValue: e.target.value })} /></div></label>
-          <label className="f">Delivery fee (S$)<input inputMode="decimal" value={f.delivery} disabled={locked} onChange={e => setF({ ...f, delivery: e.target.value })} /></label>
+          <label className="f">Delivery fee ($)<input inputMode="decimal" value={f.delivery} disabled={locked} onChange={e => setF({ ...f, delivery: e.target.value })} /></label>
         </div>
         <div className="dpos-gstsplit" aria-label="New totals">
           <div className="gs-h"><span>SUBTOTAL</span><b>{inr(bill.subtotal)}</b></div>

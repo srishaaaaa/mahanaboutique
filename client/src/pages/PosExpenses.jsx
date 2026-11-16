@@ -30,7 +30,7 @@ export default function PosExpenses() {
   const add = async e => {
     e.preventDefault(); setErr(); setBusy(true);
     try { await api('/admin/pos/expenses', { method: 'POST', body: { title: f.title.trim(), category: f.category || 'General', amount: toPaise(f.amount), paymentMode: f.mode, date: f.date, notes: f.notes.trim() || null } }); setF({ ...f, title: '', amount: '', notes: '' }); toast('Expense added.'); load() }
-    catch (x) { setErr(x.issues?.[0]?.message || (x.message === 'Validation failed' ? 'Enter what it was for and an amount above S$0.' : x.message)) } finally { setBusy(false) }
+    catch (x) { setErr(x.issues?.[0]?.message || (x.message === 'Validation failed' ? 'Enter what it was for and an amount above $0.' : x.message)) } finally { setBusy(false) }
   };
   const del = async x => { if (!confirm(`Delete expense “${x.title}”?`)) return; try { await api('/admin/pos/expenses/' + x.id, { method: 'DELETE' }); toast('Expense deleted.'); load() } catch (e) { setErr(e.message) } };
   const addCat = async e => { e.preventDefault(); setErr(); try { const c = await api('/admin/pos/expense-categories', { method: 'POST', body: { name: newCat.trim() } }); setCats(c); setNewCat(''); toast('Category added.') } catch (x) { setErr(x.message) } };
@@ -39,7 +39,7 @@ export default function PosExpenses() {
   return (
     <div className="ex">
       <div className="ex-top"><span className="ex-top-a"><button type="button" className="dpos-btn outline" onClick={() => setManage(true)}>⚙ Manage categories</button>
-        <ExportCsv name="expenses" header={['Date', 'Expense', 'Category', 'Amount (S$)', 'Paid by', 'Notes']} rows={shown.map(x => [x.date, x.title, x.category, (x.amount / 100).toFixed(2), x.paymentMode, x.notes || ''])} /></span><PeriodFilter value={per} onChange={setPer} /></div>
+        <ExportCsv name="expenses" header={['Date', 'Expense', 'Category', 'Amount ($)', 'Paid by', 'Notes']} rows={shown.map(x => [x.date, x.title, x.category, (x.amount / 100).toFixed(2), x.paymentMode, x.notes || ''])} /></span><PeriodFilter value={per} onChange={setPer} /></div>
       {err && <p className="dpos-err" role="alert">{err}</p>}
       <div className="ex-kpis">
         <div className="ex-k big"><span>TOTAL EXPENSES</span><b>{inr(total)}</b><small>{per.p === 'all' ? 'ALL TIME' : String(per.p || 'PERIOD').toUpperCase()}</small></div>
@@ -49,7 +49,7 @@ export default function PosExpenses() {
       <div className="ex-two">
         <form className="ex-card" onSubmit={add}><h3 className="ex-h">ADD EXPENSE</h3>
           <label className="ex-l">WHAT FOR?<input required maxLength={120} value={f.title} onChange={e => setF({ ...f, title: e.target.value })} placeholder="e.g. October shop rent" /></label>
-          <div className="ex-g2"><label className="ex-l">AMOUNT (S$)<input required inputMode="decimal" value={f.amount} onChange={e => setF({ ...f, amount: e.target.value })} placeholder="0.00" /></label>
+          <div className="ex-g2"><label className="ex-l">AMOUNT ($)<input required inputMode="decimal" value={f.amount} onChange={e => setF({ ...f, amount: e.target.value })} placeholder="0.00" /></label>
             <label className="ex-l">DATE<input type="date" max={todayStr()} value={f.date} onChange={e => setF({ ...f, date: e.target.value || todayStr() })} /></label></div>
           <label className="ex-l">CATEGORY<select value={f.category} onChange={e => setF({ ...f, category: e.target.value })}>{cats.map(c => <option key={c}>{c}</option>)}</select></label>
           <button type="button" className="ex-link" onClick={() => setManage(true)}>Add or manage categories</button>

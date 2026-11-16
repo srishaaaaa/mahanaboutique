@@ -54,7 +54,7 @@ export default function PosMeasurements() {
       <div className="ms-top">
         <span />
         <div className="ms-top-a"><PeriodFilter value={per} onChange={setPer} />
-          <ExportCsv name="measurements" header={['Invoice', 'Date', 'Customer', 'Mobile', 'Status', 'Item', 'Price (S$)', 'Measurements']}
+          <ExportCsv name="measurements" header={['Invoice', 'Date', 'Customer', 'Mobile', 'Status', 'Item', 'Price ($)', 'Measurements']}
             rows={bills.flatMap(b => b.items.map(i => [b.invoiceNo, b.billDate, b.customerName, b.customerPhone, STATUS[b.status], i.name, (i.lineTotal / 100).toFixed(2), measureSummary(i.measure)]))} /></div>
       </div>
       <div className="ms-tiles">{tiles.map(([v, l, k, tone]) => <button key={v} type="button" className={`ms-tile ${tone} ${f.status === v ? 'on' : ''}`} aria-pressed={f.status === v} onClick={() => setF({ ...f, status: v })}><small>{l}</small><b>{k ?? '…'}</b></button>)}</div>

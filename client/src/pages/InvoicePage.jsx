@@ -50,7 +50,7 @@ export function A4Doc({ sale, shop }) {
         <div><p className="inv-l">BILLED TO</p><b className="inv-who">{sale.customerName || 'Walk-in Customer'}</b>{sale.customerPhone && <p className="inv-sm">{phoneShown(sale.customerPhone)}</p>}{sale.customerAddress && <p className="inv-sm">{sale.customerAddress}</p>}</div>
       </section>
       <table className="inv-items">
-        <thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">QTY</th><th className="r">RATE (S$)</th><th className="r">AMOUNT (S$)</th></tr></thead>
+        <thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">QTY</th><th className="r">RATE ($)</th><th className="r">AMOUNT ($)</th></tr></thead>
         <tbody>{sale.items.map((i, n) => (
           <tr key={n}><td className="n">{n + 1}</td>
             <td><b>{i.name}</b>{i.variant?.size ? <span className="inv-var"> ({i.variant.size}{i.variant.color && i.variant.color !== 'Default' ? `, ${i.variant.color}` : ''})</span> : null}{i.variant?.measure && <span className="inv-msr">{measureSummary(i.variant.measure)}</span>}</td>
@@ -146,13 +146,13 @@ function ReturnA4({ ret, shop }) {
         <div className="inv-r"><p className="inv-l">AGAINST ORIGINAL INVOICE</p><b>#{ret.invoiceNo}</b><p className="inv-sm">Total {money(ret.saleTotal)}</p></div></section>
       <p className="inv-l inv-sec">ITEMS RETURNED</p>
       <table className="inv-items">
-        <thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">RETURNED</th><th className="r">RATE (S$)</th><th className="r">AMOUNT (S$)</th></tr></thead>
+        <thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">RETURNED</th><th className="r">RATE ($)</th><th className="r">AMOUNT ($)</th></tr></thead>
         <tbody>{ret.returned.map((i, n) => <tr key={n}><td className="n">{n + 1}</td><td><b>{i.name}</b>{i.variant?.size ? <span className="inv-var"> ({i.variant.size}{i.variant.color && i.variant.color !== 'Default' ? `, ${i.variant.color}` : ''})</span> : null}<span className="inv-var"> · returned {i.returnQty} of {i.quantity} sold</span></td><td className="c mono">{i.returnQty}</td><td className="r mono muted">{num2(i.unitPrice)}</td><td className="r mono"><b>{num2(i.returnLine)}</b></td></tr>)}</tbody>
       </table>
       <p className="muted small" style={{ margin: '8px 0' }}>Delivery charge is not refunded.</p>
       <p className="inv-l inv-sec">ITEMS NOT RETURNED (KEPT BY THE CUSTOMER)</p>
       {ret.kept.length === 0 ? <p className="inv-none">Nothing — every item on the original invoice has now been returned.</p> : (
-        <table className="inv-items kept"><thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">KEPT</th><th className="r">RATE (S$)</th></tr></thead>
+        <table className="inv-items kept"><thead><tr><th>#</th><th>ITEM DESCRIPTION</th><th className="c">KEPT</th><th className="r">RATE ($)</th></tr></thead>
           <tbody>{ret.kept.map((i, n) => <tr key={n}><td className="n">{n + 1}</td><td><b>{i.name}</b>{i.variant?.size ? <span className="inv-var"> ({i.variant.size}{i.variant.color && i.variant.color !== 'Default' ? `, ${i.variant.color}` : ''})</span> : null}</td><td className="c mono">{i.keptQty}</td><td className="r mono muted">{num2(i.unitPrice)}</td></tr>)}</tbody></table>)}
       <section className="inv-foot">
         <div className="inv-words"><p className="inv-l">REFUND IN WORDS</p><p className="inv-wd">{inWords(ret.total)}</p>

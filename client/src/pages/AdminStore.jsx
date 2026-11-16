@@ -40,7 +40,7 @@ export function AdminOrders() {
         <div className="dpos-kpi"><span>Gross sales</span><b>{s ? inr(s.gross) : '…'}</b></div>
         <div className="dpos-kpi"><span>Average order</span><b>{s ? inr(s.averageOrder) : '…'}</b></div>
       </div>
-      <div className="dpos-bar-tools"><Chips label="Payment" value={pay} onChange={setPay} options={[['all', 'All'], ['paid', 'Paid'], ['unpaid', 'Unpaid']]} /><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="online-orders" header={['Order', 'Email', 'Total (S$)', 'Payment', 'Status', 'Date']} rows={shownO.map(x => [x.order_number, x.email, (x.total / 100).toFixed(2), x.payment_status, x.status, String(x.created_at).slice(0, 10)])} /></div>
+      <div className="dpos-bar-tools"><Chips label="Payment" value={pay} onChange={setPay} options={[['all', 'All'], ['paid', 'Paid'], ['unpaid', 'Unpaid']]} /><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="online-orders" header={['Order', 'Email', 'Total ($)', 'Payment', 'Status', 'Date']} rows={shownO.map(x => [x.order_number, x.email, (x.total / 100).toFixed(2), x.payment_status, x.status, String(x.created_at).slice(0, 10)])} /></div>
       {!o ? <p className="dpos-empty">Loading…</p> : !shownO.length ? <p className="dpos-empty">No online orders here.</p> : (
         <section className="dpos-card"><div className="dpos-tw"><table className="oo-table">
           <thead><tr><th>Order</th><th>Email</th><th className="r">Total</th><th>Payment</th><th>Status</th></tr></thead>

@@ -13,7 +13,7 @@ import BillSummary from '../components/BillSummary';
 import EditSaleModal from '../components/EditSaleModal';
 import ReturnModal from '../components/ReturnModal';
 
-// "Cash S$500 · PayNow S$500" for a {cash, upi, card} split.
+// "Cash $500 · PayNow $500" for a {cash, upi, card} split.
 const SPLIT_L = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card']];
 export const splitText = s => SPLIT_L.filter(([k]) => s?.[k] > 0).map(([k, l]) => `${l} ${money(s[k])}`).join(' · ');
 const depSplit = a => a.depositSplit || { [a.depositMode]: a.deposit };
@@ -174,7 +174,7 @@ export function AdvanceModal({ total, onClose, onSave }) {
     <Modal className="adv" title="Save as Advance Order" sub="Not counted as revenue until fully paid" onClose={onClose}>
       <form onSubmit={submit} className="adv-form">
         <div className="adv-total"><span>ORDER TOTAL</span><b>{inr(total)}</b></div>
-        <label className="adv-l">DEPOSIT AMOUNT (S$) *<input autoFocus inputMode="decimal" value={dep} onChange={e => setDep(e.target.value)} placeholder="0.00" /></label>
+        <label className="adv-l">DEPOSIT AMOUNT ($) *<input autoFocus inputMode="decimal" value={dep} onChange={e => setDep(e.target.value)} placeholder="0.00" /></label>
         {deposit > 0 && deposit <= total && <p className="adv-due">Balance due: {inr(total - deposit)}</p>}
         <div><p className="adv-l">DEPOSIT PAYMENT MODE</p>
           <PayPicker value={pay} onChange={setPay} amount={deposit} label="Deposit payment mode" /></div>
@@ -283,7 +283,7 @@ export function AdvanceOrders({ manager, tick, onBilled, initialCode }) {
         <label className="adv-search"><Ico size={17}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></Ico><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search by ID, customer, phone, product or status" aria-label="Search advance orders" /></label>
         <div className="adv-chips" role="group" aria-label="Status">{[['all', 'ALL'], ['pending', 'PENDING'], ['ready', 'READY'], ['completed', 'COMPLETED'], ['cancelled', 'CANCELLED']].map(([v, l]) => <button key={v} type="button" className={st === v ? 'on' : ''} aria-pressed={st === v} onClick={() => setSt(v)}>{l}</button>)}</div>
       </div>
-      <div className="dpos-bar-tools"><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="advance-orders" header={['Order', 'Customer', 'Mobile', 'Status', 'Delivery date', 'Total (S$)', 'Advance paid (S$)', 'Balance due (S$)']} rows={(rows || []).map(a => [a.code, a.customerName, a.customerPhone, a.status, a.deliveryDate || '', (a.total / 100).toFixed(2), (a.deposit / 100).toFixed(2), (a.balance / 100).toFixed(2)])} /></div>
+      <div className="dpos-bar-tools"><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="advance-orders" header={['Order', 'Customer', 'Mobile', 'Status', 'Delivery date', 'Total ($)', 'Advance paid ($)', 'Balance due ($)']} rows={(rows || []).map(a => [a.code, a.customerName, a.customerPhone, a.status, a.deliveryDate || '', (a.total / 100).toFixed(2), (a.deposit / 100).toFixed(2), (a.balance / 100).toFixed(2)])} /></div>
       <Err>{err}</Err>
       <section className="dpos-card">
         {!rows ? <Empty>Loading…</Empty> : !shown.length ? <Empty>No advance orders here. Add items in Billing and press “Save as advance order”.</Empty> : (

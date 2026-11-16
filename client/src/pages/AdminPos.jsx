@@ -33,7 +33,7 @@ const ScanRedirect = lazy(() => loadBarcode().then(m => ({ default: m.ScanRedire
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
 const rupees = p => (p / 100).toFixed(2).replace(/\.00$/, '');
 const dmy = d => d ? d.split('-').reverse().join('-') : '';
-const k = p => p >= 100000000 ? `S$${(p / 100000000).toFixed(1).replace(/\.0$/, '')}M` : p >= 100000 ? `S$${(p / 100000).toFixed(1).replace(/\.0$/, '')}k` : `S$${Math.round(p / 100)}`;
+const k = p => p >= 100000000 ? `$${(p / 100000000).toFixed(1).replace(/\.0$/, '')}M` : p >= 100000 ? `$${(p / 100000).toFixed(1).replace(/\.0$/, '')}k` : `$${Math.round(p / 100)}`;
 const MODES = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']];
 const MODE_LABEL = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -270,7 +270,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
       {l.custom ? (
         <div className="dpos-grid" style={{ gridTemplateColumns: 'minmax(150px,2fr) minmax(90px,1fr) 130px' }}>
           <input aria-label="Item name or description" autoFocus={!ws && !l.name} placeholder={l.service ? 'Service (alteration, stitching…)' : 'Item name / description…'} list={ws ? 'dpos-ws-list' : undefined} value={l.name} onChange={e => patch(l.key, { name: e.target.value })} />
-          <input aria-label="Price in dollars" inputMode="decimal" placeholder="Price S$" value={l.priceStr} onChange={e => patch(l.key, { priceStr: e.target.value })} />
+          <input aria-label="Price in dollars" inputMode="decimal" placeholder="Price $" value={l.priceStr} onChange={e => patch(l.key, { priceStr: e.target.value })} />
           <select aria-label="GST rate" value={l.taxRate} onChange={e => patch(l.key, { taxRate: +e.target.value })}>{GST_RATES.map(r => <option key={r} value={r}>{r}% GST</option>)}</select>
           {l.service && <div className="msr-line">
             <button type="button" className="dpos-btn ghost sm" onClick={() => setMeasureFor(l.key)}>📏 {l.measure ? 'Edit measurements' : 'Add measurements'}</button>
@@ -326,7 +326,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
           </div>
           <p className="muted small" style={{ fontWeight: 800, letterSpacing: '.1em', margin: '0 0 6px' }}>MANUAL DISCOUNT</p>
           <div className="dpos-grid" style={{ gridTemplateColumns: '110px 1fr', marginBottom: 12 }}>
-            <select aria-label="Discount type" value={disc.type} disabled={!!coupon} onChange={e => setDisc({ ...disc, type: e.target.value })}><option value="fixed">S$</option><option value="percent">%</option></select>
+            <select aria-label="Discount type" value={disc.type} disabled={!!coupon} onChange={e => setDisc({ ...disc, type: e.target.value })}><option value="fixed">$</option><option value="percent">%</option></select>
             <input inputMode="decimal" disabled={!!coupon} value={disc.value} onChange={e => setDisc({ ...disc, value: e.target.value })} placeholder="0" aria-label="Discount value" style={{ textAlign: 'right' }} />
           </div>
           {!ws && <div style={{ marginBottom: 12 }}>
@@ -365,12 +365,12 @@ function Billing({ channel, shop, onSale, onAdvance }) {
           <div className="dpos-grand"><span>GRAND TOTAL</span><b>{inr(bill.total)}</b></div>
           <div className="dpos-paybox" id="dpos-pay">
             <p className="dpos-pl">{mode === 'upi' ? 'QR / PAYNOW' : mode.toUpperCase()} PAYMENT</p>
-            {mode === 'cash' && <><label className="f">Amount Received (S$)<input className="bigin" inputMode="decimal" value={tendered} onChange={e => setTendered(e.target.value)} placeholder={bill.total ? rupees(bill.total) : '0.00'} /></label>
+            {mode === 'cash' && <><label className="f">Amount Received ($)<input className="bigin" inputMode="decimal" value={tendered} onChange={e => setTendered(e.target.value)} placeholder={bill.total ? rupees(bill.total) : '0.00'} /></label>
               <p className="sub" style={{ marginTop: 8 }}>{tenderedP >= bill.total ? `Change to return: ${inr(tenderedP - bill.total)}` : `Short by ${inr(bill.total - tenderedP)}`}</p></>}
             {mode === 'split' && <>
               <p className="dpos-flabel" style={{ marginTop: 0 }}>SPLIT BETWEEN (PICK 2 OR 3)</p>
               <div className="dpos-splitpick" role="group" aria-label="Split between">{['cash', 'upi', 'card'].map(m => <button key={m} type="button" aria-pressed={splitOn[m]} className={splitOn[m] ? 'on' : ''} onClick={() => toggleSplit(m)}>{splitOn[m] ? '✓ ' : ''}{m === 'upi' ? 'QR / PAYNOW' : MODE_LABEL[m].toUpperCase()}</button>)}</div>
-              <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{MODE_LABEL[m]} (S$)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => editSplit(m, e.target.value)} placeholder="0.00" /></label>)}</div>
+              <div className="dpos-grid" style={{ gridTemplateColumns: `repeat(${pickedN}, 1fr)` }}>{['cash', 'upi', 'card'].filter(m => splitOn[m]).map(m => <label className="f" key={m}>{MODE_LABEL[m]} ($)<input className="bigin" inputMode="decimal" value={split[m]} onChange={e => editSplit(m, e.target.value)} placeholder="0.00" /></label>)}</div>
               <div className="dpos-recv"><span>TOTAL RECEIVED</span><b className={splitSum >= bill.total && bill.total > 0 ? 'ok' : 'short'}>{inr(splitSum)}</b></div>
               <div className="dpos-recv"><span>CHANGE TO RETURN</span><b className="ok">{inr(splitOver)}</b></div></>}
             {mode !== 'cash' && <label className="f" style={{ marginTop: mode === 'split' ? 12 : 0 }}>{mode === 'card' ? 'Slip / approval no.' : 'Transaction ID'} (optional)<input value={ref} onChange={e => setRef(e.target.value)} maxLength={80} /></label>}
@@ -462,7 +462,7 @@ function ProductsBoard({ rep }) {
   return (
     <section className="dpos-card">
       <div className="an-head"><h2>Product Sales Leaderboard</h2>
-        <ExportCsv name="product-sales" header={['Rank', 'Product', 'Qty sold', 'Revenue (S$)', 'Market share %']} rows={rows.map(p => [p.rank, p.name, p.qty, (p.revenue / 100).toFixed(2), (p.revenue / total * 100).toFixed(1)])} />
+        <ExportCsv name="product-sales" header={['Rank', 'Product', 'Qty sold', 'Revenue ($)', 'Market share %']} rows={rows.map(p => [p.rank, p.name, p.qty, (p.revenue / 100).toFixed(2), (p.revenue / total * 100).toFixed(1)])} />
         <label className="an-search"><SearchGlyph /><span className="sr">Search product</span><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search product…" /></label></div>
       {!rep ? <Empty>Loading…</Empty> : !all.length ? <Empty>No sales in this period.</Empty> : !rows.length ? <Empty>No product matches.</Empty> : (
         <div className="dpos-tw"><table><thead><tr><th>Rank</th><th>Product name</th><th className="r">Qty sold</th><th className="r">Revenue</th><th>Market share</th></tr></thead>
@@ -647,7 +647,7 @@ function Customers({ manager, openInvoice }) {
   return (
     <>
       <div className="dpos-bar-tools"><input type="search" style={{ maxWidth: 320 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search name or mobile…" aria-label="Search customers" />
-        {manager && <PeriodFilter value={per} onChange={setPer} />}<ExportCsv name="customers" header={['Name', 'Mobile', 'Bills', 'Spent (S$)', 'Notes']} rows={shown.map(c => [c.name, c.phone, c.bills, (c.spent / 100).toFixed(2), c.notes || ''])} /><button className="dpos-btn" onClick={() => setModal({})}><Icon n="plus" size={16} />Add customer</button></div>
+        {manager && <PeriodFilter value={per} onChange={setPer} />}<ExportCsv name="customers" header={['Name', 'Mobile', 'Bills', 'Spent ($)', 'Notes']} rows={shown.map(c => [c.name, c.phone, c.bills, (c.spent / 100).toFixed(2), c.notes || ''])} /><button className="dpos-btn" onClick={() => setModal({})}><Icon n="plus" size={16} />Add customer</button></div>
       <Err>{err}</Err>
       <section className="dpos-card">
         {!rows ? <Empty>Loading…</Empty> : !shown.length ? <Empty>No customers yet. They are added automatically when you bill with a mobile number.</Empty> : (
@@ -700,7 +700,7 @@ function DeliveryRulesCard() {
       <p className="sub" style={{ marginBottom: 12 }}>The delivery charge is picked from the bag's total weight (each size's weight × quantity). Set each product's weight in Inventory → Edit product; a product with no weight counts as the default below.</p>
       <label style={{ display: 'flex', gap: 10, alignItems: 'center', margin: '4px 0 12px' }}><input type="checkbox" checked={r.enabled} onChange={e => setR({ ...r, enabled: e.target.checked })} /><span>Charge for delivery</span></label>
       <div className="dpos-grid">
-        <label className="f">Free delivery when the order is at least (S$, 0 = never)<input inputMode="decimal" value={r.freeOver} onChange={e => setR({ ...r, freeOver: e.target.value })} /></label>
+        <label className="f">Free delivery when the order is at least ($, 0 = never)<input inputMode="decimal" value={r.freeOver} onChange={e => setR({ ...r, freeOver: e.target.value })} /></label>
         <label className="f">Weight counted for a product with none (grams)<input inputMode="numeric" value={r.defaultWeightGrams} onChange={e => setR({ ...r, defaultWeightGrams: e.target.value.replace(/\D/g, '') })} /></label>
       </div>
       <p className="dpos-flabel">DELIVERY REGIONS &amp; WEIGHT TIERS</p>
@@ -715,7 +715,7 @@ function DeliveryRulesCard() {
             <div key={j} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <span className="muted small">From</span><input aria-label="From grams" style={{ maxWidth: 110 }} inputMode="numeric" value={t.minGrams} onChange={e => tier(i, j, { minGrams: e.target.value.replace(/\D/g, '') })} />
               <span className="muted small">g, up to</span><input aria-label="Up to grams (blank = no limit)" style={{ maxWidth: 120 }} inputMode="numeric" placeholder="no limit" value={t.maxGrams} onChange={e => tier(i, j, { maxGrams: e.target.value.replace(/\D/g, '') })} />
-              <span className="muted small">g → S$</span><input aria-label="Charge" style={{ maxWidth: 110 }} inputMode="decimal" value={t.fee} onChange={e => tier(i, j, { fee: e.target.value })} />
+              <span className="muted small">g → $</span><input aria-label="Charge" style={{ maxWidth: 110 }} inputMode="decimal" value={t.fee} onChange={e => tier(i, j, { fee: e.target.value })} />
               <button type="button" className="dpos-btn ghost sm" aria-label="Remove tier" disabled={g.tiers.length < 2} onClick={() => region(i, { tiers: g.tiers.filter((_, n) => n !== j) })}>✕</button>
             </div>))}
           <button type="button" className="dpos-btn ghost sm" onClick={() => region(i, { tiers: [...g.tiers, { minGrams: g.tiers.length ? (g.tiers[g.tiers.length - 1].maxGrams || '') : '0', maxGrams: '', fee: '' }] })}>+ Add tier</button>
@@ -724,7 +724,7 @@ function DeliveryRulesCard() {
       <p className="dpos-flabel">WHAT CUSTOMERS SEE</p>
       <label className="f">Shipping note (bag and checkout)<textarea rows={2} maxLength={300} value={r.note || ''} onChange={e => setR({ ...r, note: e.target.value })} placeholder="e.g. Delivered within 3 to 5 working days across Singapore." /></label>
       <label className="f" style={{ marginTop: 10 }}>Landing page delivery line<textarea rows={2} maxLength={500} value={r.landingText || ''} onChange={e => setR({ ...r, landingText: e.target.value })} placeholder="e.g. Fast delivery: get your order within 3 to 5 days." /></label>
-      <label className="f" style={{ marginTop: 10 }}>Product page delivery lines (one per line)<textarea rows={3} value={r.productLines} onChange={e => setR({ ...r, productLines: e.target.value })} placeholder={'Standard delivery: 3 to 5 working days\nFree delivery over S$150'} /></label>
+      <label className="f" style={{ marginTop: 10 }}>Product page delivery lines (one per line)<textarea rows={3} value={r.productLines} onChange={e => setR({ ...r, productLines: e.target.value })} placeholder={'Standard delivery: 3 to 5 working days\nFree delivery over $150'} /></label>
       <Err>{err}</Err>
       <div style={{ marginTop: 12 }}><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save delivery rules'}</button></div>
     </form>
@@ -777,7 +777,7 @@ function Settings({ onSaved }) {
           {s.deliveryPresets.map((p, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
               <input aria-label="Name" value={p.name} onChange={e => preset(i, { name: e.target.value })} placeholder="e.g. Within Kumbakonam" />
-              <input aria-label="Fee in dollars" style={{ maxWidth: 140 }} inputMode="decimal" defaultValue={rupees(p.fee)} onBlur={e => preset(i, { fee: toPaise(e.target.value) })} placeholder="S$ fee" />
+              <input aria-label="Fee in dollars" style={{ maxWidth: 140 }} inputMode="decimal" defaultValue={rupees(p.fee)} onBlur={e => preset(i, { fee: toPaise(e.target.value) })} placeholder="$ fee" />
               <button type="button" className="dpos-btn ghost sm" aria-label="Remove" onClick={() => setS({ ...s, deliveryPresets: s.deliveryPresets.filter((_, n) => n !== i) })}>✕</button></div>))}
           <button type="button" className="dpos-btn ghost sm" onClick={() => setS({ ...s, deliveryPresets: [...s.deliveryPresets, { name: '', fee: 0 }] })}>+ Add delivery option</button>
           <p className="sub" style={{ marginTop: 10 }}>These appear as a quick pick on the billing screen. Online-store shipping is managed separately.</p>

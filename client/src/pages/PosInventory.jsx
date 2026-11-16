@@ -133,8 +133,8 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
           <div className="pe-g2">
             <label className="pe-l">CATEGORY<select value={f.cat} onChange={e => setF({ ...f, cat: e.target.value })}><option value="">— None —</option>{categories.map(c => <option key={c.id} value={c.slug}>{c.name}</option>)}</select></label>
             <label className="pe-l">STATUS<select value={f.status} onChange={e => setF({ ...f, status: e.target.value })}><option value="active">Active (on sale)</option><option value="draft">Draft (hidden)</option><option value="archived">Archived</option></select></label>
-            <label className="pe-l">SELLING PRICE (S$)<input required inputMode="decimal" value={f.price} onChange={e => setF({ ...f, price: e.target.value })} /></label>
-            <label className="pe-l">COST PRICE (S$)<input inputMode="decimal" value={f.cost} onChange={e => setF({ ...f, cost: e.target.value })} placeholder="What you paid" /></label>
+            <label className="pe-l">SELLING PRICE ($)<input required inputMode="decimal" value={f.price} onChange={e => setF({ ...f, price: e.target.value })} /></label>
+            <label className="pe-l">COST PRICE ($)<input inputMode="decimal" value={f.cost} onChange={e => setF({ ...f, cost: e.target.value })} placeholder="What you paid" /></label>
             <label className="pe-l">WEIGHT (GRAMS)<input inputMode="numeric" value={f.weight} onChange={e => setF({ ...f, weight: e.target.value.replace(/\D/g, '') })} placeholder="500" /></label>
             <label className="pe-l">GST %<select value={f.tax} onChange={e => setF({ ...f, tax: e.target.value })}>{[0, 9].map(r => <option key={r} value={r}>{r}%</option>)}</select></label>
             <label className="pe-l">FABRIC / MATERIAL<input value={f.material} maxLength={80} onChange={e => setF({ ...f, material: e.target.value })} placeholder="e.g. Cotton" /></label>
@@ -151,7 +151,7 @@ function EditModal({ product: start, categories, onClose, onDone, onPhotos }) {
       <section className="pe-vars-sec">
         <div className="pe-vh"><div><h3 className="pe-h">Product Variants</h3><p className="pe-hint">MANAGE SIZES, COLORS, AND SPECIFIC INVENTORY</p></div></div>
         <div className="acc-scroll"><table className="dpos-table pe-vars">
-          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Barcode</th><th>Selling price S$</th><th>Weight g</th><th>Cost price S$</th><th className="r">Stock</th><th /></tr></thead>
+          <thead><tr><th>Size</th><th>Colour</th><th>SKU</th><th>Barcode</th><th>Selling price $</th><th>Weight g</th><th>Cost price $</th><th className="r">Stock</th><th /></tr></thead>
           <tbody>{(product.variants || []).map(v => <VariantRow key={`${v.id}-${v.size}-${v.color}-${v.sku}-${v.priceOverride}-${v.active}`} productId={product.id} v={v} basePrice={product.price} onChanged={reload} setErr={setErr} onlyOne={product.variants.length < 2} />)}</tbody>
         </table></div>
         <form onSubmit={addVariant} className="pe-add">
@@ -215,8 +215,8 @@ function AddModal({ categories, onClose, onDone }) {
           <div className="pe-g2">
             <label className="pe-l">CATEGORY<select value={f.cat} onChange={e => setF({ ...f, cat: e.target.value })}><option value="">Select category</option>{categories.map(c => <option key={c.id} value={c.slug}>{c.name}</option>)}</select></label>
             <label className="pe-l">STATUS<select value={f.status} onChange={e => setF({ ...f, status: e.target.value })}><option value="active">Active (on sale)</option><option value="draft">Draft (hidden)</option></select></label>
-            <label className="pe-l">SELLING PRICE (S$)<input required inputMode="decimal" value={f.price} onChange={e => setF({ ...f, price: e.target.value })} placeholder="0" /></label>
-            <label className="pe-l">COST PRICE (S$)<input inputMode="decimal" value={f.cost} onChange={e => setF({ ...f, cost: e.target.value })} placeholder="What you paid" /></label>
+            <label className="pe-l">SELLING PRICE ($)<input required inputMode="decimal" value={f.price} onChange={e => setF({ ...f, price: e.target.value })} placeholder="0" /></label>
+            <label className="pe-l">COST PRICE ($)<input inputMode="decimal" value={f.cost} onChange={e => setF({ ...f, cost: e.target.value })} placeholder="What you paid" /></label>
             <label className="pe-l">WEIGHT (GRAMS)<input inputMode="numeric" value={f.weight} onChange={e => setF({ ...f, weight: e.target.value.replace(/\D/g, '') })} placeholder="500" /></label>
             <label className="pe-l">GST %<select value={f.tax} onChange={e => setF({ ...f, tax: e.target.value })}>{[0, 9].map(r => <option key={r} value={r}>{r}%</option>)}</select></label>
             <label className="pe-l">FABRIC / MATERIAL<input value={f.material} maxLength={80} onChange={e => setF({ ...f, material: e.target.value })} placeholder="e.g. Cotton" /></label>
@@ -234,7 +234,7 @@ function AddModal({ categories, onClose, onDone }) {
       </form>
       <section className="pe-vars-sec">
         <div className="pe-vh"><div><h3 className="pe-h">Product Variants</h3><p className="pe-hint">MANAGE SIZES, COLOURS AND SPECIFIC INVENTORY</p></div><button type="button" className="pe-addrow" onClick={() => setVars(v => [...v, blankVar()])}>＋ Add Row</button></div>
-        <div className="pe-vhead"><span>SIZE</span><span>COLOUR</span><span>SELLING (S$)</span><span>COST (S$)</span><span>BARCODE</span><span>STOCK</span><span /></div>
+        <div className="pe-vhead"><span>SIZE</span><span>COLOUR</span><span>SELLING ($)</span><span>COST ($)</span><span>BARCODE</span><span>STOCK</span><span /></div>
         {vars.map((v, i) => (
           <div key={i} className="pe-vrow">
             <input aria-label="Size" placeholder="e.g. M" value={v.size} onChange={e => setV(i, { size: e.target.value })} />
@@ -400,7 +400,7 @@ export default function PosInventory({ manager, stocker }) {
   const [tab, setTab] = useState('products');
   const snapshot = async () => {
     const list = await api('/admin/pos/products?q=');
-    downloadCsv('stock-snapshot.csv', ['Product', 'Category', 'Size', 'Colour', 'SKU', 'Stock', 'Price (S$)'], list.flatMap(p => p.variants.map(v => [p.name, p.category || '', v.size, v.color, v.sku, v.stock, (p.price / 100).toFixed(2)])));
+    downloadCsv('stock-snapshot.csv', ['Product', 'Category', 'Size', 'Colour', 'SKU', 'Stock', 'Price ($)'], list.flatMap(p => p.variants.map(v => [p.name, p.category || '', v.size, v.color, v.sku, v.stock, (p.price / 100).toFixed(2)])));
   };
   return (
     <>

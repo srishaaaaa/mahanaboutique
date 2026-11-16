@@ -1,6 +1,6 @@
 // Shared by the invoice page, the receipt and the POS: money, dates, amount in words and GST lines. All money is integer cents.
 export const num2 = p => (p / 100).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-export const money = p => 'S$' + num2(p);
+export const money = p => '$' + num2(p);
 
 const ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
 const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];

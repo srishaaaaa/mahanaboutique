@@ -20,7 +20,7 @@ export function AccentPicker({ value, onChange }) {
         <input aria-label="Accent colour code" value={cur.toUpperCase()} maxLength={7} onChange={e => { const v = e.target.value.trim(); if (/^#[0-9a-fA-F]{0,6}$/.test(v) && v.length === 7) onChange(v.toLowerCase()) }} onBlur={e => e.target.value = cur.toUpperCase()} />
         <button type="button" className="link-u" onClick={() => onChange('')}>RESET</button></div>
       <div className="pset-prev" style={{ '--c': cur }}><div className="pset-prev-h"><b>CARD PREVIEW</b><span>Buttons, links, totals and invoice headers use this colour.</span></div>
-        <div className="pset-prev-b"><span className="pset-prev-btn">BUTTON</span><b style={{ color: cur }}>Accent link</b><em>Total S$1,250</em></div></div>
+        <div className="pset-prev-b"><span className="pset-prev-btn">BUTTON</span><b style={{ color: cur }}>Accent link</b><em>Total $1,250</em></div></div>
     </section>
   );
 }

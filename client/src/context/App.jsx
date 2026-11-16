@@ -9,15 +9,10 @@ const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } cat
 const EMPTY_CART = { items: [], count: 0, subtotal: 0, shipping: { amount: 0, freeOver: null }, hasIssues: false };
 
 export function AppProvider({ children }) {
-  // --- entry preference: full cinematic intro only on a first visit -------------
-  const [entered, setEntered] = useState(() => {
-    try {
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-      return !!localStorage.getItem('dhanya.entered');
-    } catch { return true }
-  });
-  const enter = useCallback(() => { try { localStorage.setItem('dhanya.entered', String(Date.now())) } catch { /* ignore */ } setEntered(true) }, []);
-  const replayIntro = useCallback(() => setEntered(false), []);
+  // --- entry: there is no intro screen any more; the homepage shows the name splash on open / refresh -------------
+  const [entered, setEntered] = useState(true);
+  const enter = useCallback(() => setEntered(true), []);
+  const replayIntro = useCallback(() => setEntered(true), []);
 
   // --- toasts -------------------------------------------------------------------
   const [toasts, setToasts] = useState([]);

@@ -90,8 +90,8 @@ function EditModal({ c, onClose, onDone }) {
     <Modal title={<>Edit <span className="cp-mono">{c.code}</span></>} onClose={onClose}>
       <form className="cp-send" onSubmit={save}>
         <div className="cp-g2">
-          <label className="cp-l">DISCOUNT {f.type === 'percent' ? '%' : '(S$)'}<input required inputMode="decimal" value={f.value} onChange={e => setF({ ...f, value: e.target.value })} /></label>
-          <label className="cp-l">MIN ORDER (S$)<input inputMode="decimal" value={f.min} onChange={e => setF({ ...f, min: e.target.value })} /></label>
+          <label className="cp-l">DISCOUNT {f.type === 'percent' ? '%' : '($)'}<input required inputMode="decimal" value={f.value} onChange={e => setF({ ...f, value: e.target.value })} /></label>
+          <label className="cp-l">MIN ORDER ($)<input inputMode="decimal" value={f.min} onChange={e => setF({ ...f, min: e.target.value })} /></label>
           <label className="cp-l">EXPIRY DATE<input type="date" value={f.expires} onChange={e => setF({ ...f, expires: e.target.value })} /></label>
           <label className="cp-l">USAGE LIMIT<input inputMode="numeric" value={f.limit} onChange={e => setF({ ...f, limit: e.target.value.replace(/\D/g, '') })} placeholder="Unlimited" /></label>
         </div>
@@ -142,10 +142,10 @@ export default function PosCoupons() {
           <label className="cp-l">COUPON CODE <em>*</em></label>
           <div className="cp-code"><input required value={f.code} maxLength={40} onChange={e => setF({ ...f, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '') })} placeholder="E.G. SUMMER20" aria-label="Coupon code" /><button type="button" onClick={() => setF({ ...f, code: generate() })}>Generate</button></div>
           <div className="cp-g2">
-            <label className="cp-l">DISCOUNT {f.type === 'percent' ? '%' : '(S$)'} <em>*</em><input required inputMode="decimal" value={f.value} onChange={e => setF({ ...f, value: e.target.value })} placeholder={f.type === 'percent' ? 'e.g. 15' : 'e.g. 10'} /></label>
-            <label className="cp-l">MIN ORDER (S$)<input inputMode="decimal" value={f.min} onChange={e => setF({ ...f, min: e.target.value })} placeholder="e.g. 100" /></label>
+            <label className="cp-l">DISCOUNT {f.type === 'percent' ? '%' : '($)'} <em>*</em><input required inputMode="decimal" value={f.value} onChange={e => setF({ ...f, value: e.target.value })} placeholder={f.type === 'percent' ? 'e.g. 15' : 'e.g. 10'} /></label>
+            <label className="cp-l">MIN ORDER ($)<input inputMode="decimal" value={f.min} onChange={e => setF({ ...f, min: e.target.value })} placeholder="e.g. 100" /></label>
           </div>
-          <div className="cp-type" role="radiogroup" aria-label="Discount type">{[['percent', '% off'], ['fixed', 'S$ off']].map(([v, l]) => <button key={v} type="button" role="radio" aria-checked={f.type === v} className={f.type === v ? 'on' : ''} onClick={() => setF({ ...f, type: v })}>{l}</button>)}</div>
+          <div className="cp-type" role="radiogroup" aria-label="Discount type">{[['percent', '% off'], ['fixed', '$ off']].map(([v, l]) => <button key={v} type="button" role="radio" aria-checked={f.type === v} className={f.type === v ? 'on' : ''} onClick={() => setF({ ...f, type: v })}>{l}</button>)}</div>
           <div className="cp-g2">
             <label className="cp-l">EXPIRY DATE<input type="date" value={f.expires} onChange={e => setF({ ...f, expires: e.target.value })} /></label>
             <label className="cp-l">USAGE LIMIT<input inputMode="numeric" value={f.limit} onChange={e => setF({ ...f, limit: e.target.value.replace(/\D/g, '') })} placeholder="e.g. 50" /></label>

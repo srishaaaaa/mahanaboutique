@@ -24,7 +24,7 @@ export default function PayPicker({ value, onChange, amount, label }) {
       {value.mode === 'split' && (
         <div className="payp-split">
           {[['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card']].map(([k, l]) => (
-            <label key={k}>{l} S$<input inputMode="decimal" placeholder="0" value={value[k]} onChange={e => onChange({ ...value, [k]: e.target.value })} /></label>))}
+            <label key={k}>{l} $<input inputMode="decimal" placeholder="0" value={value[k]} onChange={e => onChange({ ...value, [k]: e.target.value })} /></label>))}
           <p className={parts.problem ? 'payp-bad' : 'payp-ok'}>{parts.problem || `Adds up to ${inr(amount)} ✓`}</p>
         </div>)}
     </div>

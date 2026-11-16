@@ -69,7 +69,7 @@ export function StitchingOrders({ openInvoice, goAdvance }) {
   return (
     <div className="ms">
       <div className="ms-top"><span /><div className="ms-top-a"><PeriodFilter value={per} onChange={setPer} />
-        <ExportCsv name="stitching-orders" header={['Order', 'Type', 'Date', 'Customer', 'Mobile', 'Items', 'Due date', 'Total (S$)', 'Advance paid (S$)', 'Balance (S$)', 'Status']}
+        <ExportCsv name="stitching-orders" header={['Order', 'Type', 'Date', 'Customer', 'Mobile', 'Items', 'Due date', 'Total ($)', 'Advance paid ($)', 'Balance ($)', 'Status']}
           rows={orders.map(o => [o.invoiceNo, o.kind === 'advance' ? 'Advance order' : 'Bill', o.billDate, o.customerName, o.customerPhone, o.items.map(i => `${i.name} x${i.quantity}`).join('; '), o.dueDate || '', (o.total / 100).toFixed(2), o.deposit == null ? '' : (o.deposit / 100).toFixed(2), (o.balance / 100).toFixed(2), ST[o.status][0]])} /></div></div>
       <div className="ms-tiles">{tiles.map(([v, l, k, tone]) => <button key={v} type="button" className={`ms-tile ${tone} ${f.status === v ? 'on' : ''}`} aria-pressed={f.status === v} onClick={() => setF({ ...f, status: v })}><small>{l}</small><b>{k ?? '…'}</b></button>)}</div>
       <section className="dpos-card ms-filters">
@@ -106,7 +106,7 @@ export function StitchingReports() {
   return (
     <div className="sd">
       <div className="ms-top"><span /><div className="ms-top-a"><PeriodFilter value={per} onChange={setPer} />
-        <ExportCsv name="stitching-report" header={['Garment / service', 'Quantity', 'Revenue (S$)', 'Share %']} rows={(d?.byItem || []).map(g => [g.name, g.qty, (g.revenue / 100).toFixed(2), d.revenue ? (g.revenue / d.revenue * 100).toFixed(1) : '0'])} /></div></div>
+        <ExportCsv name="stitching-report" header={['Garment / service', 'Quantity', 'Revenue ($)', 'Share %']} rows={(d?.byItem || []).map(g => [g.name, g.qty, (g.revenue / 100).toFixed(2), d.revenue ? (g.revenue / d.revenue * 100).toFixed(1) : '0'])} /></div></div>
       {err && <p className="dpos-err" role="alert">{err}</p>}
       <div className="dpos-k4">
         <Tile label="STITCHING REVENUE" value={d ? inr(d.revenue) : '…'} sub="Stitching lines on completed bills" tone="nong" />

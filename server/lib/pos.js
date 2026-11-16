@@ -48,7 +48,7 @@ export function couponProblem(c, subtotal) {
   if (!c || !c.active) return 'That coupon code is not valid';
   if (c.expires_on && String(c.expires_on).slice(0, 10) < istDate()) return 'That coupon has expired';
   if (c.usage_limit != null && c.used_count >= c.usage_limit) return 'That coupon has reached its usage limit';
-  if (subtotal < c.min_order) return `This coupon needs a minimum bill of S$${(c.min_order / 100).toLocaleString('en-SG')}`;
+  if (subtotal < c.min_order) return `This coupon needs a minimum bill of $${(c.min_order / 100).toLocaleString('en-SG')}`;
   return null;
 }
 

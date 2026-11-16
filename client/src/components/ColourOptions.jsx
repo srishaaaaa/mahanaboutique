@@ -25,7 +25,7 @@ export function ColourModal({ product, onClose, onDone }) {
       <form onSubmit={submit} style={{ display: 'grid', gap: 14 }}>
         <div className="dpos-grid">
           <label className="f">Colour name<input required autoFocus value={color} maxLength={40} onChange={e => setColor(e.target.value)} placeholder="e.g. Wine Purple" /></label>
-          <label className="f">Price for this colour S$ (optional)<input inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} placeholder={rupees(product.price)} /></label>
+          <label className="f">Price for this colour $ (optional)<input inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} placeholder={rupees(product.price)} /></label>
         </div>
         <div className="dpos-box"><b>Sizes &amp; stock for this colour</b>
           {rows.map((r, i) => (

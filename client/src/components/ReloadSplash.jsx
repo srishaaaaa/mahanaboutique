@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useReduced } from '../lib/hooks';
 
-const TAG = 'BOUTIQUE & TAILORS';
-
 // Shown each time the website is opened or reloaded (not in the admin panel, not on the first-ever visit,
-// which has its own intro): the script "Mahana" writes itself in, the tagline follows letter by letter,
+// which has its own intro): the Mahana logo (rose-gold script, as on the website header) writes itself in,
 // then the panel lifts away with a curved edge. Tap or press any key to skip.
 export default function ReloadSplash() {
   const reduced = useReduced();
@@ -26,9 +24,7 @@ export default function ReloadSplash() {
       <span className="rs-sky" aria-hidden="true">{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ left: `${(i * 37 + 9) % 100}%`, top: `${(i * 53 + 13) % 100}%`, animationDelay: `${-(i * 0.45).toFixed(2)}s` }} />)}</span>
       <div className="rs-in" aria-hidden="true">
         <svg className="rs-emblem" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1"><path d="M32 4 60 32 32 60 4 32Z" /><path d="M32 15 49 32 32 49 15 32Z" opacity=".7" /><path d="M32 25 39 32 32 39 25 32Z" fill="currentColor" fillOpacity=".35" /></svg>
-        <span className="rs-name"><b>Mahana</b><i className="rs-pen" /></span>
-        <span className="rs-line"><i /><svg viewBox="0 0 40 24" fill="none" stroke="currentColor"><path d="M20 2 30 12 20 22 10 12Z" fill="currentColor" fillOpacity=".2" /><path d="M20 8 24 12 20 16 16 12Z" fill="currentColor" /></svg><i /></span>
-        <span className="rs-tag">{TAG.split('').map((c, i) => <em key={i} style={{ animationDelay: `${1.05 + i * 0.035}s` }}>{c === ' ' ? ' ' : c}</em>)}</span>
+        <span className="rs-name"><b><img src="/logo.png" alt="" /></b><i className="rs-pen" /></span>
       </div>
     </motion.div>
   );

@@ -404,7 +404,7 @@ export async function changeStatus(db, user, id, { status, note: text = '', over
     if (status === 'delivered') {
       const bal = await one(t, `SELECT GREATEST(total_amount - COALESCE((SELECT SUM(CASE WHEN kind = 'refund' THEN -amount ELSE amount END) FROM stitch_payments WHERE order_id = $1), 0), 0)::int AS b FROM stitch_orders WHERE id = $1`, [id]);
       if (bal.b > 0) {
-        if (!override) throw new HttpError(409, `Balance of S$${(bal.b / 100).toLocaleString('en-SG')} is still due. Collect it, or an owner/admin can deliver with the balance outstanding`, 'balance_due');
+        if (!override) throw new HttpError(409, `Balance of $${(bal.b / 100).toLocaleString('en-SG')} is still due. Collect it, or an owner/admin can deliver with the balance outstanding`, 'balance_due');
         if (!manager) throw new HttpError(403, 'Only an owner or admin can deliver with a balance due', 'forbidden');
         if (text.trim().length < 3) throw new HttpError(400, 'Give a reason for delivering with a balance due', 'note_required');
         overridden = true;
@@ -491,12 +491,12 @@ export async function addPayment(db, user, orderId, d) {
       if (d.kind === 'refund') {
         if (!isManager(user)) throw new HttpError(403, 'Only an owner or admin can record a refund', 'forbidden');
         if (o.invoice_no) throw new HttpError(409, 'This order has a POS invoice. Void the invoice in billing to reverse it', 'invoiced');
-        if (d.amount > net[d.mode]) throw new HttpError(400, `Only S$${(net[d.mode] / 100).toLocaleString('en-SG')} was taken by ${d.mode.toUpperCase()}, so that is the most that can be refunded that way`, 'bad_refund');
+        if (d.amount > net[d.mode]) throw new HttpError(400, `Only $${(net[d.mode] / 100).toLocaleString('en-SG')} was taken by ${d.mode.toUpperCase()}, so that is the most that can be refunded that way`, 'bad_refund');
         if (!d.note || d.note.trim().length < 3) throw new HttpError(400, 'Give a reason for the refund', 'note_required');
       } else {
         if (o.status === 'cancelled') throw new HttpError(409, 'This order was cancelled', 'cancelled');
         const bal = Math.max(o.total_amount - paid, 0);
-        if (d.amount > bal) throw new HttpError(400, `The balance is only S$${(bal / 100).toLocaleString('en-SG')}`, 'overpay');
+        if (d.amount > bal) throw new HttpError(400, `The balance is only $${(bal / 100).toLocaleString('en-SG')}`, 'overpay');
       }
       await t.query('INSERT INTO stitch_payments (order_id, kind, amount, mode, ref, note, idempotency_key, received_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [orderId, d.kind, d.amount, d.mode, d.ref ?? null, d.note ?? '', d.idempotencyKey, user.id]);
       await note(t, orderId, user, d.kind === 'refund' ? 'refund' : 'payment', { kind: d.kind, amount: d.amount, mode: d.mode });

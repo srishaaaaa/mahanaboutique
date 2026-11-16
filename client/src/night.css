@@ -929,15 +929,15 @@
    ===================================================================== */
 .rs { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; overflow: hidden; color: #c9897a;
   background: radial-gradient(60% 50% at 50% 42%, #2d3e76 0, #1c284f 70%, #101936 100%);
-  clip-path: ellipse(150% 150% at 50% 0%); transition: clip-path .9s cubic-bezier(.76, 0, .24, 1) }
-.rs.is-out { clip-path: ellipse(150% 0% at 50% 0%) }
+  transition: opacity .6s ease }
+.rs.is-out { opacity: 0; pointer-events: none }
 .rs-sky { position: absolute; inset: 0; pointer-events: none }
 .rs-sky i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fbe4e1; box-shadow: 0 0 10px 3px rgba(201, 137, 122, .55); animation: fx-twinkle 3.2s ease-in-out infinite }
 .rs-in { position: relative; display: grid; justify-items: center; gap: 14px; transition: transform .9s cubic-bezier(.76, 0, .24, 1), opacity .6s ease }
-.rs.is-out .rs-in { transform: translateY(-60px); opacity: 0 }
+.rs.is-out .rs-in { transform: none }
 .rs-emblem { width: 46px; height: 46px; color: #efc3b3; opacity: 0; animation: rs-pop .7s .1s cubic-bezier(.22, 1, .36, 1) forwards, fx-spin 14s linear infinite }
 .rs-name { position: relative; display: block; padding: 0 .12em; line-height: 1 }
-.rs-name b { display: block; font: 400 clamp(84px, 14vw, 170px)/1.1 'Great Vibes', cursive; color: #efc3b3; text-shadow: 0 0 40px rgba(201, 137, 122, .45);
+.rs-name b { display: block; font-size: 0; filter: drop-shadow(0 0 26px rgba(201, 137, 122, .4));
   clip-path: inset(-40% 100% -40% -12%); padding: .12em .14em .1em; animation: rs-write 1.15s .25s cubic-bezier(.65, 0, .35, 1) forwards }
 /* a glowing pen tip runs along with the writing */
 .rs-pen { position: absolute; top: 50%; left: 0; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 18px 6px rgba(239, 195, 179, .9), 0 0 40px 12px rgba(201, 137, 122, .5);
@@ -1549,3 +1549,6 @@
 .pdp-delivery li { display: flex; gap: 10px; align-items: flex-start; padding-left: 0 } .pdp-delivery li::before { display: none }
 .pdp-delivery .pdp-ic { flex: none; margin-top: 2px; color: var(--d-acc, #1c284f) }
 .pdp-actions .icon-btn svg { stroke-width: 1.6 }
+
+.rs-name b img { display: block; width: clamp(300px, 40vw, 580px); height: auto }
+.rs-emblem { margin-bottom: 18px }
