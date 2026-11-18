@@ -273,7 +273,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
           <input aria-label="Price in dollars" inputMode="decimal" placeholder="Price $" value={l.priceStr} onChange={e => patch(l.key, { priceStr: e.target.value })} />
           <select aria-label="GST rate" value={l.taxRate} onChange={e => patch(l.key, { taxRate: +e.target.value })}>{GST_RATES.map(r => <option key={r} value={r}>{r}% GST</option>)}</select>
           {l.service && <div className="msr-line">
-            <button type="button" className="dpos-btn ghost sm" onClick={() => setMeasureFor(l.key)}>📏 {l.measure ? 'Edit measurements' : 'Add measurements'}</button>
+            <button type="button" className="dpos-btn ghost sm" onClick={() => setMeasureFor(l.key)}><Icon n="ruler" size={15} /> {l.measure ? 'Edit measurements' : 'Add measurements'}</button>
             {l.measure && <span className="msr-sum">{measureSummary(l.measure)}</span>}
           </div>}
         </div>

@@ -598,3 +598,11 @@
 .ra.ret { background: #fff1de; color: #c46a12 } .ra.edit { background: #e7ecfb; color: #2f47a8 } .ra.del { background: #fde7e7; color: #c0322a }
 .oo-acts { gap: 8px; flex-wrap: nowrap } .oo-acts .oh-fulfil { flex: none } .oo-acts .dpos-pill, .oo-acts select { flex: none }
 .oh-btn svg { width: 15px; height: 15px }
+
+/* Order items: only the remove (x) button is a round 38px control; the measurements button keeps its natural size and sits neatly in its bar */
+.dpos-line .dpos-btn.sm { width: auto; height: auto; padding: 8px 14px; display: inline-flex; align-items: center; gap: 8px }
+.dpos-line .dpos-btn.sm[aria-label="Remove item"] { width: 38px; height: 38px; padding: 0; display: inline-grid; place-items: center; border-radius: 50% }
+.dpos-line .msr-line { min-height: 54px; padding: 8px 14px; gap: 14px }
+.dpos-line .msr-line .dpos-btn { flex: none; white-space: nowrap; background: #fff }
+.dpos-line .msr-line .dpos-btn svg { flex: none; width: 15px; height: 15px }
+.dpos-line .dpos-grid { grid-template-columns: minmax(150px, 2fr) minmax(90px, 1fr) 130px }
