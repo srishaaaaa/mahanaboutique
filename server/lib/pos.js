@@ -308,22 +308,24 @@ export function listSales(db, { q = '', name = '', phone = '', source = 'all', f
   if (phone.trim()) w.push(`regexp_replace(s.customer_phone, '\\D', '', 'g') LIKE ${add(`%${phone.replace(/\D/g, '')}%`)}`);
   if (source === 'offline' || source === 'online') w.push(`s.source = ${add(source)}`);
   if (gst === 'gst') w.push('s.is_gst'); else if (gst === 'nongst') w.push('NOT s.is_gst');
-  if (['cash', 'upi', 'card', 'split'].includes(payment)) w.push(`s.payment_mode = ${add(payment)}`);
+  { const pf = payFilter(payment); if (pf) w.push(pf.replace(/^ AND /, '')) }
   if (from) w.push(`${dayExpr} >= ${add(from)}::date`);
   if (to) w.push(`${dayExpr} <= ${add(to)}::date`);
   return rows(db, `
     SELECT s.invoice_no AS "invoiceNo", s.status, s.customer_name AS "customerName", s.customer_phone AS "customerPhone", s.total_amount AS total,
-           s.payment_mode AS "paymentMode", s.created_at AS "createdAt", s.bill_date::text AS "billDate", s.is_gst AS "isGst", s.source, s.share_token AS "shareToken", NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int AS "webOrderId", (SELECT o.status FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webStatus", (SELECT o.order_number FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webOrderNumber", (SELECT o.email FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webEmail", s.customer_address AS "customerAddress", (SELECT COALESCE(SUM(quantity), 0)::int FROM pos_sale_items i WHERE i.sale_id = s.id) AS "itemCount", (SELECT COUNT(*)::int FROM pos_returns r WHERE r.sale_id = s.id) AS "returnCount"
+           s.payment_mode AS "paymentMode", s.pay_cash AS "payCash", s.pay_upi AS "payUpi", s.pay_card AS "payCard", s.created_at AS "createdAt", s.bill_date::text AS "billDate", s.is_gst AS "isGst", s.source, s.share_token AS "shareToken", NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int AS "webOrderId", (SELECT o.status FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webStatus", (SELECT o.order_number FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webOrderNumber", (SELECT o.email FROM orders o WHERE o.id = NULLIF(to_jsonb(s) ->> 'web_order_id', '')::int) AS "webEmail", s.customer_address AS "customerAddress", (SELECT COALESCE(SUM(quantity), 0)::int FROM pos_sale_items i WHERE i.sale_id = s.id) AS "itemCount", (SELECT COUNT(*)::int FROM pos_returns r WHERE r.sale_id = s.id) AS "returnCount"
     FROM pos_sales s WHERE ${w.join(' AND ')} ORDER BY s.id DESC LIMIT ${Math.min(limit, 500)}`, a);
 }
 
 // Sales report for an inclusive date range, one channel, optionally GST-only / non-GST-only. Voided bills are excluded from revenue and counted
 // separately. Expenses (retail) are subtracted for net earnings. The monthly and weekly charts always show the current year / week.
+// A bill paid with several methods counts under each of them (a cash + PayNow split is in Cash and in QR / PayNow). Only the API's 'split' keeps meaning "paid with more than one".
+const payFilter = payment => payment === 'cash' ? ' AND s.pay_cash > 0' : payment === 'upi' ? ' AND s.pay_upi > 0' : payment === 'card' ? ' AND s.pay_card > 0' : payment === 'split' ? " AND s.payment_mode = 'split'" : '';
 export async function report(db, from, to, channel = 'retail', gst = 'all', source = 'all', payment = 'all') {
   // Optional filters: sales channel (offline POS / online) and how the bill was paid (cash, PayNow/QR, card or a split of them).
   const g = (gst === 'gst' ? ' AND s.is_gst' : gst === 'nongst' ? ' AND NOT s.is_gst' : '')
     + (source === 'offline' || source === 'online' ? ` AND s.source = '${source}'` : '')
-    + (['cash', 'upi', 'card', 'split'].includes(payment) ? ` AND s.payment_mode = '${payment}'` : '');
+    + payFilter(payment);
   const range = `s.channel = $3 AND ${dayExpr} BETWEEN $1::date AND $2::date${g}`, p = [from, to, channel];
   const done = "s.status = 'completed'";
   const totals = await one(db, `
@@ -335,6 +337,7 @@ export async function report(db, from, to, channel = 'retail', gst = 'all', sour
            COUNT(*) FILTER (WHERE ${done} AND NOT s.is_gst)::int AS "nonGstBills", COALESCE(SUM(s.total_amount) FILTER (WHERE ${done} AND NOT s.is_gst), 0)::int AS "nonGstSales",
            COUNT(*) FILTER (WHERE ${done} AND s.source = 'offline')::int AS "offlineBills", COALESCE(SUM(s.total_amount) FILTER (WHERE ${done} AND s.source = 'offline'), 0)::int AS "offlineSales",
            COUNT(*) FILTER (WHERE ${done} AND s.source = 'online')::int AS "onlineBills", COALESCE(SUM(s.total_amount) FILTER (WHERE ${done} AND s.source = 'online'), 0)::int AS "onlineSales",
+           COUNT(*) FILTER (WHERE ${done} AND s.pay_cash > 0)::int AS "cashBills", COUNT(*) FILTER (WHERE ${done} AND s.pay_upi > 0)::int AS "upiBills", COUNT(*) FILTER (WHERE ${done} AND s.pay_card > 0)::int AS "cardBills",
            COUNT(DISTINCT COALESCE(NULLIF(s.customer_phone, ''), NULLIF(lower(s.customer_name), ''))) FILTER (WHERE ${done})::int AS customers
     FROM pos_sales s WHERE ${range}`, p);
   let units = (await one(db, `SELECT COALESCE(SUM(i.quantity), 0)::int AS n FROM pos_sale_items i JOIN pos_sales s ON s.id = i.sale_id WHERE ${done} AND ${range}`, p)).n;
@@ -393,7 +396,9 @@ export async function report(db, from, to, channel = 'retail', gst = 'all', sour
   const retWk = await rows(db, `SELECT ${rDay}::text AS day, SUM(r.total)::int AS total FROM pos_returns r JOIN pos_sales s ON s.id = r.sale_id WHERE s.channel = $1 AND ${rDay} BETWEEN $2::date AND $3::date${g} GROUP BY 1`, [channel, iso(mon), iso(sun)]);
   const week = Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + i); return (wk.find(r => r.day === iso(d))?.revenue ?? 0) - (retWk.find(r => r.day === iso(d))?.total ?? 0) });
   const jan1 = new Date(Date.UTC(year, 0, 1)), weekNo = Math.ceil(((t - jan1) / 86400000 + ((jan1.getUTCDay() + 6) % 7) + 1) / 7);
-  return { from, to, channel, gst, source, payment, ...totals, grossRevenue, returned: { count: ret.n, total: ret.total, tax: ret.tax }, units, expenses, expenseByCategory, costs, cogs: costs.soldCost, gross: totals.revenue - costs.soldCost, net: totals.revenue - costs.soldCost - expenses, average: totals.bills ? Math.round(totals.revenue / totals.bills) : 0,
+  return { from, to, channel, gst, source, payment, ...totals, grossRevenue, returned: { count: ret.n, total: ret.total, tax: ret.tax, cash: ret.cash, upi: ret.upi, card: ret.card },
+    // money collected per method, net of refunds paid back the same way; split bills are already broken down into their cash / PayNow / card parts
+    byMethod: Object.fromEntries(['cash', 'upi', 'card'].map(m => [m, { collected: totals[m], refunded: ret[m], net: totals[m] - ret[m], bills: totals[m + 'Bills'] }])), units, expenses, expenseByCategory, costs, cogs: costs.soldCost, gross: totals.revenue - costs.soldCost, net: totals.revenue - costs.soldCost - expenses, average: totals.bills ? Math.round(totals.revenue / totals.bills) : 0,
     topProduct: products[0]?.name ?? null, daily, products, coupons, discountedList, year, monthly, week, weekNo };
 }
 

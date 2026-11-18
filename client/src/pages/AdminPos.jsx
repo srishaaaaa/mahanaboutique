@@ -37,7 +37,7 @@ const k = p => p >= 100000000 ? `$${(p / 100000000).toFixed(1).replace(/\.0$/, '
 const MODES = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']];
 const MODE_LABEL = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, inventory: true, customers: false, coupons: true, expenses: true, settings: true };
+const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, inventory: true, customers: false, coupons: true, expenses: true, delivery: true, settings: true };
 
 // ---- live preview of the bill (the server recomputes everything on checkout) ----
 function preview(lines, { isGst, gstRate, discountType, discountValue, deliveryFee }) {
@@ -318,7 +318,6 @@ function Billing({ channel, shop, onSale, onAdvance }) {
       <div className="dpos-col dpos-sticky">
         <section className="dpos-card"><div className="dpos-head" style={{ marginBottom: 10 }}><h2 style={{ marginBottom: 0 }}><Icon n="orders" />Current order{priced.length > 0 && <span className={`dpos-count ${flash ? 'pop' : ''}`} aria-label={`${priced.reduce((t, l) => t + l.qty, 0)} items on the bill`}>{priced.reduce((t, l) => t + l.qty, 0)}</span>}</h2></div>
           <div className="dpos-box dpos-sum" style={{ marginBottom: 14 }}>
-            <div><span>SOURCE</span><span className="dpos-pill">{ws ? 'Wholesale' : source === 'online' ? 'Online' : 'Offline'}</span></div>
             <div><span>CUSTOMER</span><span>{cust.name || '-'}</span></div><div><span>PHONE</span><span>{cust.phone || '-'}</span></div>
             <div><span>DATE</span><span>{dmy(billDate)}</span></div>
             <hr style={{ border: 0, borderTop: '1px solid var(--d-line)', width: '100%' }} />
@@ -521,7 +520,7 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
         </div>
         <span className="an-gst"><Chips value={gst} onChange={setGst} options={GST_CHIPS} /></span>
         <div className="an-grp an-pay" role="group" aria-label="Payment method"><b>PAYMENT</b>
-          {[['all', 'All', null], ['cash', 'Cash', 'amber'], ['upi', 'QR / PayNow', 'blue'], ['card', 'Card', 'pink'], ['split', 'Split', 'violet']].map(([v, l, d]) => <button key={v} type="button" className={pay === v ? 'on' : ''} aria-pressed={pay === v} onClick={() => setPay(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
+          {[['all', 'All', null], ['cash', 'Cash', 'amber'], ['upi', 'QR / PayNow', 'blue'], ['card', 'Card', 'pink']].map(([v, l, d]) => <button key={v} type="button" className={pay === v ? 'on' : ''} aria-pressed={pay === v} onClick={() => setPay(v)}>{d && <i className={`dot ${d}`} />}{l}</button>)}
         </div>
       </div>
       <Err>{err}</Err>
@@ -532,6 +531,12 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
           <Stat cls="gstc" icon="doc" label="GST sales" value={v(r => inr(r.gstSales))} sub={v(r => `${r.gstBills} GST invoices`, ' ')} />
           <Stat cls="nong" icon="trend" label="Non-GST sales" value={v(r => `+ ${inr(r.nonGstSales)}`)} sub={v(r => `${r.nonGstBills} ${ws ? 'wholesale' : 'retail'} bills`, ' ')} />
           {!ws && <Stat cls="exp" icon="wallet" label="Total expenses" value={v(r => `− ${inr(r.expenses)}`)} sub={v(r => r.expenseByCategory?.length ? `${r.expenseByCategory.length} categor${r.expenseByCategory.length === 1 ? 'y' : 'ies'} · top: ${r.expenseByCategory[0].category}` : 'No expenses yet', ' ')} onOpen={rep ? () => setDetail('expenses') : undefined} />}
+        </div>
+        <div className="dpos-k4 an-methods">
+          <Stat cls="nong" icon="wallet" label="Cash collected" value={v(r => inr(r.byMethod.cash.net))} sub={v(r => `${r.byMethod.cash.bills} bill${r.byMethod.cash.bills === 1 ? '' : 's'}${r.byMethod.cash.refunded ? ` · refunds − ${inr(r.byMethod.cash.refunded)}` : ''}`, ' ')} />
+          <Stat cls="gstc" icon="doc" label="QR / PayNow collected" value={v(r => inr(r.byMethod.upi.net))} sub={v(r => `${r.byMethod.upi.bills} bill${r.byMethod.upi.bills === 1 ? '' : 's'}${r.byMethod.upi.refunded ? ` · refunds − ${inr(r.byMethod.upi.refunded)}` : ''}`, ' ')} />
+          <Stat cls="exp" icon="wallet" label="Card collected" value={v(r => inr(r.byMethod.card.net))} sub={v(r => `${r.byMethod.card.bills} bill${r.byMethod.card.bills === 1 ? '' : 's'}${r.byMethod.card.refunded ? ` · refunds − ${inr(r.byMethod.card.refunded)}` : ''}`, ' ')} />
+          <Stat cls="net" icon="trend" label="Total collected" value={v(r => inr(r.byMethod.cash.net + r.byMethod.upi.net + r.byMethod.card.net))} sub="Cash + QR / PayNow + Card · split bills are counted in each method they were paid with" />
         </div>
         <div className="dpos-k4">
           <Stat cls="exp" icon="wallet" label="Refunded amount" value={v(r => `− ${inr(r.returned?.total || 0)}`)} sub="Returns made in this period" />
@@ -786,7 +791,6 @@ function Settings({ onSaved }) {
         <div><button className="dpos-btn" disabled={busy} type="submit">{busy ? 'Saving…' : 'Save settings'}</button></div>
         </div>
       </form>
-      <DeliveryRulesCard />
       <LoginPasswordCard />
       <StaffAccessCard />
     </div>
@@ -857,15 +861,15 @@ export default function AdminPos() {
     'stitching-reports': <StitchingReports />,
     orders: <OrderHistory manager={manager} tick={tick} openInvoice={openInvoice} onChanged={() => setTick(t => t + 1)} />,
     inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />,
-    expenses: <PosExpenses />, settings: <Settings onSaved={loadShop} />,
+    expenses: <PosExpenses />, delivery: <DeliveryRulesCard />, settings: <Settings onSaved={loadShop} />,
   }[tab];
   const sub = {
     stitching: 'Stitching work at a glance: what is due, what is late and what it earned', 'stitching-orders': 'Every bill with stitching and every open advance order, with due dates and status', 'stitching-reports': 'Stitching revenue by garment and by day',
     billing: 'Quick invoice generator · stock synced with the online store · for in-store (offline) and online-order billing', analytics: 'Real-time store & channel insights', advance: 'Orders booked with a deposit, billed when the customer collects', orders: 'Manage and track past invoices',
     inventory: 'Manage products and stock — add, edit and adjust', customers: 'Customer details', coupons: 'Create discount codes and send them to customers on WhatsApp. Applies to the product subtotal only.',
-    expenses: 'Record spending by category and see your real net profit', settings: 'POS logo, shop details on bills, GST number and delivery quick picks',
+    expenses: 'Record spending by category and see your real net profit', delivery: 'Delivery charges for the online store by weight and region, the free-delivery amount and the delivery notes customers see', settings: 'POS logo, shop details on bills, GST number and delivery quick picks',
   }[tab];
-  const title = { billing: 'POS Billing Panel', analytics: 'POS Analytics', orders: 'Order History', measurements: 'Measurements', stitching: 'Stitching Dashboard', 'stitching-orders': 'Stitching Orders', 'stitching-reports': 'Stitching Reports', inventory: 'Inventory', advance: 'Advance Orders', customers: 'Customers', coupons: 'Coupon Management', birthdays: 'Date of Birth', expenses: 'Expense Tracker', settings: 'Settings' }[tab];
+  const title = { billing: 'POS Billing Panel', analytics: 'POS Analytics', orders: 'Order History', measurements: 'Measurements', stitching: 'Stitching Dashboard', 'stitching-orders': 'Stitching Orders', 'stitching-reports': 'Stitching Reports', inventory: 'Inventory', advance: 'Advance Orders', customers: 'Customers', coupons: 'Coupon Management', birthdays: 'Date of Birth', expenses: 'Expense Tracker', delivery: 'Delivery', settings: 'Settings' }[tab];
   return (
     <AdminShell title={title} sub={sub}>
       <Err>{err}</Err>

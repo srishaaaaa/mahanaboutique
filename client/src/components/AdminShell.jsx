@@ -56,7 +56,7 @@ export const Icon = ({ n, size = 18 }) => <svg width={size} height={size} viewBo
 // [path, label, icon, managerOnly]
 export const NAV = [
   { group: 'Online store', items: [
-    ['/admin/orders', 'Online orders', 'orders', true], ['/admin/reviews', 'Reviews', 'star', true], ['/admin/categories', 'Categories', 'tag', true], ['/admin/trending', 'Trending', 'star', true], ['/admin/site-text', 'Site text', 'edit', true],
+    ['/admin/orders', 'Online orders', 'orders', true], ['/admin/reviews', 'Reviews', 'star', true], ['/admin/categories', 'Categories', 'tag', true], ['/admin/billing/delivery', 'Delivery', 'truck', true], ['/admin/trending', 'Trending', 'star', true], ['/admin/site-text', 'Site text', 'edit', true],
     ['/admin/storefront', 'Storefront images', 'image', true], ['/admin/reels', 'Reels & Gallery', 'film', true], ['/admin/enquiries', 'Enquiries', 'mail', true],
     ['/admin/users', 'Users', 'users', true], ['/admin/sample', 'Sample data', 'flask', true]] },
   { group: 'Retail billing', items: [
