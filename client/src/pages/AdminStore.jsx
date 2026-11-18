@@ -4,6 +4,10 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAccess } from '../lib/access';
 import { useApp } from '../context/App';
 import { StaffAccessCard } from './AdminStaff';
+import { waLink, invoiceUrl, WaIcon, DocIcon, EyeIcon, ReturnIcon, PencilIcon, FulfilControl, OrderQuick } from './PosOrders';
+import ReturnModal from '../components/ReturnModal';
+import EditSaleModal from '../components/EditSaleModal';
+import { InvoicePreview } from './InvoicePage';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import AdminShell, { Icon } from '../components/AdminShell';
@@ -29,7 +33,12 @@ const Card = ({ children }) => <section className="dpos-card">{children}</sectio
 
 export function AdminOrders() {
   const gate = useGate(); const [s, setS] = useState(); const [o, setO] = useState(null); const [e, setE] = useState(); const [per, setPer] = usePeriod('all'); const [pay, setPay] = useState('all');
-  useEffect(() => { if (!gate) Promise.all([api('/admin/stats'), api('/admin/orders')]).then(([a, b]) => { setS(a); setO(b) }).catch(x => setE(x.message)) }, [gate]);
+  const [bills, setBills] = useState({}); const [pv, setPv] = useState(null); const [ret, setRet] = useState(null); const [edit, setEdit] = useState(null); const [quick, setQuick] = useState(null); const [n, setN] = useState(0);
+  const { user } = useApp(); const manager = ['owner', 'admin'].includes(user?.role);
+  useEffect(() => { if (!gate) Promise.all([api('/admin/stats'), api('/admin/orders')]).then(([a, b]) => { setS(a); setO(b) }).catch(x => setE(x.message)) }, [gate, n]);
+  // each paid website order has an online bill: its invoice, returns and edits live there
+  useEffect(() => { if (!gate) api('/admin/pos/sales?source=online&channel=retail&limit=500').then(r => setBills(Object.fromEntries(r.filter(x => x.webOrderNumber).map(x => [x.webOrderNumber, x])))).catch(() => {}) }, [gate, n]);
+  const advance = async (r, status) => { try { await api('/admin/orders/' + encodeURIComponent(r.webOrderNumber), { method: 'PATCH', body: { status } }); setN(x => x + 1) } catch (x) { setE(x.message) } };
   if (gate) return gate;
   const shownO = (o || []).filter(x => inPeriod(x.created_at, per) && (pay === 'all' || (pay === 'paid' ? x.payment_status === 'paid' : x.payment_status !== 'paid')));
   return (
@@ -43,15 +52,28 @@ export function AdminOrders() {
       <div className="dpos-bar-tools"><Chips label="Payment" value={pay} onChange={setPay} options={[['all', 'All'], ['paid', 'Paid'], ['unpaid', 'Unpaid']]} /><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="online-orders" header={['Order', 'Email', 'Total ($)', 'Payment', 'Status', 'Date']} rows={shownO.map(x => [x.order_number, x.email, (x.total / 100).toFixed(2), x.payment_status, x.status, String(x.created_at).slice(0, 10)])} /></div>
       {!o ? <p className="dpos-empty">Loading…</p> : !shownO.length ? <p className="dpos-empty">No online orders here.</p> : (
         <section className="dpos-card"><div className="dpos-tw"><table className="oo-table">
-          <thead><tr><th>Order</th><th>Email</th><th className="r">Total</th><th>Payment</th><th>Status</th></tr></thead>
+          <thead><tr><th>Order</th><th>Email</th><th className="r">Total</th><th className="r">Status &amp; actions</th></tr></thead>
           <tbody>{shownO.map(x => (
             <tr key={x.id}>
               <td className="oid"><b>{x.order_number}</b></td>
               <td>{x.email}</td>
               <td className="r">{inr(x.total)}</td>
-              <td><span className={`dpos-pill ${x.payment_status === 'paid' ? 'ok' : ''}`}>{x.payment_status}</span></td>
-              <td><select className={`oo-st st-${x.status}`} value={x.status} aria-label={`Status for ${x.order_number}`} onChange={async ev => { try { await api('/admin/orders/' + x.order_number, { method: 'PATCH', body: { status: ev.target.value } }); setO(list => list.map(y => y.id === x.id ? { ...y, status: ev.target.value } : y)) } catch (err) { setE(err.message) } }}>{STATUSES.map(v => <option key={v} value={v}>{v === 'delivered' || v === 'shipped' ? '✓ ' : ''}{v}</option>)}</select></td>
+              <td className="r">{(() => { const bl = bills[x.order_number]; const voided = bl?.status === 'voided'; return (
+                <div className="dpos-rowact oo-acts">
+                  <span className={`dpos-pill ${voided ? 'bad' : x.payment_status === 'paid' ? 'ok' : ''}`}>{voided ? 'Cancelled' : x.payment_status === 'paid' ? 'Completed' : 'Unpaid'}</span>
+                  {bl && manager ? <FulfilControl r={bl} onAdvance={advance} />
+                    : <select className={`oo-st st-${x.status}`} value={x.status} aria-label={`Status for ${x.order_number}`} onChange={async ev => { try { await api('/admin/orders/' + x.order_number, { method: 'PATCH', body: { status: ev.target.value } }); setO(list => list.map(y => y.id === x.id ? { ...y, status: ev.target.value } : y)) } catch (err) { setE(err.message) } }}>{STATUSES.map(v => <option key={v} value={v}>{v[0].toUpperCase() + v.slice(1)}</option>)}</select>}
+                  {x.phone && <a className="ra wa" title="Message on WhatsApp" aria-label="Message on WhatsApp" href={waLink(x.phone, bl ? `Hello${x.name ? ' ' + x.name : ''}, here is your invoice ${bl.invoiceNo} for ${inr(bl.total)}: ${invoiceUrl(bl.shareToken)}` : `Hello${x.name ? ' ' + x.name : ''}, your order ${x.order_number} (${inr(x.total)}) is ${x.status}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>}
+                  {bl && <a className="ra doc" title="Open the invoice" aria-label="Open the invoice" href={`/invoice/${bl.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); setPv(bl) } }}><DocIcon /></a>}
+                  {bl && <button type="button" className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(bl)}><EyeIcon /></button>}
+                  {bl && <button type="button" className="ra ret" title="Return items" aria-label="Return items" disabled={voided} onClick={() => setRet(bl.invoiceNo)}><ReturnIcon /></button>}
+                  {bl && manager && <button type="button" className="ra edit" title="Edit this invoice" aria-label="Edit invoice" disabled={voided} onClick={() => setEdit(bl.invoiceNo)}><PencilIcon /></button>}
+                </div>) })()}</td>
             </tr>))}</tbody></table></div></section>)}
+      {pv && <InvoicePreview token={pv.shareToken} invoiceNo={pv.invoiceNo} onClose={() => setPv(null)} />}
+      {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={(no, row) => { setQuick(null); setPv(row || { invoiceNo: no }) }} manager={manager} onEdited={() => setN(x => x + 1)} />}
+      {ret && <ReturnModal invoiceNo={ret} onClose={() => setRet(null)} onDone={() => setN(x => x + 1)} />}
+      {edit && <EditSaleModal invoiceNo={edit} onClose={() => setEdit(null)} onSaved={() => setN(x => x + 1)} />}
     </AdminShell>
   );
 }

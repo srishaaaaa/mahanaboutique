@@ -21,20 +21,20 @@ const depSplit = a => a.depositSplit || { [a.depositMode]: a.deposit };
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
 const Err = ({ children }) => children ? <p className="dpos-err" role="alert">{children}</p> : null;
 const Empty = ({ children }) => <p className="dpos-empty">{children}</p>;
-const waLink = (phone, text) => { const d = String(phone || '').replace(/\D/g, ''); return `https://wa.me/${d.length === 8 ? '65' + d : d}?text=${encodeURIComponent(text)}` };
-const invoiceUrl = token => `${location.origin}/invoice/${token}`;
+export const waLink = (phone, text) => { const d = String(phone || '').replace(/\D/g, ''); return `https://wa.me/${d.length === 8 ? '65' + d : d}?text=${encodeURIComponent(text)}` };
+export const invoiceUrl = token => `${location.origin}/invoice/${token}`;
 const dtShort = iso => ({ d: longDate(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date(iso))), t: clock(iso) });
 const Ico = ({ children, size = 17 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>;
-const WaIcon = () => <Ico><path d="M20 12a8 8 0 0 1-11.9 7L4 20l1.1-4A8 8 0 1 1 20 12Z" /><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.2-1.7-1-.8.6a3.5 3.5 0 0 1-1.6-1.6l.6-.8-1-1.7Z" /></Ico>;
-const DocIcon = () => <Ico><path d="M6 3h9l4 4v14H6z" /><path d="M9 13h7M9 17h7" /></Ico>;
-const EyeIcon = () => <Ico><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></Ico>;
-const ReturnIcon = () => <Ico><path d="M9 14 4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></Ico>;
-const PencilIcon = () => <Ico><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></Ico>;
-const TrashIcon = () => <Ico><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6" /></Ico>;
+export const WaIcon = () => <Ico><path d="M20 12a8 8 0 0 1-11.9 7L4 20l1.1-4A8 8 0 1 1 20 12Z" /><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.2-1.7-1-.8.6a3.5 3.5 0 0 1-1.6-1.6l.6-.8-1-1.7Z" /></Ico>;
+export const DocIcon = () => <Ico><path d="M6 3h9l4 4v14H6z" /><path d="M9 13h7M9 17h7" /></Ico>;
+export const EyeIcon = () => <Ico><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></Ico>;
+export const ReturnIcon = () => <Ico><path d="M9 14 4 9l5-5" /><path d="M4 9h10a6 6 0 0 1 0 12h-3" /></Ico>;
+export const PencilIcon = () => <Ico><path d="M15 4.5 19.5 9 9 19.5H4.5V15z" /><path d="M13 6.5 17.5 11" /><path d="M14 21h7" /></Ico>;
+export const TrashIcon = () => <Ico><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6" /></Ico>;
 
 // ============================ order history ============================
 // Quick details for one bill (the eye button): who, when, what and the full split-up. "View invoice" opens the invoice preview.
-function OrderQuick({ r, onClose, openInvoice, manager, onEdited }) {
+export function OrderQuick({ r, onClose, openInvoice, manager, onEdited }) {
   const [sale, setSale] = useState(null); const [err, setErr] = useState(); const [editing, setEditing] = useState(false); const [n, setN] = useState(0);
   useEffect(() => { api('/admin/pos/sales/' + encodeURIComponent(r.invoiceNo)).then(x => setSale(x.sale || x)).catch(e => setErr(e.message)) }, [r.invoiceNo, n]);
   return (
@@ -60,8 +60,8 @@ function OrderQuick({ r, onClose, openInvoice, manager, onEdited }) {
 }
 
 // Fulfilment stages of a website order (Shalistone's pending -> packed -> shipped, plus delivered): a chip for the stage and the next step as a button.
-const FULFIL = { pending: ['PENDING', 'packed', 'Mark packed'], paid: ['PENDING', 'packed', 'Mark packed'], confirmed: ['PENDING', 'packed', 'Mark packed'], packed: ['PACKED', 'shipped', 'Mark shipped'], shipped: ['SHIPPED', 'delivered', 'Mark delivered'], delivered: ['DELIVERED', null, null], cancelled: ['CANCELLED', null, null] };
-function FulfilControl({ r, onAdvance }) {
+export const FULFIL = { pending: ['PENDING', 'packed', 'Mark packed'], paid: ['PENDING', 'packed', 'Mark packed'], confirmed: ['PENDING', 'packed', 'Mark packed'], packed: ['PACKED', 'shipped', 'Mark shipped'], shipped: ['SHIPPED', 'delivered', 'Mark delivered'], delivered: ['DELIVERED', null, null], cancelled: ['CANCELLED', null, null] };
+export function FulfilControl({ r, onAdvance }) {
   const [label, next, btn] = FULFIL[r.webStatus] || [String(r.webStatus || '').toUpperCase(), null, null];
   if (r.status === 'voided') return <span className="oh-fs st-cancelled">CANCELLED</span>;
   return <span className="oh-fulfil"><span className={`oh-fs st-${r.webStatus}`}>{r.webStatus === 'shipped' || r.webStatus === 'delivered' ? '✓ ' : ''}{label}</span>{next && <button type="button" className="oh-mark" onClick={() => onAdvance(r, next)}>{btn}</button>}</span>;
@@ -95,8 +95,8 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
   const page = sorted && sorted.slice(0, shown);
   const exportCsv = () => {
     const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const lines = [['Order ID', 'Date', 'Time', 'Customer', 'Mobile', 'Source', 'Type', 'Payment', 'Total (INR)', 'Status'].map(esc).join(',')]
-      .concat((rows || []).map(r => [r.invoiceNo, r.billDate, clock(r.createdAt), r.customerName || 'Guest', r.customerPhone, r.source, r.isGst ? 'GST' : 'NON-GST', MODE[r.paymentMode], (r.total / 100).toFixed(2), r.status].map(esc).join(',')));
+    const lines = [['Order ID', 'Date', 'Time', 'Customer', 'Mobile', 'Source', 'Type', 'Payment', 'Cash ($)', 'QR / PayNow ($)', 'Card ($)', 'Total ($)', 'Status'].map(esc).join(',')]
+      .concat((rows || []).map(r => [r.invoiceNo, r.billDate, clock(r.createdAt), r.customerName || 'Guest', r.customerPhone, r.source, r.isGst ? 'GST' : 'NON-GST', r.paymentMode === 'split' ? SPLIT_L.filter(([k]) => r['pay' + k[0].toUpperCase() + k.slice(1)] > 0).map(([, l]) => l).join(' + ') : MODE[r.paymentMode], ((r.payCash || 0) / 100).toFixed(2), ((r.payUpi || 0) / 100).toFixed(2), ((r.payCard || 0) / 100).toFixed(2), (r.total / 100).toFixed(2), r.status].map(esc).join(',')));
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })); a.download = `order-history-${todayStr()}.csv`; a.click(); URL.revokeObjectURL(a.href);
   };
   return (
@@ -113,7 +113,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
       <div className="oh-chips">
         <div role="group" aria-label="Bill type"><b>TYPE</b>{[['all', 'All bills'], ['online', 'Online (website)'], ['offline', 'In-store (billing)']].map(([v, l]) => <button key={v} type="button" className={f.source === v ? 'on' : ''} aria-pressed={f.source === v} onClick={() => setF({ ...f, source: v })}>{l}</button>)}</div>
         <div role="group" aria-label="GST filter">{[['all', 'All bills'], ['gst', 'GST invoices'], ['nongst', 'Non-GST bills']].map(([v, l]) => <button key={v} type="button" className={f.gst === v ? 'on' : ''} aria-pressed={f.gst === v} onClick={() => setF({ ...f, gst: v })}>{l}</button>)}</div>
-        <div role="group" aria-label="Payment filter"><b>PAYMENT</b>{[['all', 'All methods'], ['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']].map(([v, l]) => <button key={v} type="button" className={f.payment === v ? 'on' : ''} aria-pressed={f.payment === v} onClick={() => setF({ ...f, payment: v })}>{l}</button>)}</div>
+        <div role="group" aria-label="Payment filter"><b>PAYMENT</b>{[['all', 'All methods'], ['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card']].map(([v, l]) => <button key={v} type="button" className={f.payment === v ? 'on' : ''} aria-pressed={f.payment === v} onClick={() => setF({ ...f, payment: v })}>{l}</button>)}</div>
       </div>
       <Err>{err}</Err>
       <div className="oh-foot" style={{ margin: '4px 2px' }}><b>{rows ? rows.length : 0} orders</b>
@@ -133,7 +133,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
                 <td><b>{longDate(r.billDate)}</b><div className="muted small">{dt.t}</div></td>
                 <td><b>{r.customerName || 'Guest'}</b></td>
                 <td>{r.customerPhone || <span className="muted">—</span>}</td>
-                <td><span className="dpos-tag">{r.source}</span><br /><span className="dpos-tag solid">{r.isGst ? 'GST' : 'NON-GST'}</span></td>
+                <td><span className="dpos-tag">{r.source}</span><br /><span className="dpos-tag solid">{r.isGst ? 'GST' : 'NON-GST'}</span>{r.paymentMode === 'split' && <div className="muted small">{splitText({ cash: r.payCash, upi: r.payUpi, card: r.payCard })}</div>}</td>
                 <td className="due">{inr(r.total)}</td>
                 <td className="r"><div className="dpos-rowact">
                   <span className={`dpos-pill ${r.status === 'voided' ? 'bad' : 'ok'}`}>{r.status === 'voided' ? 'Void' : 'Completed'}</span>
@@ -287,12 +287,15 @@ export function AdvanceOrders({ manager, tick, onBilled, initialCode }) {
       <Err>{err}</Err>
       <section className="dpos-card">
         {!rows ? <Empty>Loading…</Empty> : !shown.length ? <Empty>No advance orders here. Add items in Billing and press “Save as advance order”.</Empty> : (
-          <div className="dpos-tw"><table><thead><tr><th>Order</th><th>Customer</th><th>Delivery date</th><th className="r">Items</th><th className="r">Total</th><th className="r">Advance</th><th className="r">Balance</th><th>Status</th></tr></thead>
+          <div className="dpos-tw"><table><thead><tr><th>Order</th><th>Customer</th><th>Delivery date</th><th className="r">Items</th><th className="r">Total</th><th className="r">Advance</th><th className="r">Balance</th><th>Status</th><th /></tr></thead>
             <tbody>{shown.map(r => { const late = r.deliveryDate && r.deliveryDate < today && ['pending', 'ready'].includes(r.status); const [lab, tone] = ADV_STATUS[r.status]; return (
               <tr key={r.code} className="click" tabIndex={0} onClick={() => setSel(r.code)} onKeyDown={e => e.key === 'Enter' && setSel(r.code)}>
                 <td><b>{r.code}</b></td><td>{r.customerName || <span className="muted">Walk-in</span>}{r.customerPhone ? <div className="muted small">{r.customerPhone}</div> : null}</td>
                 <td>{r.deliveryDate ? longDate(r.deliveryDate) : <span className="muted">—</span>} {late && <span className="dpos-pill bad">Late</span>}</td>
-                <td className="r">{r.itemCount}</td><td className="r">{inr(r.total)}</td><td className="r">{inr(r.deposit)}</td><td className="r"><b>{inr(r.balance)}</b></td><td><span className={`dpos-pill ${tone}`}>{lab}</span></td></tr>) })}</tbody></table></div>)}
+                <td className="r">{r.itemCount}</td><td className="r">{inr(r.total)}</td><td className="r">{inr(r.deposit)}</td><td className="r"><b>{inr(r.balance)}</b></td><td><span className={`dpos-pill ${tone}`}>{lab}</span></td>
+                <td className="r" onClick={e => e.stopPropagation()}><div className="dpos-rowact">
+                  <a className="ra wa" title="Message on WhatsApp" aria-label="Message on WhatsApp" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, your order ${r.code} is ${r.status === 'ready' ? 'ready to collect' : 'being prepared'}${r.deliveryDate ? ' (due ' + longDate(r.deliveryDate) + ')' : ''}. Balance to pay: ${money(r.balance)}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
+                  <button type="button" className="ra eye" title="Open the order" aria-label="Open the order" onClick={() => setSel(r.code)}><EyeIcon /></button></div></td></tr>) })}</tbody></table></div>)}
       </section>
       {sel && <AdvanceDetail code={sel} manager={manager} onClose={() => setSel(null)} onChanged={() => setN(x => x + 1)} onBilled={(sale, invoiceNo) => { setSel(null); setN(x => x + 1); onBilled(sale, invoiceNo) }} />}
     </>

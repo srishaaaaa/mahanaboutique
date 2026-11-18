@@ -588,3 +588,13 @@
 .dpos-line .msr-sum { flex: 1 1 260px; min-width: 0; font-size: 11.5px; line-height: 1.5; color: #5b5870 }
 .dpos-line .dpos-qty { height: 38px }
 .dpos-line .dpos-btn.sm { height: 38px; width: 38px; padding: 0; display: inline-grid; place-items: center }
+
+/* row icons a little bigger, in every table (Order History, Advance, Online orders, Stitching orders) */
+.dpos-rowact .ra { width: 42px; height: 42px; border-radius: 12px } .dpos-rowact .ra svg { width: 20px; height: 20px }
+.dpos-rowact { display: inline-flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: nowrap }
+
+/* one icon style everywhere: soft tinted tiles - WhatsApp green, invoice purple, view grey, return orange, edit blue, delete red */
+.ra.wa { background: #e1f5ea; color: #138a4d } .ra.doc { background: #eee6f4; color: #5b2a6b } .ra.eye { background: #eeedf1; color: #26212a }
+.ra.ret { background: #fff1de; color: #c46a12 } .ra.edit { background: #e7ecfb; color: #2f47a8 } .ra.del { background: #fde7e7; color: #c0322a }
+.oo-acts { gap: 8px; flex-wrap: nowrap } .oo-acts .oh-fulfil { flex: none } .oo-acts .dpos-pill, .oo-acts select { flex: none }
+.oh-btn svg { width: 15px; height: 15px }

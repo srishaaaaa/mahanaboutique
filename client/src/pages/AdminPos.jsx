@@ -512,7 +512,18 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
   const v = (f, d = '…') => rep ? f(rep) : d;
   return (
     <>
-      {tab !== 'today' && <PeriodFilter value={per} onChange={setPer} />}
+      <div className="dpos-bar-tools">{tab !== 'today' && <PeriodFilter value={per} onChange={setPer} />}
+        <ExportCsv name="analytics" label="Export Excel" header={['Metric', 'Value']} rows={rep ? [
+          ['Period', `${from} to ${to}`], ['Total revenue ($)', (rep.revenue / 100).toFixed(2)], ['Completed bills', rep.bills], ['Average bill ($)', (rep.average / 100).toFixed(2)], ['GST on sales ($)', (rep.tax / 100).toFixed(2)], ['Discounts ($)', (rep.discounts / 100).toFixed(2)],
+          ['GST sales ($)', (rep.gstSales / 100).toFixed(2)], ['GST bills', rep.gstBills], ['Non-GST sales ($)', (rep.nonGstSales / 100).toFixed(2)], ['Non-GST bills', rep.nonGstBills],
+          ['Offline (POS) sales ($)', (rep.offlineSales / 100).toFixed(2)], ['Offline bills', rep.offlineBills], ['Online (website) sales ($)', (rep.onlineSales / 100).toFixed(2)], ['Online bills', rep.onlineBills],
+          ['Cash collected ($)', (rep.byMethod.cash.collected / 100).toFixed(2)], ['Cash refunded ($)', (rep.byMethod.cash.refunded / 100).toFixed(2)], ['Cash net ($)', (rep.byMethod.cash.net / 100).toFixed(2)],
+          ['QR / PayNow collected ($)', (rep.byMethod.upi.collected / 100).toFixed(2)], ['QR / PayNow refunded ($)', (rep.byMethod.upi.refunded / 100).toFixed(2)], ['QR / PayNow net ($)', (rep.byMethod.upi.net / 100).toFixed(2)],
+          ['Card collected ($)', (rep.byMethod.card.collected / 100).toFixed(2)], ['Card refunded ($)', (rep.byMethod.card.refunded / 100).toFixed(2)], ['Card net ($)', (rep.byMethod.card.net / 100).toFixed(2)],
+          ['Refunded amount ($)', ((rep.returned?.total || 0) / 100).toFixed(2)], ['Refunded bills', rep.returned?.count || 0], ['Units sold', rep.units], ['Expenses ($)', (rep.expenses / 100).toFixed(2)],
+          ['Cost of goods sold ($)', (rep.cogs / 100).toFixed(2)], ['Net profit ($)', (rep.net / 100).toFixed(2)],
+          ...((rep.products || []).map(p => ['Product: ' + p.name, `${p.qty} pcs · $${(p.revenue / 100).toFixed(2)}`])),
+        ] : []} /></div>
       <div className="dpos-tabs" role="tablist">{[['revenue', 'Revenue'], ['today', 'Today’s sales'], ['products', 'Products'], ['coupons', 'Coupons']].map(([id, l]) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>{l}</button>)}</div>
       <div className="an-bar an-all">
         <div className="an-grp" role="group" aria-label="Sales channel">

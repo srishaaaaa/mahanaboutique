@@ -4,6 +4,7 @@ import { inr } from '../lib/format';
 import { longDate, money } from '../lib/invoiceFormat';
 import { PeriodFilter, periodRange, usePeriod } from '../components/PeriodFilter';
 import ExportCsv from '../components/ExportCsv';
+import { waLink, invoiceUrl, WaIcon, DocIcon, EyeIcon } from './PosOrders';
 
 const ST = { pending: ['Pending', 'warn'], completed: ['Completed', 'ok'], cancelled: ['Cancelled', 'bad'] };
 const dueTag = (d, today, status) => !d ? <span className="muted">—</span> : <span className={`sd-due ${status === 'pending' && d < today ? 'late' : status === 'pending' && d === today ? 'now' : ''}`}>{longDate(d)}{status === 'pending' && d < today ? ' · overdue' : status === 'pending' && d === today ? ' · today' : ''}</span>;
@@ -92,7 +93,10 @@ export function StitchingOrders({ openInvoice, goAdvance }) {
                 <td className="r">{o.balance > 0 ? <b className="sd-bal">{money(o.balance)}</b> : <span className="muted">Paid</span>}</td>
                 <td>{o.kind === 'advance' ? <span className="ms-st warn">Pending</span> : o.status === 'cancelled' ? <span className="ms-st bad">Cancelled</span>
                   : <select className={`ms-st ${ST[o.status][1]}`} value={o.status} aria-label={`Status of ${o.invoiceNo}`} onChange={e => setStatus(o, e.target.value)}><option value="pending">Pending</option><option value="completed">Completed</option></select>}</td>
-                <td className="r"><button type="button" className="dpos-btn ghost sm" onClick={() => open(o, openInvoice, goAdvance)}>{o.kind === 'advance' ? 'Open' : 'Invoice'}</button></td></tr>))}</tbody></table></div>)}
+                <td className="r"><div className="dpos-rowact">
+                  <a className="ra wa" title="Message on WhatsApp" aria-label="Message on WhatsApp" href={waLink(o.customerPhone, `Hello${o.customerName ? ' ' + o.customerName : ''}, your order ${o.invoiceNo}${o.dueDate ? ' is due on ' + longDate(o.dueDate) : ''}${o.balance > 0 ? ', balance ' + money(o.balance) : ''}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
+                  {o.shareToken && <a className="ra doc" title="Open the invoice" aria-label="Open the invoice" href={`/invoice/${o.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); open(o, openInvoice, goAdvance) } }}><DocIcon /></a>}
+                  <button type="button" className="ra eye" title={o.kind === 'advance' ? 'Open the advance order' : 'View the bill'} aria-label="View" onClick={() => open(o, openInvoice, goAdvance)}><EyeIcon /></button></div></td></tr>))}</tbody></table></div>)}
       </section>
     </div>
   );

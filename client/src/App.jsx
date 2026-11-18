@@ -4,6 +4,7 @@ import { useApp } from './context/App';
 import FloatingNavbar from './components/FloatingNavbar';
 import LuxuryFooter from './components/LuxuryFooter';
 import ReloadSplash from './components/ReloadSplash';
+import ErrorBoundary from './components/ErrorBoundary';
 import Toasts from './components/Toasts';
 import CartDrawer from './components/CartDrawer';
 import SearchOverlay from './components/SearchOverlay';
@@ -51,7 +52,7 @@ export default function App() {
       {splash && location.pathname === '/' && <ReloadSplash />}
       {site && <FloatingNavbar />}
       {site && <SmoothScroll />}
-      <PageTransition>
+      <ErrorBoundary key={location.pathname}><PageTransition>
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
@@ -90,7 +91,7 @@ export default function App() {
           <Route path="/shipping-returns" element={<Policy slug="shipping-returns" title="Shipping and returns" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </PageTransition>
+      </PageTransition></ErrorBoundary>
       {site && <><LuxuryFooter />
       <CartDrawer /><SearchOverlay /><QuickView /></>}
       {!bare && <Toasts />}

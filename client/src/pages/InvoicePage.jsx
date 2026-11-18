@@ -8,6 +8,7 @@ import { CHANNEL, MODE, clock, inWords, longDate, money, num2 } from '../lib/inv
 import { measureSummary } from '../components/MeasureModal';
 import { billRows, modeName, returnRows } from '../lib/billSummary';
 import ReturnModal from '../components/ReturnModal';
+import { ReturnIcon, PencilIcon } from './PosOrders';
 import EditSaleModal from '../components/EditSaleModal';
 import '../invoice.css';
 
@@ -221,7 +222,7 @@ export default function InvoicePage() {
     const rwa = `https://wa.me/${rd.length === 8 ? '65' + rd : rd}?text=${encodeURIComponent(`Hello${ret.customerName ? ' ' + ret.customerName : ''}, here is your return invoice ${ret.returnNo} for ${money(ret.total)} against invoice ${ret.invoiceNo}: ${rlink}`)}`;
     return (
       <div className="inv-page">
-        <div className="inv-bar">
+        <div className={`inv-bar ${staffR ? '' : 'inv-cust'}`}>
           {staffR ? <Link className="inv-btn" to="/admin/billing/orders">← Return to POS</Link> : <Link className="inv-btn" to="/">← {shop.name}</Link>}
           <Link className="inv-btn" to={`/invoice/${ret.saleToken}`}>View original bill #{ret.invoiceNo}</Link>
           <span className="inv-grow" />
@@ -246,14 +247,14 @@ export default function InvoicePage() {
   };
   return (
     <div className="inv-page">
-      <div className="inv-bar">
+      <div className={`inv-bar ${staff ? '' : 'inv-cust'}`}>
         {staff ? <Link className="inv-btn" to="/admin/billing/orders">← Return to POS</Link> : <Link className="inv-btn" to="/">← {shop.name}</Link>}
         <span className="inv-grow" />
         <a className="inv-btn" href={wa} target="_blank" rel="noopener noreferrer">Share WhatsApp</a>
         <button className="inv-btn" onClick={copy}>{copied ? 'Link copied ✓' : 'Copy Link'}</button>
         {manager && sale.status === 'completed' && !sale.returns?.length && <button className="inv-btn bad" onClick={voidIt} disabled={busy}>Void</button>}
-        {manager && sale.status === 'completed' && !sale.returns?.length && sale.items.some(i => i.id != null) && <button className="inv-btn" onClick={() => setEditOpen(true)}>✎ Edit</button>}
-        {staff && sale.status === 'completed' && sale.items.some(i => i.id != null && i.returnedQty < i.quantity) && <button className="inv-btn" onClick={() => setRetOpen(true)}>↩ Return items</button>}
+        {manager && sale.status === 'completed' && !sale.returns?.length && sale.items.some(i => i.id != null) && <button className="inv-btn" onClick={() => setEditOpen(true)}><PencilIcon /> Edit</button>}
+        {staff && sale.status === 'completed' && sale.items.some(i => i.id != null && i.returnedQty < i.quantity) && <button className="inv-btn" onClick={() => setRetOpen(true)}><ReturnIcon /> Return items</button>}
         <button className="inv-btn dark" onClick={() => setPs(true)}><PrintIcon size={15} /> Print</button>
       </div>
       {fmt === 'thermal' ? <Thermal sale={sale} shop={shop} paper={paper} /> : <A4Doc sale={sale} shop={shop} />}
