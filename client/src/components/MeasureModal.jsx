@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../lib/api';
 import Modal from './Modal';
 import { BACK_NECKS, FRONT_NECKS, Sheet } from './NeckPicker';
 
@@ -27,6 +28,10 @@ function Chips({ options, value, onChange, label }) {
 export default function MeasureModal({ value, onSave, onClose }) {
   const [m, setM] = useState(() => ({ frontNeck: '', backNeck: '', sleeveType: '', sleeveLength: '', dueDate: '', ...value, cm: { ...(value?.cm || {}) }, remarks: [...(value?.remarks || [])] }));
   const [sheet, setSheet] = useState(null);
+  const [mine, setMine] = useState({ front: [], back: [] });
+  useEffect(() => { api('/admin/pos/stitch-designs').then(setMine).catch(() => {}) }, []);
+  const withMine = (base, list) => [...base, ...list.map(d => [d.name, d.image ? <img src={d.image} alt={d.name} style={{ width: 64, height: 48, objectFit: 'contain' }} /> : <span className="pick-init">{d.name.slice(0, 2).toUpperCase()}</span>])];
+  const FRONT = withMine(FRONT_NECKS, mine.front), BACK = withMine(BACK_NECKS, mine.back);
   const [remark, setRemark] = useState(null);
   const set = p => setM(x => ({ ...x, ...p }));
   const icon = (list, v) => list.find(([l]) => l === v)?.[1];
@@ -56,7 +61,7 @@ export default function MeasureModal({ value, onSave, onClose }) {
     <Modal title="Measurements" sub="For this stitching service. Sizes in cm." wide onClose={onClose}
       footer={<><button type="button" className="dpos-btn ghost" onClick={onClose}>Cancel</button><button type="button" className="dpos-btn" onClick={save}>Save measurements</button></>}>
       <div className="msr">
-        <div className="msr-two">{neck('Front neck type', 'frontNeck', FRONT_NECKS, 'front')}{neck('Back neck type', 'backNeck', BACK_NECKS, 'back')}</div>
+        <div className="msr-two">{neck('Front neck type', 'frontNeck', FRONT, 'front')}{neck('Back neck type', 'backNeck', BACK, 'back')}</div>
         <div className="msr-f"><span className="msr-l">Sleeve type</span><Chips label="Sleeve type" options={SLEEVE_TYPES} value={m.sleeveType} onChange={v => set({ sleeveType: v })} /></div>
         <div className="msr-f"><span className="msr-l">Sleeve length</span><Chips label="Sleeve length" options={SLEEVE_LENGTHS} value={m.sleeveLength} onChange={v => set({ sleeveLength: v })} /></div>
         <label className="msr-f"><span className="msr-l">Due date (optional)</span><input type="date" value={m.dueDate} onChange={e => set({ dueDate: e.target.value })} /></label>
@@ -83,8 +88,8 @@ export default function MeasureModal({ value, onSave, onClose }) {
             <button type="button" className="dpos-btn ghost sm" onClick={() => setRemark(null)}>Cancel</button>
           </div>)}
       </div>
-      {sheet === 'front' && <Sheet title="Select Front Neck Type" options={FRONT_NECKS} value={m.frontNeck} onCancel={() => setSheet(null)} onNext={v => { set({ frontNeck: v }); setSheet(m.backNeck ? null : 'back') }} />}
-      {sheet === 'back' && <Sheet title="Select Back Neck Type" options={BACK_NECKS} value={m.backNeck} last onCancel={() => setSheet(null)} onNext={v => { set({ backNeck: v }); setSheet(null) }} />}
+      {sheet === 'front' && <Sheet title="Select Front Neck Type" options={FRONT} value={m.frontNeck} onCancel={() => setSheet(null)} onNext={v => { set({ frontNeck: v }); setSheet(m.backNeck ? null : 'back') }} />}
+      {sheet === 'back' && <Sheet title="Select Back Neck Type" options={BACK} value={m.backNeck} last onCancel={() => setSheet(null)} onNext={v => { set({ backNeck: v }); setSheet(null) }} />}
     </Modal>
   );
 }

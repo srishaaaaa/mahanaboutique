@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import { useApp } from '../context/App';
 import { Icon } from '../components/AdminShell';
+import { PencilIcon, TrashIcon } from './PosOrders';
 import { PeriodFilter, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
 
 const toPaise = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
@@ -15,7 +16,7 @@ export default function PosExpenses() {
   const { toast } = useApp();
   const [per, setPer] = usePeriod('month'); const [rows, setRows] = useState(null); const [cats, setCats] = useState([]); const [err, setErr] = useState();
   const [f, setF] = useState({ title: '', amount: '', date: todayStr(), category: '', mode: 'cash', notes: '' });
-  const [manage, setManage] = useState(false); const [newCat, setNewCat] = useState(''); const [fc, setFc] = useState('all'); const [q, setQ] = useState(''); const [busy, setBusy] = useState(false);
+  const [editId, setEditId] = useState(null); const [manage, setManage] = useState(false); const [newCat, setNewCat] = useState(''); const [fc, setFc] = useState('all'); const [q, setQ] = useState(''); const [busy, setBusy] = useState(false);
   const [from, to] = periodRange(per);
   const load = useCallback(() => api(`/admin/pos/expenses?from=${from}&to=${to}`).then(r => { setRows(r); setErr() }).catch(e => setErr(e.message)), [from, to]);
   const loadCats = useCallback(() => api('/admin/pos/expense-categories').then(c => { setCats(c); setF(x => ({ ...x, category: x.category && c.includes(x.category) ? x.category : (c[0] || 'General') })) }).catch(e => setErr(e.message)), []);
@@ -27,9 +28,11 @@ export default function PosExpenses() {
   const shown = (rows || []).filter(x => (fc === 'all' || x.category === fc) && (!q.trim() || `${x.title} ${x.category} ${x.notes || ''}`.toLowerCase().includes(q.trim().toLowerCase())));
   const logCats = [...new Set([...cats, ...(rows || []).map(x => x.category)])].sort();
 
+  const startEdit = x => { setEditId(x.id); setF({ title: x.title, amount: (x.amount / 100).toFixed(2), date: x.date, category: x.category, mode: x.paymentMode, notes: x.notes || '' }); setErr(); window.scrollTo({ top: 0, behavior: 'smooth' }) };
+  const cancelEdit = () => { setEditId(null); setF(x => ({ ...x, title: '', amount: '', date: todayStr(), notes: '', mode: 'cash' })) };
   const add = async e => {
     e.preventDefault(); setErr(); setBusy(true);
-    try { await api('/admin/pos/expenses', { method: 'POST', body: { title: f.title.trim(), category: f.category || 'General', amount: toPaise(f.amount), paymentMode: f.mode, date: f.date, notes: f.notes.trim() || null } }); setF({ ...f, title: '', amount: '', notes: '' }); toast('Expense added.'); load() }
+    try { await api(editId ? '/admin/pos/expenses/' + editId : '/admin/pos/expenses', { method: editId ? 'PATCH' : 'POST', body: { title: f.title.trim(), category: f.category || 'General', amount: toPaise(f.amount), paymentMode: f.mode, date: f.date, notes: f.notes.trim() || null } }); if (editId) cancelEdit(); else setF({ ...f, title: '', amount: '', notes: '' }); toast(editId ? 'Expense updated.' : 'Expense added.'); load() }
     catch (x) { setErr(x.issues?.[0]?.message || (x.message === 'Validation failed' ? 'Enter what it was for and an amount above $0.' : x.message)) } finally { setBusy(false) }
   };
   const del = async x => { if (!confirm(`Delete expense “${x.title}”?`)) return; try { await api('/admin/pos/expenses/' + x.id, { method: 'DELETE' }); toast('Expense deleted.'); load() } catch (e) { setErr(e.message) } };
@@ -47,7 +50,7 @@ export default function PosExpenses() {
         <div className="ex-k"><span>TOP CATEGORY</span><b>{byCat[0]?.[0] || 'None'}</b><small>{byCat[0] ? `${inr(byCat[0][1])} spent` : 'Highest spend'}</small></div>
       </div>
       <div className="ex-two">
-        <form className="ex-card" onSubmit={add}><h3 className="ex-h">ADD EXPENSE</h3>
+        <form className="ex-card" onSubmit={add}><h3 className="ex-h">{editId ? 'EDIT EXPENSE' : 'ADD EXPENSE'}</h3>
           <label className="ex-l">WHAT FOR?<input required maxLength={120} value={f.title} onChange={e => setF({ ...f, title: e.target.value })} placeholder="e.g. October shop rent" /></label>
           <div className="ex-g2"><label className="ex-l">AMOUNT ($)<input required inputMode="decimal" value={f.amount} onChange={e => setF({ ...f, amount: e.target.value })} placeholder="0.00" /></label>
             <label className="ex-l">DATE<input type="date" max={todayStr()} value={f.date} onChange={e => setF({ ...f, date: e.target.value || todayStr() })} /></label></div>
@@ -56,7 +59,7 @@ export default function PosExpenses() {
           <p className="ex-l" style={{ margin: '10px 0 6px' }}>PAID VIA</p>
           <div className="ex-modes" role="radiogroup" aria-label="Paid via">{MODES.map(([v, l]) => <button key={v} type="button" role="radio" aria-checked={f.mode === v} className={f.mode === v ? 'on' : ''} onClick={() => setF({ ...f, mode: v })}>{l}</button>)}</div>
           <label className="ex-l">NOTES (OPTIONAL)<input maxLength={300} value={f.notes} onChange={e => setF({ ...f, notes: e.target.value })} placeholder="Reference / supplier / bill no." /></label>
-          <button className="ex-add" disabled={busy}>+ ADD EXPENSE</button></form>
+          <button className="ex-add" disabled={busy}>{editId ? 'SAVE CHANGES' : '+ ADD EXPENSE'}</button>{editId && <button type="button" className="ex-link" style={{ marginTop: 8 }} onClick={cancelEdit}>Cancel editing</button>}</form>
         <section className="ex-card"><div className="ex-ch"><h3 className="ex-h">SPEND BY CATEGORY</h3><button type="button" className="ex-man" onClick={() => setManage(m => !m)}><Icon n="gear" size={15} /> {manage ? 'CLOSE' : 'MANAGE'}</button></div>
           {manage ? (
             <div className="ex-mgr">
@@ -75,8 +78,8 @@ export default function PosExpenses() {
         <div className="ex-fl"><select value={fc} onChange={e => setFc(e.target.value)} aria-label="Category filter"><option value="all">All categories</option>{logCats.map(c => <option key={c}>{c}</option>)}</select>
           <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search expenses…" aria-label="Search expenses" /></div></div>
         {!rows ? <p className="dpos-empty">Loading…</p> : !shown.length ? <div className="ex-empty"><span className="ex-pig"><Icon n="wallet" size={26} /></span><b>No expenses found.</b><p>Try a different period or add a new expense.</p></div> : (
-          <div className="dpos-tw"><table><thead><tr><th>Date</th><th>Expense</th><th>Category</th><th>Paid via</th><th className="r">Amount</th><th /></tr></thead>
-            <tbody>{shown.map(x => <tr key={x.id}><td>{dmy(x.date)}</td><td><b>{x.title}</b>{x.notes && <div className="muted small">{x.notes}</div>}</td><td><span className="ex-chip">{x.category}</span></td><td>{{ cash: 'Cash', upi: 'PayNow', card: 'Card' }[x.paymentMode]}</td><td className="r ex-amt">{inr(x.amount)}</td><td className="r"><button type="button" className="dpos-btn danger sm" onClick={() => del(x)}>Delete</button></td></tr>)}</tbody></table></div>)}
+          <div className="dpos-tw"><table><thead><tr><th>Date</th><th>Expense</th><th>Category</th><th>Paid via</th><th className="r">Amount</th><th className="r">Actions</th></tr></thead>
+            <tbody>{shown.map(x => <tr key={x.id}><td>{dmy(x.date)}</td><td><b>{x.title}</b>{x.notes && <div className="muted small">{x.notes}</div>}</td><td><span className="ex-chip">{x.category}</span></td><td>{{ cash: 'Cash', upi: 'PayNow', card: 'Card' }[x.paymentMode]}</td><td className="r ex-amt">{inr(x.amount)}</td><td className="r"><div className="dpos-rowact"><button type="button" className="ra edit" title="Edit this expense" aria-label={`Edit ${x.title}`} onClick={() => startEdit(x)}><PencilIcon /></button><button type="button" className="ra del" title="Delete this expense" aria-label={`Delete ${x.title}`} onClick={() => del(x)}><TrashIcon /></button></div></td></tr>)}</tbody></table></div>)}
       </section>
     </div>
   );

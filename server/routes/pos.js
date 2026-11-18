@@ -290,6 +290,13 @@ export default function pos({ db, auth }) {
     res.json({ ok: true });
   }));
   // Delivery rules: distance bands from the shop's postal code, free-delivery threshold, optional cheaper tiers for bigger orders.
+  // Stitching designs: extra front / back neck designs the owner adds (name + optional picture); they appear next to the built-in ones when measurements are taken.
+  const designList = z.array(z.object({ id: text(40).min(1), name: text(40).min(1), image: text(500).nullable().default(null) })).max(60).default([]);
+  r.get('/pos/stitch-designs', biller, wrap(async (_req, res) => { const v = await getSetting(db, 'stitch_designs', {}); res.json({ front: v.front || [], back: v.back || [] }) }));
+  r.put('/pos/stitch-designs', manager, wrap(async (req, res) => {
+    const v = z.object({ front: designList, back: designList }).parse(req.body);
+    await putSetting(db, 'stitch_designs', v); await audit(db, req.user.id, 'pos.stitch_designs', 'pos_settings', 'stitch_designs'); res.json(v);
+  }));
   r.get('/pos/delivery-rules', manager, wrap(async (_req, res) => res.json(await loadRules(db))));
   r.put('/pos/delivery-rules', manager, wrap(async (req, res) => {
     const tier = z.object({ minGrams: z.number().int().min(0).max(1_000_000), maxGrams: z.number().int().min(1).max(1_000_000).nullable(), fee: paise });
@@ -468,6 +475,14 @@ export default function pos({ db, auth }) {
     if (!cats.includes(name)) throw new HttpError(404, 'Category not found');
     const next = cats.filter(c => c !== name); await putSetting(db, 'expense_categories', next);
     await audit(db, req.user.id, 'pos.expense_category.remove', 'pos_settings', name); res.json(next);
+  }));
+  r.patch('/pos/expenses/:id', manager, wrap(async (req, res) => {
+    const e = expenseBody.parse(req.body); const xid = id.parse(req.params.id);
+    if (e.date && e.date > today()) throw new HttpError(400, 'Expense date cannot be in the future');
+    const row = await one(db, 'UPDATE pos_expenses SET title = $2, category = $3, amount = $4, payment_mode = $5, notes = $6, expense_date = COALESCE($7::date, expense_date) WHERE id = $1 RETURNING id', [xid, e.title, e.category, e.amount, e.paymentMode, e.notes, e.date ?? null]);
+    if (!row) throw new HttpError(404, 'Expense not found');
+    await audit(db, req.user.id, 'pos.expense.update', 'pos_expense', xid, { amount: e.amount });
+    res.json({ id: xid });
   }));
   r.delete('/pos/expenses/:id', manager, wrap(async (req, res) => {
     const d = await db.query('DELETE FROM pos_expenses WHERE id = $1 RETURNING id', [id.parse(req.params.id)]);

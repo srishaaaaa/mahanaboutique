@@ -7,7 +7,7 @@ const A = ['admin'], ALLR = ['admin', 'cashier', 'inventory'];
 export const SECTIONS = [
   ['Online store', [['/admin/orders', 'Online orders', ALLR], ['/admin/reviews', 'Reviews', ALLR], ['/admin/categories', 'Categories', ALLR], ['/admin/billing/delivery', 'Delivery', A], ['/admin/trending', 'Trending', ALLR], ['/admin/site-text', 'Site text', ALLR], ['/admin/storefront', 'Storefront images', ALLR], ['/admin/reels', 'Reels & Gallery', ALLR], ['/admin/enquiries', 'Enquiries', ALLR], ['/admin/users', 'Users', A], ['/admin/sample', 'Sample data', A]]],
   ['Retail billing', [['/admin/billing', 'Billing', ALLR], ['/admin/billing/analytics', 'POS Analytics', ALLR], ['/admin/billing/advance', 'Advance Orders', ALLR], ['/admin/billing/orders', 'Order History', ALLR], ['/admin/billing/inventory', 'Inventory', ALLR], ['/admin/billing/customers', 'Customers', ALLR], ['/admin/billing/coupons', 'Coupons', ALLR], ['/admin/billing/expenses', 'Expenses', ALLR]]],
-  ['Stitching', [['/admin/billing/stitching', 'Stitching Dashboard', ALLR], ['/admin/billing/stitching-orders', 'Stitching Orders', ALLR], ['/admin/billing/measurements', 'Measurements', ALLR], ['/admin/billing/stitching-reports', 'Stitching Reports', ALLR]]],
+  ['Stitching', [['/admin/billing/stitching', 'Stitching Dashboard', ALLR], ['/admin/billing/stitching-orders', 'Stitching Orders', ALLR], ['/admin/billing/measurements', 'Measurements', ALLR], ['/admin/billing/stitching-reports', 'Stitching Reports', ALLR], ['/admin/billing/stitching-designs', 'Stitching Designs', A]]],
   ['Settings', [['/admin/billing/settings', 'POS Settings', A], ['/admin/settings', 'Store Settings', A]]],
 ].map(([group, items]) => ({ group, items: items.map(([path, label, max]) => ({ path, label, max })) }));
 const ALL = SECTIONS.flatMap(g => g.items);
@@ -52,6 +52,7 @@ const ROUTES = [
   [/^\/pos\/delivery-rules/, [B + '/delivery']],
   [/^\/pos\/(products|stock|categories|catalog)/, [B + '/inventory', ...BILL, B + '/advance']],
   [/^\/pos\/advances/, [B + '/advance', B]],
+  [/^\/pos\/stitch-designs/, [...STITCH, B + '/stitching-designs']],
   [/^\/pos\/(measurements|stitching)/, STITCH],
   [/^\/stitching/, STITCH],
   [/^\/pos\/sales\/[^/]+\/tailoring/, [...STITCH, ...BILL]],

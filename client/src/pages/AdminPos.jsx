@@ -14,7 +14,7 @@ import PosExpenses from './PosExpenses';
 import PosCoupons from './PosCoupons';
 import CatalogPicker from '../components/CatalogPicker';
 import PosMeasurements from './PosMeasurements';
-import { StitchingDashboard, StitchingOrders, StitchingReports } from './PosStitching';
+import { StitchingDashboard, StitchingOrders, StitchingReports, StitchingDesigns } from './PosStitching';
 import { InvoicePreview } from './InvoicePage';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
 import { Chips, PeriodFilter, inPeriod, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
@@ -37,7 +37,7 @@ const k = p => p >= 100000000 ? `$${(p / 100000000).toFixed(1).replace(/\.0$/, '
 const MODES = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']];
 const MODE_LABEL = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, inventory: true, customers: false, coupons: true, expenses: true, delivery: true, settings: true };
+const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, 'stitching-designs': true, inventory: true, customers: false, coupons: true, expenses: true, delivery: true, settings: true };
 
 // ---- live preview of the bill (the server recomputes everything on checkout) ----
 function preview(lines, { isGst, gstRate, discountType, discountValue, deliveryFee }) {
@@ -293,7 +293,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
         <section className="dpos-card"><h2><Icon n="user" />Customer details</h2>
           <div className="dpos-grid">
             <label className="f">Customer name<input value={cust.name} onChange={e => setCust({ ...cust, name: e.target.value })} placeholder="Walk-in customer" autoComplete="off" /></label>
-            <label className="f">Mobile number (WhatsApp)<input value={cust.phone} inputMode="tel" onChange={e => setCust({ ...cust, phone: e.target.value })} onBlur={() => lookup()} onChange={e => { setCust({ ...cust, phone: e.target.value }); if (e.target.value.replace(/\D/g, '').length >= 10) lookup(e.target.value) }} placeholder="Enter 10-digit number" autoComplete="off" /></label>
+            <label className="f">Mobile number (WhatsApp)<input value={cust.phone} inputMode="tel" onBlur={() => lookup()} onChange={e => { setCust({ ...cust, phone: e.target.value }); if (e.target.value.replace(/\D/g, '').length >= 10) lookup(e.target.value) }} placeholder="Enter 10-digit number" autoComplete="off" /></label>
             <label className="f">Bill date · custom / past<input type="date" max={todayStr()} value={billDate} onChange={e => setBillDate(e.target.value || todayStr())} /></label>
           </div>
         </section>
@@ -870,17 +870,18 @@ export default function AdminPos() {
     stitching: <StitchingDashboard openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} goBilling={() => nav('/admin/billing?new=stitching')} goTab={t => nav('/admin/billing/' + t)} />,
     'stitching-orders': <StitchingOrders openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} />,
     'stitching-reports': <StitchingReports />,
+    'stitching-designs': <StitchingDesigns />,
     orders: <OrderHistory manager={manager} tick={tick} openInvoice={openInvoice} onChanged={() => setTick(t => t + 1)} />,
     inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />,
     expenses: <PosExpenses />, delivery: <DeliveryRulesCard />, settings: <Settings onSaved={loadShop} />,
   }[tab];
   const sub = {
-    stitching: 'Stitching work at a glance: what is due, what is late and what it earned', 'stitching-orders': 'Every bill with stitching and every open advance order, with due dates and status', 'stitching-reports': 'Stitching revenue by garment and by day',
+    stitching: 'Stitching work at a glance: what is due, what is late and what it earned', 'stitching-orders': 'Every bill with stitching and every open advance order, with due dates and status', 'stitching-reports': 'Stitching revenue by garment and by day', 'stitching-designs': 'Add your own front and back neck designs; they appear when measurements are taken',
     billing: 'Quick invoice generator · stock synced with the online store · for in-store (offline) and online-order billing', analytics: 'Real-time store & channel insights', advance: 'Orders booked with a deposit, billed when the customer collects', orders: 'Manage and track past invoices',
     inventory: 'Manage products and stock — add, edit and adjust', customers: 'Customer details', coupons: 'Create discount codes and send them to customers on WhatsApp. Applies to the product subtotal only.',
     expenses: 'Record spending by category and see your real net profit', delivery: 'Delivery charges for the online store by weight and region, the free-delivery amount and the delivery notes customers see', settings: 'POS logo, shop details on bills, GST number and delivery quick picks',
   }[tab];
-  const title = { billing: 'POS Billing Panel', analytics: 'POS Analytics', orders: 'Order History', measurements: 'Measurements', stitching: 'Stitching Dashboard', 'stitching-orders': 'Stitching Orders', 'stitching-reports': 'Stitching Reports', inventory: 'Inventory', advance: 'Advance Orders', customers: 'Customers', coupons: 'Coupon Management', birthdays: 'Date of Birth', expenses: 'Expense Tracker', delivery: 'Delivery', settings: 'Settings' }[tab];
+  const title = { billing: 'POS Billing Panel', analytics: 'POS Analytics', orders: 'Order History', measurements: 'Measurements', stitching: 'Stitching Dashboard', 'stitching-orders': 'Stitching Orders', 'stitching-reports': 'Stitching Reports', 'stitching-designs': 'Stitching Designs', inventory: 'Inventory', advance: 'Advance Orders', customers: 'Customers', coupons: 'Coupon Management', birthdays: 'Date of Birth', expenses: 'Expense Tracker', delivery: 'Delivery', settings: 'Settings' }[tab];
   return (
     <AdminShell title={title} sub={sub}>
       <Err>{err}</Err>
