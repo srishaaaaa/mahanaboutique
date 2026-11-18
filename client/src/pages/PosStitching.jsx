@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, uploadImage } from '../lib/api';
 import { FRONT_NECKS, BACK_NECKS } from '../components/NeckPicker';
-import { PencilIcon, TrashIcon } from './PosOrders';
 import { Icon } from '../components/AdminShell';
 import { inr } from '../lib/format';
 import { longDate, money } from '../lib/invoiceFormat';
 import { PeriodFilter, periodRange, usePeriod } from '../components/PeriodFilter';
 import ExportCsv from '../components/ExportCsv';
-import { waLink, invoiceUrl, WaIcon, DocIcon, EyeIcon } from './PosOrders';
+import { waLink, invoiceUrl, WaIcon, DocIcon, EyeIcon, ReturnIcon, PencilIcon, TrashIcon } from './PosOrders';
+import ReturnModal from '../components/ReturnModal';
+import EditSaleModal from '../components/EditSaleModal';
+import { useApp } from '../context/App';
 
 const ST = { pending: ['Pending', 'warn'], completed: ['Completed', 'ok'], cancelled: ['Cancelled', 'bad'] };
 const dueTag = (d, today, status) => !d ? <span className="muted">—</span> : <span className={`sd-due ${status === 'pending' && d < today ? 'late' : status === 'pending' && d === today ? 'now' : ''}`}>{longDate(d)}{status === 'pending' && d < today ? ' · overdue' : status === 'pending' && d === today ? ' · today' : ''}</span>;
@@ -59,6 +61,7 @@ export function StitchingDashboard({ openInvoice, goAdvance, goBilling, goTab })
 
 // ---------- Stitching orders ----------
 export function StitchingOrders({ openInvoice, goAdvance }) {
+  const { user } = useApp(); const manager = ['owner', 'admin'].includes(user?.role); const [retFor, setRetFor] = useState(null); const [editFor, setEditFor] = useState(null);
   const [f, setF] = useState({ q: '', name: '', phone: '', status: 'all' }); const [per, setPer] = usePeriod('all');
   const [data, setData] = useState(null); const [err, setErr] = useState(); const [n, setN] = useState(0); const [from, to] = periodRange(per);
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date());
@@ -68,6 +71,8 @@ export function StitchingOrders({ openInvoice, goAdvance }) {
   }, [f, from, to, n]);
   const set = k => e => setF({ ...f, [k]: e.target.value });
   const setStatus = async (o, status) => { try { await api(`/admin/pos/sales/${encodeURIComponent(o.invoiceNo)}/tailoring`, { method: 'PATCH', body: { status } }); setN(x => x + 1) } catch (e) { setErr(e.message) } };
+  const voidBill = async o => { const reason = window.prompt(`Void ${o.invoiceNo}? Its stock goes back. Reason?`); if (!reason) return; try { await api(`/admin/pos/sales/${encodeURIComponent(o.invoiceNo)}/void`, { method: 'POST', body: { reason } }); setN(x => x + 1) } catch (e) { setErr(e.message) } };
+  const cancelAdv = async o => { if (!confirm(`Cancel ${o.invoiceNo}? Remember to hand back the advance.`)) return; try { await api(`/admin/pos/advances/${encodeURIComponent(o.invoiceNo)}/status`, { method: 'PATCH', body: { status: 'cancelled' } }); setN(x => x + 1) } catch (e) { setErr(e.message) } };
   const c = data?.counts, orders = data?.orders || [];
   const tiles = [['all', 'ALL ORDERS', c?.all, ''], ['pending', 'PENDING', c?.pending, 'warn'], ['completed', 'COMPLETED', c?.completed, 'ok'], ['cancelled', 'CANCELLED', c?.cancelled, 'bad']];
   return (
@@ -96,10 +101,15 @@ export function StitchingOrders({ openInvoice, goAdvance }) {
                 <td className="r">{o.balance > 0 ? <b className="sd-bal">{money(o.balance)}</b> : <span className="muted">Paid</span>}</td>
                 <td>{o.kind === 'advance' ? <span className="ms-st warn">Pending</span> : o.status === 'cancelled' ? <span className="ms-st bad">Cancelled</span>
                   : <select className={`ms-st ${ST[o.status][1]}`} value={o.status} aria-label={`Status of ${o.invoiceNo}`} onChange={e => setStatus(o, e.target.value)}><option value="pending">Pending</option><option value="completed">Completed</option></select>}</td>
-                <td className="r"><div className="dpos-rowact">
-                  <a className="ra wa" title="Message on WhatsApp" aria-label="Message on WhatsApp" href={waLink(o.customerPhone, `Hello${o.customerName ? ' ' + o.customerName : ''}, your order ${o.invoiceNo}${o.dueDate ? ' is due on ' + longDate(o.dueDate) : ''}${o.balance > 0 ? ', balance ' + money(o.balance) : ''}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
-                  {o.shareToken && <a className="ra doc" title="Open the invoice" aria-label="Open the invoice" href={`/invoice/${o.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); open(o, openInvoice, goAdvance) } }}><DocIcon /></a>}
-                  <button type="button" className="ra eye" title={o.kind === 'advance' ? 'Open the advance order' : 'View the bill'} aria-label="View" onClick={() => open(o, openInvoice, goAdvance)}><EyeIcon /></button></div></td></tr>))}</tbody></table></div>)}
+                <td className="r"><div className="dpos-rowact oo-acts">
+                  <a className="ra wa" title={o.shareToken ? 'Send invoice on WhatsApp' : 'Message on WhatsApp'} aria-label="Message on WhatsApp" href={waLink(o.customerPhone, o.shareToken ? `Hello${o.customerName ? ' ' + o.customerName : ''}, here is your invoice ${o.invoiceNo} for ${money(o.total)}: ${invoiceUrl(o.shareToken)}` : `Hello${o.customerName ? ' ' + o.customerName : ''}, your order ${o.invoiceNo}${o.dueDate ? ' is due on ' + longDate(o.dueDate) : ''}${o.balance > 0 ? ', balance ' + money(o.balance) : ''}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
+                  <button type="button" className="ra doc" title={o.shareToken ? 'Open the invoice' : 'The invoice is made when the order is billed'} aria-label="Open the invoice" disabled={!o.shareToken} onClick={() => open(o, openInvoice, goAdvance)}><DocIcon /></button>
+                  <button type="button" className="ra eye" title={o.kind === 'advance' ? 'Open the advance order' : 'View the bill'} aria-label="View" onClick={() => open(o, openInvoice, goAdvance)}><EyeIcon /></button>
+                  <button type="button" className="ra ret" title={o.kind === 'bill' ? 'Return items' : 'Returns are made after the order is billed'} aria-label="Return items" disabled={o.kind !== 'bill' || o.status === 'cancelled'} onClick={() => setRetFor(o.invoiceNo)}><ReturnIcon /></button>
+                  <button type="button" className="ra edit" title={o.kind === 'bill' ? 'Edit the invoice' : 'Edit the advance order'} aria-label="Edit" disabled={o.status === 'cancelled' || (o.kind === 'bill' && !manager)} onClick={() => o.kind === 'bill' ? setEditFor(o.invoiceNo) : goAdvance(o.invoiceNo)}><PencilIcon /></button>
+                  <button type="button" className="ra del" title={o.kind === 'bill' ? 'Void this bill' : 'Cancel this advance order'} aria-label="Delete" disabled={!manager || o.status === 'cancelled'} onClick={() => o.kind === 'bill' ? voidBill(o) : cancelAdv(o)}><TrashIcon /></button></div></td></tr>))}</tbody></table></div>)}
+      {retFor && <ReturnModal invoiceNo={retFor} onClose={() => setRetFor(null)} onDone={() => setN(x => x + 1)} />}
+      {editFor && <EditSaleModal invoiceNo={editFor} onClose={() => setEditFor(null)} onSaved={() => setN(x => x + 1)} />}
       </section>
     </div>
   );
