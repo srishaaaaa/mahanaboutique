@@ -292,9 +292,10 @@ export default function pos({ db, auth }) {
   // Delivery rules: distance bands from the shop's postal code, free-delivery threshold, optional cheaper tiers for bigger orders.
   // Stitching designs: extra front / back neck designs the owner adds (name + optional picture); they appear next to the built-in ones when measurements are taken.
   const designList = z.array(z.object({ id: text(40).min(1), name: text(40).min(1), image: text(500).nullable().default(null) })).max(60).default([]);
-  r.get('/pos/stitch-designs', biller, wrap(async (_req, res) => { const v = await getSetting(db, 'stitch_designs', {}); res.json({ front: v.front || [], back: v.back || [] }) }));
+  r.get('/pos/stitch-designs', biller, wrap(async (_req, res) => { const v = await getSetting(db, 'stitch_designs', {}); res.json({ front: v.front || [], back: v.back || [], sleeveTypes: v.sleeveTypes || [], sleeveLengths: v.sleeveLengths || [] }) }));
   r.put('/pos/stitch-designs', manager, wrap(async (req, res) => {
-    const v = z.object({ front: designList, back: designList }).parse(req.body);
+    const opt = z.array(text(30).min(1)).max(30).default([]);
+    const v = z.object({ front: designList, back: designList, sleeveTypes: opt, sleeveLengths: opt }).parse(req.body);
     await putSetting(db, 'stitch_designs', v); await audit(db, req.user.id, 'pos.stitch_designs', 'pos_settings', 'stitch_designs'); res.json(v);
   }));
   r.get('/pos/delivery-rules', manager, wrap(async (_req, res) => res.json(await loadRules(db))));

@@ -28,7 +28,7 @@ function Chips({ options, value, onChange, label }) {
 export default function MeasureModal({ value, onSave, onClose }) {
   const [m, setM] = useState(() => ({ frontNeck: '', backNeck: '', sleeveType: '', sleeveLength: '', dueDate: '', ...value, cm: { ...(value?.cm || {}) }, remarks: [...(value?.remarks || [])] }));
   const [sheet, setSheet] = useState(null);
-  const [mine, setMine] = useState({ front: [], back: [] });
+  const [mine, setMine] = useState({ front: [], back: [], sleeveTypes: [], sleeveLengths: [] });
   useEffect(() => { api('/admin/pos/stitch-designs').then(setMine).catch(() => {}) }, []);
   const withMine = (base, list) => [...base, ...list.map(d => [d.name, d.image ? <img src={d.image} alt={d.name} style={{ width: 64, height: 48, objectFit: 'contain' }} /> : <span className="pick-init">{d.name.slice(0, 2).toUpperCase()}</span>])];
   const FRONT = withMine(FRONT_NECKS, mine.front), BACK = withMine(BACK_NECKS, mine.back);
@@ -62,8 +62,8 @@ export default function MeasureModal({ value, onSave, onClose }) {
       footer={<><button type="button" className="dpos-btn ghost" onClick={onClose}>Cancel</button><button type="button" className="dpos-btn" onClick={save}>Save measurements</button></>}>
       <div className="msr">
         <div className="msr-two">{neck('Front neck type', 'frontNeck', FRONT, 'front')}{neck('Back neck type', 'backNeck', BACK, 'back')}</div>
-        <div className="msr-f"><span className="msr-l">Sleeve type</span><Chips label="Sleeve type" options={SLEEVE_TYPES} value={m.sleeveType} onChange={v => set({ sleeveType: v })} /></div>
-        <div className="msr-f"><span className="msr-l">Sleeve length</span><Chips label="Sleeve length" options={SLEEVE_LENGTHS} value={m.sleeveLength} onChange={v => set({ sleeveLength: v })} /></div>
+        <div className="msr-f"><span className="msr-l">Sleeve type</span><Chips label="Sleeve type" options={[...SLEEVE_TYPES, ...(mine.sleeveTypes || []).filter(o => !SLEEVE_TYPES.includes(o))]} value={m.sleeveType} onChange={v => set({ sleeveType: v })} /></div>
+        <div className="msr-f"><span className="msr-l">Sleeve length</span><Chips label="Sleeve length" options={[...SLEEVE_LENGTHS, ...(mine.sleeveLengths || []).filter(o => !SLEEVE_LENGTHS.includes(o))]} value={m.sleeveLength} onChange={v => set({ sleeveLength: v })} /></div>
         <label className="msr-f"><span className="msr-l">Due date (optional)</span><input type="date" value={m.dueDate} onChange={e => set({ dueDate: e.target.value })} /></label>
 
         <h4 className="msr-h">Measurements (cm)</h4>
