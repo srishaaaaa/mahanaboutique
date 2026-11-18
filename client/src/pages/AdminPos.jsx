@@ -865,7 +865,7 @@ export default function AdminPos() {
   const body = {
     billing: <Billing channel="retail" shop={shop} onSale={onSale} onAdvance={onAdvance} />,
     analytics: <Analytics channel="retail" openInvoice={openInvoice} tick={tick} goExpenses={goExpenses} />,
-    advance: <AdvanceOrders manager={manager} tick={tick} onBilled={onBilled} />,
+    advance: <AdvanceOrders manager={manager} tick={tick} onBilled={onBilled} openInvoice={openInvoice} />,
     measurements: <PosMeasurements />,
     stitching: <StitchingDashboard openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} goBilling={() => nav('/admin/billing?new=stitching')} goTab={t => nav('/admin/billing/' + t)} />,
     'stitching-orders': <StitchingOrders openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} />,

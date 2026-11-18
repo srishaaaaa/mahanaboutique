@@ -499,7 +499,7 @@ export async function shopInfo(db) {
 const advCols = `a.code, a.status, a.customer_name AS "customerName", a.customer_phone AS "customerPhone", a.customer_address AS "customerAddress",
   a.is_gst AS "isGst", a.gst_rate AS "gstRate", a.discount_type AS "discountType", a.discount_value AS "discountValue", a.delivery_fee AS "deliveryFee",
   a.subtotal, a.discount_amount AS discount, a.tax_amount AS tax, a.total_amount AS total, a.deposit, (a.total_amount - a.deposit) AS balance, a.deposit_mode AS "depositMode", to_jsonb(a) -> 'deposit_split' AS "depositSplit",
-  a.delivery_date::text AS "deliveryDate", a.notes, a.finalized_invoice AS "invoiceNo", a.created_at AS "createdAt", a.finalized_at AS "finalizedAt", a.cancelled_at AS "cancelledAt"`;
+  a.delivery_date::text AS "deliveryDate", a.notes, a.finalized_invoice AS "invoiceNo", (SELECT s.share_token FROM pos_sales s WHERE s.invoice_no = a.finalized_invoice) AS "shareToken", a.created_at AS "createdAt", a.finalized_at AS "finalizedAt", a.cancelled_at AS "cancelledAt"`;
 
 export async function createAdvance(db, user, d) {
   const code = await db.tx(async t => {

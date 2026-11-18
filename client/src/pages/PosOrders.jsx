@@ -260,7 +260,10 @@ function AdvanceDetail({ code, manager, onClose, onChanged, onBilled }) {
   );
 }
 
-export function AdvanceOrders({ manager, tick, onBilled, initialCode }) {
+export function AdvanceOrders({ manager, tick, onBilled, initialCode, openInvoice }) {
+  const [retFor, setRetFor] = useState(null); const [editFor, setEditFor] = useState(null);
+  const cancelAdv = async r => { if (!confirm(`Cancel ${r.code}? Remember to hand back the ${inr(r.deposit)} advance.`)) return; try { await api(`/admin/pos/advances/${encodeURIComponent(r.code)}/status`, { method: 'PATCH', body: { status: 'cancelled' } }); setN(x => x + 1) } catch (e) { setErr(e.message) } };
+  const setReady = async (r, status) => { try { await api(`/admin/pos/advances/${encodeURIComponent(r.code)}/status`, { method: 'PATCH', body: { status } }); setN(x => x + 1) } catch (e) { setErr(e.message) } };
   const [st, setSt] = useState('all'); const [q, setQ] = useState(''); const [per, setPer] = usePeriod('all');
   const [rows, setRows] = useState(null); const [err, setErr] = useState(); const [sel, setSel] = useState(initialCode || null); const [n, setN] = useState(0);
   useEffect(() => { const t = setTimeout(() => api('/admin/pos/advances?q=' + encodeURIComponent(q)).then(r => { setRows(r); setErr() }).catch(e => setErr(e.message)), 200); return () => clearTimeout(t) }, [q, tick, n]);
@@ -276,7 +279,7 @@ export function AdvanceOrders({ manager, tick, onBilled, initialCode }) {
         <div className="adv-k"><div><span>TOTAL ORDERS</span><b>{rows ? inP.length : '…'}</b><small>{rows ? `${openP.length} open · ${doneP.length} completed · ${inP.length - openP.length - doneP.length} cancelled` : ''}</small></div><i className="blue"><Ico size={22}><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /></Ico></i></div>
         <div className="adv-k"><div><span>DEPOSIT PAID</span><b>{rows ? inr(sum(liveP, 'deposit')) : '…'}</b><small>{rows ? `Advances on ${liveP.length} order${liveP.length === 1 ? '' : 's'}` : ''}</small></div><i className="blue"><Ico size={22}><rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></Ico></i></div>
         <div className="adv-k"><div><span>FINAL BALANCE PAID</span><b>{rows ? inr(sum(doneP, 'balance')) : '…'}</b><small>{rows ? `Collected on ${doneP.length} completed order${doneP.length === 1 ? '' : 's'}` : ''}</small></div><i className="green"><Ico size={22}><path d="M12 19V5m0 0-6 6m6-6 6 6" /></Ico></i></div>
-        <div className="adv-k"><div><span>REMAINING BALANCE</span><b>{rows ? inr(sum(openP, 'balance')) : '…'}</b><small>{rows ? `To receive on ${openP.length} open order${openP.length === 1 ? '' : 's'} · ${openP.filter(r => r.status === 'ready').length} ready` : ''}</small></div><i className="rose"><Ico size={22}><path d="M7 5h10M7 9h10M9 5c4 0 6 2 6 4s-2 4-6 4H7l7 6" /></Ico></i></div>
+        <div className="adv-k"><div><span>REMAINING BALANCE</span><b>{rows ? inr(sum(openP, 'balance')) : '…'}</b><small>{rows ? `To receive on ${openP.length} open order${openP.length === 1 ? '' : 's'} · ${openP.filter(r => r.status === 'ready').length} ready` : ''}</small></div><i className="rose"><Ico size={22}><path d="M12 3v18" /><path d="M16 7.5c0-1.7-1.8-3-4-3s-4 1.2-4 3 1.8 2.6 4 3 4 1.3 4 3-1.8 3-4 3-4-1.3-4-3" /></Ico></i></div>
         <div className="adv-k"><div><span>COMPLETED ORDERS</span><b>{rows ? inr(sum(doneP, 'total')) : '…'}</b><small>{rows ? `${doneP.length} order${doneP.length === 1 ? '' : 's'} collected and fully paid` : ''}</small></div><i className="green"><Ico size={22}><path d="m5 12.5 4.5 4.5L19 7.5" /></Ico></i></div>
       </div>
       <div className="adv-bar">
@@ -293,10 +296,18 @@ export function AdvanceOrders({ manager, tick, onBilled, initialCode }) {
                 <td><b>{r.code}</b></td><td>{r.customerName || <span className="muted">Walk-in</span>}{r.customerPhone ? <div className="muted small">{r.customerPhone}</div> : null}</td>
                 <td>{r.deliveryDate ? longDate(r.deliveryDate) : <span className="muted">—</span>} {late && <span className="dpos-pill bad">Late</span>}</td>
                 <td className="r">{r.itemCount}</td><td className="r">{inr(r.total)}</td><td className="r">{inr(r.deposit)}</td><td className="r"><b>{inr(r.balance)}</b></td><td><span className={`dpos-pill ${tone}`}>{lab}</span></td>
-                <td className="r" onClick={e => e.stopPropagation()}><div className="dpos-rowact">
-                  <a className="ra wa" title="Message on WhatsApp" aria-label="Message on WhatsApp" href={waLink(r.customerPhone, `Hello${r.customerName ? ' ' + r.customerName : ''}, your order ${r.code} is ${r.status === 'ready' ? 'ready to collect' : 'being prepared'}${r.deliveryDate ? ' (due ' + longDate(r.deliveryDate) + ')' : ''}. Balance to pay: ${money(r.balance)}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
-                  <button type="button" className="ra eye" title="Open the order" aria-label="Open the order" onClick={() => setSel(r.code)}><EyeIcon /></button></div></td></tr>) })}</tbody></table></div>)}
+                <td className="r" onClick={e => e.stopPropagation()}><div className="dpos-rowact oo-acts">
+                  {['pending', 'ready'].includes(r.status) && <button type="button" className="oh-mark" onClick={() => r.status === 'pending' ? setReady(r, 'ready') : setSel(r.code)}>{r.status === 'pending' ? 'Mark ready' : 'Collect & bill'}</button>}
+                  <a className="ra wa" title={r.invoiceNo ? 'Send invoice on WhatsApp' : 'Message on WhatsApp'} aria-label="Message on WhatsApp" href={waLink(r.customerPhone, r.invoiceNo && r.shareToken ? `Hello${r.customerName ? ' ' + r.customerName : ''}, here is your invoice ${r.invoiceNo} for ${money(r.total)}: ${invoiceUrl(r.shareToken)}` : `Hello${r.customerName ? ' ' + r.customerName : ''}, your order ${r.code} is ${r.status === 'ready' ? 'ready to collect' : 'being prepared'}${r.deliveryDate ? ' (due ' + longDate(r.deliveryDate) + ')' : ''}. Balance to pay: ${money(r.balance)}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>
+                  {r.invoiceNo && r.shareToken && <a className="ra doc" title="Open the invoice" aria-label="Open the invoice" href={`/invoice/${r.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); openInvoice?.(r.invoiceNo, r) } }}><DocIcon /></a>}
+                  <button type="button" className="ra eye" title="Open the order" aria-label="Open the order" onClick={() => setSel(r.code)}><EyeIcon /></button>
+                  {r.invoiceNo && <button type="button" className="ra ret" title="Return items" aria-label="Return items" onClick={() => setRetFor(r.invoiceNo)}><ReturnIcon /></button>}
+                  {r.invoiceNo && manager && <button type="button" className="ra edit" title="Edit the invoice" aria-label="Edit invoice" onClick={() => setEditFor(r.invoiceNo)}><PencilIcon /></button>}
+                  {manager && ['pending', 'ready'].includes(r.status) && <button type="button" className="ra del" title="Cancel this advance order" aria-label="Cancel advance order" onClick={() => cancelAdv(r)}><TrashIcon /></button>}
+                </div></td></tr>) })}</tbody></table></div>)}
       </section>
+      {retFor && <ReturnModal invoiceNo={retFor} onClose={() => setRetFor(null)} onDone={() => setN(x => x + 1)} />}
+      {editFor && <EditSaleModal invoiceNo={editFor} onClose={() => setEditFor(null)} onSaved={() => setN(x => x + 1)} />}
       {sel && <AdvanceDetail code={sel} manager={manager} onClose={() => setSel(null)} onChanged={() => setN(x => x + 1)} onBilled={(sale, invoiceNo) => { setSel(null); setN(x => x + 1); onBilled(sale, invoiceNo) }} />}
     </>
   );
