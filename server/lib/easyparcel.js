@@ -20,7 +20,10 @@ export function makeEasyParcel({ db, cfg, fetchImpl = fetch }) {
 
   // The address EasyParcel sends the owner back to after approving the app. Must be listed in the app's settings in the Developer Hub.
   const redirectUri = req => {
-    const origin = cfg.SITE_URL ? cfg.SITE_URL.replace(/\/$/, '') : `${req.protocol}://${req.get('host')}`;
+    // On the live site the connection is always https, but behind Vercel's proxy the server may see plain http: never send http for a real domain.
+    const host = req.get('host') || '';
+    const proto = /^(localhost|127\.|\[::1\])/.test(host) ? (req.get('x-forwarded-proto') || req.protocol).split(',')[0].trim() : 'https';
+    const origin = cfg.SITE_URL ? cfg.SITE_URL.replace(/\/$/, '') : `${proto}://${host}`;
     return `${origin}/api/easyparcel/callback`;
   };
   const stateFor = userId => jwt.sign({ u: userId, p: 'easyparcel' }, cfg.JWT_SECRET, { expiresIn: '10m' });
