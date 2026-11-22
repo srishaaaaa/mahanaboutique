@@ -636,3 +636,9 @@
 .sdz-chips { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px }
 .sdz-chips li { display: inline-flex; align-items: center; gap: 8px; padding: 5px 6px 5px 12px; border-radius: 999px; background: #eef1fb; color: var(--d-acc, #1c284f); font-size: 12.5px; font-weight: 600 }
 .sdz-chips button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(28, 40, 79, .12); color: inherit; font-size: 14px; line-height: 1; cursor: pointer; display: grid; place-items: center }
+
+/* EasyParcel */
+.ra.ship { background: #e0f4f6; color: #0f7a86 } .ep { margin-bottom: 14px } .ep-h { display: flex; align-items: center; justify-content: space-between; gap: 10px } .ep-h h2 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px }
+.ep-acts { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap } .ep-form h3 { margin: 16px 0 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #6d6a64 }
+.ep-quotes { display: grid; gap: 8px } .ep-q { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--d-line, #e3e2ef); border-radius: 12px; cursor: pointer } .ep-q.on { border-color: var(--d-acc, #1c284f); background: #eef1fb } .ep-q b { flex: 1; font-size: 13.5px } .ep-q span { font-weight: 700; font-size: 13.5px }
+.ep-done p { margin: 0 0 6px }

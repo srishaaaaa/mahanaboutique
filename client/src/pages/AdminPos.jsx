@@ -14,6 +14,7 @@ import PosExpenses from './PosExpenses';
 import PosCoupons from './PosCoupons';
 import CatalogPicker from '../components/CatalogPicker';
 import PosMeasurements from './PosMeasurements';
+import { EasyParcelCard } from '../components/EasyParcel';
 import { StitchingDashboard, StitchingOrders, StitchingReports, StitchingDesigns } from './PosStitching';
 import { InvoicePreview } from './InvoicePage';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
@@ -873,7 +874,7 @@ export default function AdminPos() {
     'stitching-designs': <StitchingDesigns />,
     orders: <OrderHistory manager={manager} tick={tick} openInvoice={openInvoice} onChanged={() => setTick(t => t + 1)} />,
     inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />,
-    expenses: <PosExpenses />, delivery: <DeliveryRulesCard />, settings: <Settings onSaved={loadShop} />,
+    expenses: <PosExpenses />, delivery: <><EasyParcelCard /><DeliveryRulesCard /></>, settings: <Settings onSaved={loadShop} />,
   }[tab];
   const sub = {
     stitching: 'Stitching work at a glance: what is due, what is late and what it earned', 'stitching-orders': 'Every bill with stitching and every open advance order, with due dates and status', 'stitching-reports': 'Stitching revenue by garment and by day', 'stitching-designs': 'Add your own front and back neck designs; they appear when measurements are taken',

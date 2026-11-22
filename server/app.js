@@ -8,6 +8,7 @@ import { createStripeProvider } from './lib/stripe.js';
 import authRoutes from './routes/auth.js';
 import catalogRoutes from './routes/catalog.js';
 import adminRoutes from './routes/admin.js';
+import easyparcelAdmin, { easyparcelPublic } from './routes/easyparcel.js';
 import settingsRoutes from './routes/settings.js';
 import { enquiryAdmin, enquiryRoutes } from './routes/enquiries.js';
 import sampleAdmin from './routes/sample.js';
@@ -30,6 +31,7 @@ export function createApp({ db, cfg, payments = createStripeProvider(cfg) }) {
 
   app.use('/api', webhookRoute(ctx)); // before body parsing: needs the raw bytes
   app.use(express.json({ limit: '100kb' }), cookieParser());
+  app.use('/api', easyparcelPublic(ctx)); // EasyParcel's return address and tracking webhook cannot send our CSRF header
   app.use('/api', csrfGuard());
 
   // Public, non-personal catalogue reads are cached at the CDN edge: after the first visitor, everyone gets them in milliseconds,
@@ -56,6 +58,7 @@ export function createApp({ db, cfg, payments = createStripeProvider(cfg) }) {
   app.use('/api', commerceRoutes(ctx));
   app.use('/api', mediaPublic(ctx));
   app.use('/api', enquiryRoutes(ctx));
+  app.use('/api/admin', easyparcelAdmin(ctx));
   app.use('/api/admin', adminRoutes(ctx));
   app.use('/api/admin', mediaAdmin(ctx));
   app.use('/api/admin', enquiryAdmin(ctx));

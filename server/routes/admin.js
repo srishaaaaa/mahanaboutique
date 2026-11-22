@@ -35,7 +35,7 @@ export default function admin({ db, auth }) {
   r.get('/orders', staff, wrap(async (_req, res) => res.json(await rows(db, `
     SELECT o.id, o.order_number, o.email, o.status, o.payment_status, o.total_amount AS total, o.created_at,
            o.shipping_address_snapshot->>'name' AS name, o.shipping_address_snapshot->>'phone' AS phone,
-           (SELECT COUNT(*)::int FROM order_items oi WHERE oi.order_id = o.id) AS item_count
+           (SELECT COUNT(*)::int FROM order_items oi WHERE oi.order_id = o.id) AS item_count, to_jsonb(o) -> 'shipment' AS shipment
     FROM orders o ORDER BY o.id DESC LIMIT 200`))));
 
   r.patch('/orders/:number', staff, wrap(async (req, res) => {

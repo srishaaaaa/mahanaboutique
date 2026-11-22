@@ -6,6 +6,7 @@ import { useApp } from '../context/App';
 import { StaffAccessCard } from './AdminStaff';
 import { waLink, invoiceUrl, WaIcon, DocIcon, EyeIcon, ReturnIcon, PencilIcon, FulfilControl, OrderQuick } from './PosOrders';
 import ReturnModal from '../components/ReturnModal';
+import { ShipModal } from '../components/EasyParcel';
 import EditSaleModal from '../components/EditSaleModal';
 import { InvoicePreview } from './InvoicePage';
 import { api } from '../lib/api';
@@ -33,7 +34,7 @@ const Card = ({ children }) => <section className="dpos-card">{children}</sectio
 
 export function AdminOrders() {
   const gate = useGate(); const [s, setS] = useState(); const [o, setO] = useState(null); const [e, setE] = useState(); const [per, setPer] = usePeriod('all'); const [pay, setPay] = useState('all');
-  const [bills, setBills] = useState({}); const [pv, setPv] = useState(null); const [ret, setRet] = useState(null); const [edit, setEdit] = useState(null); const [quick, setQuick] = useState(null); const [n, setN] = useState(0);
+  const [bills, setBills] = useState({}); const [pv, setPv] = useState(null); const [ret, setRet] = useState(null); const [edit, setEdit] = useState(null); const [quick, setQuick] = useState(null); const [ship, setShip] = useState(null); const [n, setN] = useState(0);
   const { user } = useApp(); const manager = ['owner', 'admin'].includes(user?.role);
   useEffect(() => { if (!gate) Promise.all([api('/admin/stats'), api('/admin/orders')]).then(([a, b]) => { setS(a); setO(b) }).catch(x => setE(x.message)) }, [gate, n]);
   // each paid website order has an online bill: its invoice, returns and edits live there
@@ -64,6 +65,7 @@ export function AdminOrders() {
                   {bl && manager ? <FulfilControl r={bl} onAdvance={advance} />
                     : <select className={`oo-st st-${x.status}`} value={x.status} aria-label={`Status for ${x.order_number}`} onChange={async ev => { try { await api('/admin/orders/' + x.order_number, { method: 'PATCH', body: { status: ev.target.value } }); setO(list => list.map(y => y.id === x.id ? { ...y, status: ev.target.value } : y)) } catch (err) { setE(err.message) } }}>{STATUSES.map(v => <option key={v} value={v}>{v[0].toUpperCase() + v.slice(1)}</option>)}</select>}
                   {x.phone && <a className="ra wa" title="Message on WhatsApp" aria-label="Message on WhatsApp" href={waLink(x.phone, bl ? `Hello${x.name ? ' ' + x.name : ''}, here is your invoice ${bl.invoiceNo} for ${inr(bl.total)}: ${invoiceUrl(bl.shareToken)}` : `Hello${x.name ? ' ' + x.name : ''}, your order ${x.order_number} (${inr(x.total)}) is ${x.status}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>}
+                  {x.payment_status === 'paid' && <button type="button" className="ra ship" title={x.shipment?.awb ? `${x.shipment.courier || 'Courier'} · ${x.shipment.awb}` : x.shipment ? 'Courier booked' : 'Book a courier (EasyParcel)'} aria-label="Courier" onClick={() => setShip(x)}><Icon n="truck" size={20} /></button>}
                   {bl && <a className="ra doc" title="Open the invoice" aria-label="Open the invoice" href={`/invoice/${bl.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); setPv(bl) } }}><DocIcon /></a>}
                   {bl && <button type="button" className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(bl)}><EyeIcon /></button>}
                   {bl && <button type="button" className="ra ret" title="Return items" aria-label="Return items" disabled={voided} onClick={() => setRet(bl.invoiceNo)}><ReturnIcon /></button>}
@@ -72,6 +74,7 @@ export function AdminOrders() {
             </tr>))}</tbody></table></div></section>)}
       {pv && <InvoicePreview token={pv.shareToken} invoiceNo={pv.invoiceNo} onClose={() => setPv(null)} />}
       {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={(no, row) => { setQuick(null); setPv(row || { invoiceNo: no }) }} manager={manager} onEdited={() => setN(x => x + 1)} />}
+      {ship && <ShipModal order={ship} onClose={() => setShip(null)} onDone={() => setN(v => v + 1)} />}
       {ret && <ReturnModal invoiceNo={ret} onClose={() => setRet(null)} onDone={() => setN(x => x + 1)} />}
       {edit && <EditSaleModal invoiceNo={edit} onClose={() => setEdit(null)} onSaved={() => setN(x => x + 1)} />}
     </AdminShell>

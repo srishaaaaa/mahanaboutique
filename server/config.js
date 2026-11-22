@@ -15,6 +15,9 @@ const schema = z.object({
   SITE_URL: z.string().url().optional().or(z.literal('').transform(() => undefined)), // public site address Stripe returns customers to
   GOOGLE_MAPS_API_KEY: z.string().optional().transform(v => v || undefined), // browser Embed API key (restrict by referrer)
   GOOGLE_CLIENT_ID: z.string().optional().transform(v => v || undefined), // OAuth 2.0 Web client ID for "Sign in with Google"; the button is hidden until set
+  EASYPARCEL_CLIENT_ID: z.string().optional().transform(v => v || undefined), // Developer Hub -> Apps -> your app (courier booking)
+  EASYPARCEL_CLIENT_SECRET: z.string().optional().transform(v => v || undefined),
+  EASYPARCEL_BASE: z.string().url().optional().or(z.literal('').transform(() => undefined)), // only to point tests at a stub
   RESERVATION_MINUTES: z.coerce.number().default(35), // stock hold during payment; Stripe needs at least 30
 });
 
