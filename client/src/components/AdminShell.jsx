@@ -17,7 +17,7 @@ const ICONS = {
   box: <><path d="M21 8 12 3 3 8v8l9 5 9-5Z" /><path d="M3 8l9 5 9-5M12 13v8" /></>,
   tag: <><path d="M3 12V4h8l10 10-8 8Z" /><circle cx="7.5" cy="8.5" r="1.2" /></>,
   cake: <><path d="M4 21h16v-7H4zM4 17c2 2 4-2 8 0s6 0 8 0M12 14V9M12 6V5" /></>,
-  truck: <><path d="M2 6h12v10H2zM14 10h4l3 3v3h-7" /><circle cx="7" cy="18" r="1.8" /><circle cx="17" cy="18" r="1.8" /></>,
+  truck: <><path d="M2.5 4.5h10.5v11H2.5zM13 8.5h4.2l3.8 3.8v3.2H13" /><circle cx="7" cy="18" r="2" /><circle cx="17" cy="18" r="2" /></>,
   doc: <><path d="M6 3h9l4 4v14H6z" /><path d="M9 12h7M9 16h7" /></>,
   trend: <path d="M3 17l6-6 4 4 8-9M15 6h6v6" />,
   shop: <><path d="M4 9l1-5h14l1 5M4 9v11h16V9M4 9h16" /><path d="M9 20v-6h6v6" /></>,

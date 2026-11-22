@@ -644,3 +644,8 @@
 .ep-done p { margin: 0 0 6px }
 
 .ep-redir { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; padding: 10px 12px; border-radius: 10px; background: #fff7e6; border: 1px solid #f3d9a4; font-size: 12px } .ep-redir code { padding: 3px 8px; border-radius: 6px; background: #fff; border: 1px solid #f3d9a4; font-size: 12px; word-break: break-all }
+
+/* icons keep their shape everywhere: tiles never squash, line icons are the same size beside every heading */
+.ra { flex: none; min-width: 42px; aspect-ratio: 1 / 1 } .sdz-list .ra { min-width: 38px }
+.dpos h2 > svg, .dpos h3 > svg, .ep-h h2 svg { flex: none; width: 20px; height: 20px; vertical-align: -4px; margin-right: 4px }
+.dpos svg { flex-shrink: 0 }
