@@ -78,7 +78,7 @@ export function commerceRoutes(ctx) {
 export function webhookRoute({ db, payments }) {
   const r = Router();
   r.post('/payments/webhook', express.raw({ type: '*/*', limit: '1mb' }), wrap(async (req, res) => {
-    const ev = payments.parseWebhook(req.body, req.get('stripe-signature'));
+    const ev = payments.parseWebhook(req.body, req.get('stripe-signature') || req.get('hitpay-signature'));
     if (ev?.type === 'captured') { await markPaid(db, { provider: payments.name, providerOrderId: ev.providerOrderId, providerPaymentId: ev.providerPaymentId }); await syncWebOrders(db, { force: true }).catch(() => {}) }
     if (ev?.type === 'failed') {
       const o = await one(db, `SELECT o.order_number FROM payments p JOIN orders o ON o.id = p.order_id WHERE p.provider = $1 AND p.provider_order_id = $2`, [payments.name, ev.providerOrderId]);

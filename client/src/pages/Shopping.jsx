@@ -59,14 +59,17 @@ export function Checkout() {
   const { cart, cartInfo, clearCart, loadCart, bagSubtotal, user } = useApp();
   const [f, setF] = useState({ email: user?.email || '', name: user?.name || '', phone: '', line1: '', city: '', state: '', pin: '' });
   const [err, setErr] = useState(); const [busy, setBusy] = useState(false); const [done, setDone] = useState();
-  // Back from Stripe: ?session_id=… after paying, ?cancelled=<order> after pressing back on the payment page.
+  // Back from the payment page: Stripe ?session_id=…, HitPay ?hitpay_order=…&reference=…&status=…, or ?cancelled=<order> after pressing back.
   const [params, setParams] = useSearchParams();
-  const sessionId = params.get('session_id'), cancelled = params.get('cancelled');
+  const hpOrder = params.get('hitpay_order'), hpStatus = String(params.get('status') || '').toLowerCase();
+  const hpBack = hpOrder && /cancel|fail|expire/.test(hpStatus); // pressed back / failed on HitPay's page
+  const sessionId = params.get('session_id') || (hpOrder && !hpBack ? 'hitpay' : null), cancelled = params.get('cancelled') || (hpBack ? hpOrder : null);
+  const verifyBody = params.get('session_id') ? { session_id: params.get('session_id') } : hpOrder ? { hitpay_order: hpOrder, reference: params.get('reference') || '' } : null;
   const [confirming, setConfirming] = useState(!!sessionId); const [pending, setPending] = useState(false);
   useEffect(() => {
     if (!sessionId) return;
     let alive = true;
-    api('/payments/verify', { method: 'POST', body: { session_id: sessionId } })
+    api('/payments/verify', { method: 'POST', body: verifyBody })
       .then(async v => { if (!alive) return; if (v.ok) { await loadCart(); setDone(v.orderNumber || true) } else setPending(true) })
       .catch(x => alive && setErr(x.message))
       .finally(() => alive && setConfirming(false));
@@ -93,7 +96,7 @@ export function Checkout() {
     try {
       const { email, ...address } = f;
       const o = await api('/checkout', { method: 'POST', body: { email, address: { ...address, regionId: region || cartInfo.shipping?.region?.id || undefined } } });
-      window.location.assign(o.redirectUrl); // Stripe's secure payment page: PayNow, cards, GrabPay, Apple/Google Pay
+      window.location.assign(o.redirectUrl); // the provider's secure payment page (HitPay or Stripe): PayNow, cards ...
     } catch (x) { setErr(x.message); setBusy(false); loadCart() }
   }
   if (confirming) return <div className="empty page-pad" role="status"><p className="serif big">Confirming your payment…</p><p className="muted">Please keep this page open.</p></div>;

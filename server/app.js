@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { makeAuth, csrfGuard } from './lib/auth.js';
 import { errorHandler, HttpError } from './lib/http.js';
 import { createStripeProvider } from './lib/stripe.js';
+import { createHitpayProvider } from './lib/hitpay.js';
 import authRoutes from './routes/auth.js';
 import catalogRoutes from './routes/catalog.js';
 import adminRoutes from './routes/admin.js';
@@ -21,7 +22,7 @@ import { cartRoutes, wishlistRoutes, newsletterRoutes, reviewRoutes } from './ro
 import { commerceRoutes, webhookRoute } from './routes/commerce.js';
 
 // `payments` is injectable so tests (and future providers) can supply their own implementation.
-export function createApp({ db, cfg, payments = createStripeProvider(cfg) }) {
+export function createApp({ db, cfg, payments = (cfg.PAYMENT_PROVIDER || (cfg.HITPAY_API_KEY ? 'hitpay' : 'stripe')) === 'hitpay' ? createHitpayProvider(cfg) : createStripeProvider(cfg) }) {
   const app = express();
   const ctx = { db, cfg, payments, auth: makeAuth({ db, cfg }) };
   if (cfg.NODE_ENV === 'production') app.set('trust proxy', 1);

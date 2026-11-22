@@ -15,6 +15,12 @@ const schema = z.object({
   SITE_URL: z.string().url().optional().or(z.literal('').transform(() => undefined)), // public site address Stripe returns customers to
   GOOGLE_MAPS_API_KEY: z.string().optional().transform(v => v || undefined), // browser Embed API key (restrict by referrer)
   GOOGLE_CLIENT_ID: z.string().optional().transform(v => v || undefined), // OAuth 2.0 Web client ID for "Sign in with Google"; the button is hidden until set
+  HITPAY_API_KEY: z.string().optional().transform(v => v || undefined), // HitPay Dashboard -> Developers -> API Keys
+  HITPAY_SALT: z.string().optional().transform(v => v || undefined), // webhook signing salt (Developers -> Webhooks)
+  HITPAY_ENV: z.enum(['sandbox', 'live']).default('sandbox'),
+  HITPAY_METHODS: z.string().optional().transform(v => v || undefined), // e.g. paynow_online,card
+  HITPAY_BASE: z.string().url().optional().or(z.literal('').transform(() => undefined)), // only to point tests at a stub
+  PAYMENT_PROVIDER: z.enum(['hitpay', 'stripe']).optional(), // which provider checkout uses; default: HitPay when its key is set, else Stripe
   EASYPARCEL_CLIENT_ID: z.string().optional().transform(v => v || undefined), // Developer Hub -> Apps -> your app (courier booking)
   EASYPARCEL_CLIENT_SECRET: z.string().optional().transform(v => v || undefined),
   EASYPARCEL_BASE: z.string().url().optional().or(z.literal('').transform(() => undefined)), // only to point tests at a stub
