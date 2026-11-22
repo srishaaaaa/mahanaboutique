@@ -26,6 +26,7 @@ export function EasyParcelCard() {
         <span className={`dpos-pill ${st.connected ? 'ok' : st.configured ? 'warn' : 'bad'}`}>{st.connected ? 'Connected' : st.configured ? 'Not connected' : 'Keys missing'}</span></div>
       <p className="muted small">Book couriers for paid online orders from the Online orders page: prices, label and tracking come from EasyParcel, and the order moves to shipped and delivered by itself. Bookings are paid from your EasyParcel wallet.</p>
       {err && <p className="dpos-err" role="alert">{err}</p>}
+      {!st.connected && st.redirectUri && <div className="ep-redir"><span>Register this exact address as the redirect URL of your app in the EasyParcel Developer Hub:</span><code>{st.redirectUri}</code><button type="button" className="dpos-btn ghost sm" onClick={() => { navigator.clipboard?.writeText(st.redirectUri); toast('Copied.') }}>Copy</button></div>}
       {!st.configured && <p className="muted small">Add <b>EASYPARCEL_CLIENT_ID</b> and <b>EASYPARCEL_CLIENT_SECRET</b> to the server settings (Vercel → Environment Variables), then redeploy.</p>}
       <div className="ep-acts">{st.connected
         ? <><span className="muted small">Connected {st.connectedAt ? new Date(st.connectedAt).toLocaleDateString('en-SG') : ''}</span><button type="button" className="dpos-btn ghost sm" onClick={disconnect}>Disconnect</button></>

@@ -642,3 +642,5 @@
 .ep-acts { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap } .ep-form h3 { margin: 16px 0 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #6d6a64 }
 .ep-quotes { display: grid; gap: 8px } .ep-q { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--d-line, #e3e2ef); border-radius: 12px; cursor: pointer } .ep-q.on { border-color: var(--d-acc, #1c284f); background: #eef1fb } .ep-q b { flex: 1; font-size: 13.5px } .ep-q span { font-weight: 700; font-size: 13.5px }
 .ep-done p { margin: 0 0 6px }
+
+.ep-redir { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; padding: 10px 12px; border-radius: 10px; background: #fff7e6; border: 1px solid #f3d9a4; font-size: 12px } .ep-redir code { padding: 3px 8px; border-radius: 6px; background: #fff; border: 1px solid #f3d9a4; font-size: 12px; word-break: break-all }

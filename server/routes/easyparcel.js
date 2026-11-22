@@ -25,7 +25,7 @@ export default function easyparcelAdmin({ db, cfg, auth }) {
   const r = Router(); const ep = makeEasyParcel({ db, cfg });
   const staff = auth.role('owner', 'admin');
 
-  r.get('/easyparcel/status', staff, wrap(async (_req, res) => res.json(await ep.status())));
+  r.get('/easyparcel/status', staff, wrap(async (req, res) => res.json({ ...(await ep.status()), redirectUri: ep.redirectUri(req) })));
   r.get('/easyparcel/connect', staff, wrap(async (req, res) => {
     if (!ep.configured()) throw new HttpError(409, 'EasyParcel keys are not set on the server yet (EASYPARCEL_CLIENT_ID and EASYPARCEL_CLIENT_SECRET).', 'not_configured');
     res.json({ url: ep.authUrl(req, req.user.id), redirectUri: ep.redirectUri(req) });
