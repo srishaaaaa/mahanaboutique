@@ -24,7 +24,7 @@ export function EasyParcelCard() {
     <section className="dpos-card ep">
       <div className="ep-h"><h2><Icon n="truck" size={18} /> EasyParcel courier booking</h2>
         <span className={`dpos-pill ${st.connected ? 'ok' : st.configured ? 'warn' : 'bad'}`}>{st.connected ? 'Connected' : st.configured ? 'Not connected' : 'Keys missing'}</span></div>
-      <p className="muted small">Book couriers for paid online orders from the Online orders page: prices, label and tracking come from EasyParcel, and the order moves to shipped and delivered by itself. Bookings are paid from your EasyParcel wallet.</p>
+      <p className="muted small ep-sub">Book couriers for paid online orders from the Online orders page: prices, label and tracking come from EasyParcel, and the order moves to shipped and delivered by itself. Bookings are paid from your EasyParcel wallet.</p>
       {err && <p className="dpos-err" role="alert">{err}</p>}
       {!st.connected && st.redirectUri && <div className="ep-redir"><span>Register this exact address as the redirect URL of your app in the EasyParcel Developer Hub:</span><code>{st.redirectUri}</code><button type="button" className="dpos-btn ghost sm" onClick={() => { navigator.clipboard?.writeText(st.redirectUri); toast('Copied.') }}>Copy</button></div>}
       {!st.configured && <p className="muted small">Add <b>EASYPARCEL_CLIENT_ID</b> and <b>EASYPARCEL_CLIENT_SECRET</b> to the server settings (Vercel → Environment Variables), then redeploy.</p>}
@@ -32,18 +32,24 @@ export function EasyParcelCard() {
         ? <><span className="muted small">Connected {st.connectedAt ? new Date(st.connectedAt).toLocaleDateString('en-SG') : ''}</span><button type="button" className="dpos-btn ghost sm" onClick={disconnect}>Disconnect</button></>
         : <button type="button" className="dpos-btn" disabled={busy || !st.configured} onClick={connect}>Connect EasyParcel</button>}</div>
       <form onSubmit={save} className="ep-form">
-        <h3>Pickup address (where the courier collects)</h3>
-        <div className="dpos-grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))' }}>
-          <label className="f">Name<input value={f.pickup.name} maxLength={80} onChange={e => p('name', e.target.value)} placeholder="Mahana Boutique & Tailors" /></label>
-          <label className="f">Phone<input value={f.pickup.phone} maxLength={20} inputMode="tel" onChange={e => p('phone', e.target.value)} placeholder="6979 1072" /></label>
-          <label className="f">Postal code<input value={f.pickup.postcode} maxLength={10} inputMode="numeric" onChange={e => p('postcode', e.target.value)} placeholder="217701" /></label>
-          <label className="f" style={{ gridColumn: '1 / -1' }}>Address<input value={f.pickup.address1} maxLength={200} onChange={e => p('address1', e.target.value)} placeholder="1 Tessensohn Rd, #01-03" /></label>
+        <div className="dl-two">
+          <div className="dl-box">
+            <p className="dl-h">Pickup address <span>where the courier collects</span></p>
+            <div className="dl-row3">
+              <label className="f">Name<input value={f.pickup.name} maxLength={80} onChange={e => p('name', e.target.value)} placeholder="Mahana Boutique & Tailors" /></label>
+              <label className="f">Phone<input value={f.pickup.phone} maxLength={20} inputMode="tel" onChange={e => p('phone', e.target.value)} placeholder="6979 1072" /></label>
+              <label className="f">Postal code<input value={f.pickup.postcode} maxLength={10} inputMode="numeric" onChange={e => p('postcode', e.target.value)} placeholder="217701" /></label>
+            </div>
+            <label className="f">Address<input value={f.pickup.address1} maxLength={200} onChange={e => p('address1', e.target.value)} placeholder="1 Tessensohn Rd, #01-03" /></label>
+          </div>
+          <div className="dl-box">
+            <p className="dl-h">Usual parcel size <span>in cm</span></p>
+            <div className="dl-row3">
+              {[['length', 'Length'], ['width', 'Width'], ['height', 'Height']].map(([k, l]) => <label className="f" key={k}>{l}<input inputMode="decimal" value={f.parcel[k]} onChange={e => d(k, e.target.value)} /></label>)}
+            </div>
+          </div>
         </div>
-        <h3>Usual parcel size (cm)</h3>
-        <div className="dpos-grid" style={{ gridTemplateColumns: 'repeat(3,minmax(90px,140px))' }}>
-          {[['length', 'Length'], ['width', 'Width'], ['height', 'Height']].map(([k, l]) => <label className="f" key={k}>{l}<input inputMode="decimal" value={f.parcel[k]} onChange={e => d(k, e.target.value)} /></label>)}
-        </div>
-        <div style={{ marginTop: 12 }}><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save pickup details'}</button></div>
+        <div className="dl-save"><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save pickup details'}</button></div>
       </form>
     </section>
   );

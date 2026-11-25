@@ -649,3 +649,36 @@
 .ra { flex: none; min-width: 42px; aspect-ratio: 1 / 1 } .sdz-list .ra { min-width: 38px }
 .dpos h2 > svg, .dpos h3 > svg, .ep-h h2 svg { flex: none; width: 20px; height: 20px; vertical-align: -4px; margin-right: 4px }
 .dpos svg { flex-shrink: 0 }
+
+/* ---- Delivery page: aligned boxes, equal-width fields, tier table ---- */
+.dl-page { display: grid; gap: 18px } .dl-page .ep { margin: 0 }
+.ep-sub, .dl-intro { max-width: 80ch; margin: 6px 0 0 }
+.dl-page .ep-acts { margin: 14px 0 0 }
+.dl-two { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; margin-top: 16px }
+.dl-box { display: grid; gap: 14px; align-content: start; padding: 18px; border: 1px solid var(--d-line, #e3e2ef); border-radius: 16px; background: #faf9f7 }
+.dl-h { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #3b3842 }
+.dl-h span { margin-left: 6px; font-weight: 500; letter-spacing: .02em; text-transform: none; color: #8a8690 }
+.dl-sec { margin: 24px 0 10px }
+.dl-row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+.dl-row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
+.dl-box .f { margin: 0 }
+.dl-box input:not([type=checkbox]), .dl-box textarea { width: 100%; box-sizing: border-box }
+.dl-save { margin-top: 18px }
+.dl-rules .dl-intro { margin-bottom: 16px }
+.dl-check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer } .dl-check input { margin-top: 3px }
+.dl-check span { display: grid; gap: 2px } .dl-check em { font-style: normal; font-size: 12px; color: #8a8690 }
+.dl-region { margin-bottom: 12px }
+.dl-rhead { display: grid; grid-template-columns: minmax(0, 320px) auto 1fr auto; gap: 14px; align-items: center }
+.dl-rhead > button { grid-column: 4 }
+.dl-active { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 600 }
+.dl-tiers { display: grid; gap: 8px; max-width: 640px }
+.dl-tier { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 40px; gap: 10px; align-items: center }
+.dl-th span { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #8a8690 }
+.dl-tier > button { width: 40px; height: 40px; padding: 0; display: grid; place-items: center }
+.dl-region > .dpos-btn { justify-self: start }
+.dl-copy { grid-template-columns: repeat(2, minmax(0, 1fr)) } .dl-wide { grid-column: 1 / -1 }
+@media (max-width: 900px) {
+  .dl-two, .dl-row2, .dl-copy { grid-template-columns: 1fr }
+  .dl-rhead { grid-template-columns: 1fr auto } .dl-rhead > button { grid-column: auto }
+}
+@media (max-width: 560px) { .dl-row3 { grid-template-columns: 1fr 1fr } .dl-tier { grid-template-columns: repeat(3, minmax(0, 1fr)) 36px; gap: 6px } }

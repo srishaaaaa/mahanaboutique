@@ -714,38 +714,45 @@ function DeliveryRulesCard() {
     } catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
   };
   return (
-    <form className="dpos-card" onSubmit={save} style={{ marginTop: 16 }}>
+    <form className="dpos-card dl-rules" onSubmit={save}>
       <h2><Icon n="truck" />Delivery charge (by weight)</h2>
-      <p className="sub" style={{ marginBottom: 12 }}>The delivery charge is picked from the bag's total weight (each size's weight × quantity). Set each product's weight in Inventory → Edit product; a product with no weight counts as the default below.</p>
-      <label style={{ display: 'flex', gap: 10, alignItems: 'center', margin: '4px 0 12px' }}><input type="checkbox" checked={r.enabled} onChange={e => setR({ ...r, enabled: e.target.checked })} /><span>Charge for delivery</span></label>
-      <div className="dpos-grid">
-        <label className="f">Free delivery when the order is at least ($, 0 = never)<input inputMode="decimal" value={r.freeOver} onChange={e => setR({ ...r, freeOver: e.target.value })} /></label>
-        <label className="f">Weight counted for a product with none (grams)<input inputMode="numeric" value={r.defaultWeightGrams} onChange={e => setR({ ...r, defaultWeightGrams: e.target.value.replace(/\D/g, '') })} /></label>
+      <p className="sub dl-intro">The delivery charge is picked from the bag's total weight (each size's weight × quantity). Set each product's weight in Inventory → Edit product; a product with no weight counts as the default below.</p>
+      <div className="dl-box">
+        <label className="dl-check"><input type="checkbox" checked={r.enabled} onChange={e => setR({ ...r, enabled: e.target.checked })} /><span><b>Charge for delivery</b><em>Untick to deliver every online order free.</em></span></label>
+        <div className="dl-row2">
+          <label className="f">Free delivery when the order is at least ($, 0 = never)<input inputMode="decimal" value={r.freeOver} onChange={e => setR({ ...r, freeOver: e.target.value })} /></label>
+          <label className="f">Weight counted for a product with none (grams)<input inputMode="numeric" value={r.defaultWeightGrams} onChange={e => setR({ ...r, defaultWeightGrams: e.target.value.replace(/\D/g, '') })} /></label>
+        </div>
       </div>
-      <p className="dpos-flabel">DELIVERY REGIONS &amp; WEIGHT TIERS</p>
+      <p className="dl-h dl-sec">Delivery regions &amp; weight tiers</p>
       {r.regions.map((g, i) => (
-        <div key={g.id} className="dpos-box" style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
-            <input aria-label="Region name" placeholder="Region name, e.g. Singapore" style={{ maxWidth: 280 }} value={g.name} onChange={e => region(i, { name: e.target.value })} />
-            <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={g.active} onChange={e => region(i, { active: e.target.checked })} /><span className="small">Active</span></label>
-            <button type="button" className="dpos-btn ghost sm" style={{ marginLeft: 'auto' }} disabled={r.regions.length < 2} onClick={() => setR({ ...r, regions: r.regions.filter((_, n) => n !== i) })}>Remove region</button>
+        <div key={g.id} className="dl-box dl-region">
+          <div className="dl-rhead">
+            <input aria-label="Region name" placeholder="Region name, e.g. Singapore" value={g.name} onChange={e => region(i, { name: e.target.value })} />
+            <label className="dl-active"><input type="checkbox" checked={g.active} onChange={e => region(i, { active: e.target.checked })} /><span>Active</span></label>
+            <button type="button" className="dpos-btn ghost sm" disabled={r.regions.length < 2} onClick={() => setR({ ...r, regions: r.regions.filter((_, n) => n !== i) })}>Remove region</button>
           </div>
-          {g.tiers.map((t, j) => (
-            <div key={j} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-              <span className="muted small">From</span><input aria-label="From grams" style={{ maxWidth: 110 }} inputMode="numeric" value={t.minGrams} onChange={e => tier(i, j, { minGrams: e.target.value.replace(/\D/g, '') })} />
-              <span className="muted small">g, up to</span><input aria-label="Up to grams (blank = no limit)" style={{ maxWidth: 120 }} inputMode="numeric" placeholder="no limit" value={t.maxGrams} onChange={e => tier(i, j, { maxGrams: e.target.value.replace(/\D/g, '') })} />
-              <span className="muted small">g → $</span><input aria-label="Charge" style={{ maxWidth: 110 }} inputMode="decimal" value={t.fee} onChange={e => tier(i, j, { fee: e.target.value })} />
-              <button type="button" className="dpos-btn ghost sm" aria-label="Remove tier" disabled={g.tiers.length < 2} onClick={() => region(i, { tiers: g.tiers.filter((_, n) => n !== j) })}>✕</button>
-            </div>))}
+          <div className="dl-tiers">
+            <div className="dl-tier dl-th" aria-hidden="true"><span>From (g)</span><span>Up to (g)</span><span>Charge ($)</span><span /></div>
+            {g.tiers.map((t, j) => (
+              <div key={j} className="dl-tier">
+                <input aria-label="From grams" inputMode="numeric" value={t.minGrams} onChange={e => tier(i, j, { minGrams: e.target.value.replace(/\D/g, '') })} />
+                <input aria-label="Up to grams (blank = no limit)" inputMode="numeric" placeholder="no limit" value={t.maxGrams} onChange={e => tier(i, j, { maxGrams: e.target.value.replace(/\D/g, '') })} />
+                <input aria-label="Charge in dollars" inputMode="decimal" value={t.fee} onChange={e => tier(i, j, { fee: e.target.value })} />
+                <button type="button" className="dpos-btn ghost sm" aria-label="Remove tier" disabled={g.tiers.length < 2} onClick={() => region(i, { tiers: g.tiers.filter((_, n) => n !== j) })}>✕</button>
+              </div>))}
+          </div>
           <button type="button" className="dpos-btn ghost sm" onClick={() => region(i, { tiers: [...g.tiers, { minGrams: g.tiers.length ? (g.tiers[g.tiers.length - 1].maxGrams || '') : '0', maxGrams: '', fee: '' }] })}>+ Add tier</button>
         </div>))}
-      <button type="button" className="dpos-btn ghost sm" onClick={addRegion}>+ Add region</button>
-      <p className="dpos-flabel">WHAT CUSTOMERS SEE</p>
-      <label className="f">Shipping note (bag and checkout)<textarea rows={2} maxLength={300} value={r.note || ''} onChange={e => setR({ ...r, note: e.target.value })} placeholder="e.g. Delivered within 3 to 5 working days across Singapore." /></label>
-      <label className="f" style={{ marginTop: 10 }}>Landing page delivery line<textarea rows={2} maxLength={500} value={r.landingText || ''} onChange={e => setR({ ...r, landingText: e.target.value })} placeholder="e.g. Fast delivery: get your order within 3 to 5 days." /></label>
-      <label className="f" style={{ marginTop: 10 }}>Product page delivery lines (one per line)<textarea rows={3} value={r.productLines} onChange={e => setR({ ...r, productLines: e.target.value })} placeholder={'Standard delivery: 3 to 5 working days\nFree delivery over $150'} /></label>
+      <div><button type="button" className="dpos-btn ghost sm" onClick={addRegion}>+ Add region</button></div>
+      <p className="dl-h dl-sec">What customers see</p>
+      <div className="dl-box dl-copy">
+        <label className="f">Shipping note (bag and checkout)<textarea rows={3} maxLength={300} value={r.note || ''} onChange={e => setR({ ...r, note: e.target.value })} placeholder="e.g. Delivered within 3 to 5 working days across Singapore." /></label>
+        <label className="f">Landing page delivery line<textarea rows={3} maxLength={500} value={r.landingText || ''} onChange={e => setR({ ...r, landingText: e.target.value })} placeholder="e.g. Fast delivery: get your order within 3 to 5 days." /></label>
+        <label className="f dl-wide">Product page delivery lines (one per line)<textarea rows={3} value={r.productLines} onChange={e => setR({ ...r, productLines: e.target.value })} placeholder={'Standard delivery: 3 to 5 working days\nFree delivery over $150'} /></label>
+      </div>
       <Err>{err}</Err>
-      <div style={{ marginTop: 12 }}><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save delivery rules'}</button></div>
+      <div className="dl-save"><button className="dpos-btn" disabled={busy}>{busy ? 'Saving…' : 'Save delivery rules'}</button></div>
     </form>
   );
 }
@@ -882,7 +889,7 @@ export default function AdminPos() {
     'stitching-designs': <StitchingDesigns />,
     orders: <OrderHistory manager={manager} tick={tick} openInvoice={openInvoice} onChanged={() => setTick(t => t + 1)} />,
     inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />,
-    expenses: <PosExpenses />, delivery: <><EasyParcelCard /><DeliveryRulesCard /></>, settings: <Settings onSaved={loadShop} />,
+    expenses: <PosExpenses />, delivery: <div className="dl-page"><EasyParcelCard /><DeliveryRulesCard /></div>, settings: <Settings onSaved={loadShop} />,
   }[tab];
   const sub = {
     stitching: 'Stitching work at a glance: what is due, what is late and what it earned', 'stitching-orders': 'Every bill with stitching and every open advance order, with due dates and status', 'stitching-reports': 'Stitching revenue by garment and by day', 'stitching-designs': 'Add your own front and back neck designs; they appear when measurements are taken',
