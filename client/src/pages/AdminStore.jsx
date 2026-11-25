@@ -107,8 +107,8 @@ export function AdminReviews() {
   );
 }
 
-const ROLES = [['admin', 'Admin'], ['cashier', 'Staff · Billing'], ['inventory', 'Staff · Stock'], ['customer', 'Customer']];
-const ROLE_LABEL = { owner: 'Owner', ...Object.fromEntries(ROLES) };
+const ROLES = [['admin', 'Admin'], ['cashier', 'Staff'], ['customer', 'Customer']];
+const ROLE_LABEL = { owner: 'Owner', inventory: 'Staff', ...Object.fromEntries(ROLES) };
 function AddUserModal({ onClose, onDone }) {
   const [f, setF] = useState({ name: '', email: '', password: '', role: 'cashier' }); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const [show, setShow] = useState(false);
   const submit = async e => {
@@ -150,7 +150,7 @@ export function AdminUsers() {
             <tbody>{shown.map(u => (
               <tr key={u.id}><td><span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}><span className="dpos-av" style={{ width: 32, height: 32, fontSize: 13 }}>{(u.name || u.email)[0].toUpperCase()}</span><b>{u.name || '—'}</b></span></td><td>{u.email}</td>
                 <td>{u.role === 'owner' || !isOwner || u.id === user.id ? <span className={`dpos-pill ${u.role === 'customer' ? '' : 'ok'}`}>{ROLE_LABEL[u.role] || u.role}</span>
-                  : <select aria-label={`Role for ${u.email}`} value={u.role} onChange={ev => setRole(u, ev.target.value)} style={{ maxWidth: 150 }}>{ROLES.map(([r, l]) => <option key={r} value={r}>{l}</option>)}</select>}</td><td>{when(u.created_at)}</td></tr>))}</tbody></table></div>)}
+                  : <select aria-label={`Role for ${u.email}`} value={u.role === 'inventory' ? 'cashier' : u.role} onChange={ev => setRole(u, ev.target.value)} style={{ maxWidth: 150 }}>{ROLES.map(([r, l]) => <option key={r} value={r}>{l}</option>)}</select>}</td><td>{when(u.created_at)}</td></tr>))}</tbody></table></div>)}
       </Card>
       {add && <AddUserModal onClose={() => setAdd(false)} onDone={() => { toast('User created.'); load() }} />}
     </AdminShell>

@@ -649,3 +649,11 @@ html.lenis, html.lenis body { height: auto }
 .wordmark.has-logo .wm-a { font-size: 32px }
 .wordmark.has-logo .wm-b { font-size: 7.5px; white-space: nowrap }
 .mm-top .wordmark.has-logo .wm-a { color: #fff }
+
+/* Settings -> Staff permissions: tick tiles, like Dhanya */
+.sp-card .sub { margin: 4px 0 14px }
+.sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px }
+.sp-tile { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid #e5e2dd; border-radius: 12px; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s, border-color .2s }
+.sp-tile:hover { border-color: #c9c3cf }
+.sp-tile.on { background: color-mix(in srgb, var(--d-acc, #1c284f) 8%, #fff); border-color: var(--d-acc, #1c284f) }
+.sp-tile input { margin: 0; accent-color: var(--d-acc, #1c284f) }

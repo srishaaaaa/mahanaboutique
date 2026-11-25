@@ -7,7 +7,6 @@ import AdminShell, { Icon, NAV, ROLE_NAME } from '../components/AdminShell';
 import StaffOnly from '../components/StaffOnly';
 
 const STAFF = ['owner', 'admin', 'cashier', 'inventory'];
-const ROLE_LABEL = { admin: 'Admin', cashier: 'Cashier', inventory: 'Stock staff' };
 
 // Staff dashboard: the landing page for every staff role. It lists exactly the pages that role may open.
 export function AdminStaff() {
@@ -20,7 +19,7 @@ export function AdminStaff() {
   return (
     <AdminShell title="Staff dashboard" sub={`Welcome${user.name ? ', ' + user.name : ''} · signed in as ${ROLE_NAME[user.role] || user.role}`}>
       {!access.loaded ? <p className="muted">Loading your pages…</p> : !groups.length ? (
-        <section className="dpos-card"><p className="dpos-empty">No pages have been given to your role yet. Ask the owner to open Store settings → Staff access.</p></section>
+        <section className="dpos-card"><p className="dpos-empty">No pages have been given to your role yet. Ask the owner to open Settings → Staff permissions.</p></section>
       ) : groups.map(g => (
         <section key={g.group} className="dpos-card sd-group">
           <p className="sd-h">{g.group.toUpperCase()}</p>
@@ -30,30 +29,29 @@ export function AdminStaff() {
   );
 }
 
-// Store settings -> Staff dashboard: who sees what (owner and admins; only the owner edits the Admin column): which pages each role sees. A page can be hidden from a role, never opened beyond what the server allows that role.
+// Settings -> Staff permissions (owner and admins): the pages every Staff member can open, like Dhanya's tick grid.
+// Staff are the 'cashier' role; older stock-staff accounts ('inventory') get the same list. Admins always see everything.
+// A page can be hidden from staff, never opened beyond what the server allows them.
 export function StaffAccessCard() {
   const { toast, user } = useApp();
-  const [d, setD] = useState(null); const [cfg, setCfg] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
-  useEffect(() => { api('/admin/access').then(x => { setD(x); setCfg(x.config) }).catch(e => setErr(e.message)) }, []);
+  const [d, setD] = useState(null); const [pages, setPages] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState();
+  useEffect(() => { api('/admin/access').then(x => { setD(x); setPages(x.config.cashier || []) }).catch(e => setErr(e.message)) }, []);
   if (!['owner', 'admin'].includes(user?.role)) return null;
-  const toggle = (role, path) => setCfg(c => ({ ...c, [role]: c[role].includes(path) ? c[role].filter(p => p !== path) : [...c[role], path] }));
+  const items = d ? d.sections.flatMap(g => g.items).filter(i => i.max.includes('cashier')) : [];
+  const toggle = path => setPages(p => p.includes(path) ? p.filter(x => x !== path) : [...p, path]);
   const save = async () => {
     setBusy(true); setErr();
-    try { const r = await api('/admin/access', { method: 'PUT', body: cfg }); setCfg(r.config); await reloadAccess(); toast('Staff access saved') } catch (e) { setErr(e.message) } finally { setBusy(false) }
+    try { const r = await api('/admin/access', { method: 'PUT', body: { ...d.config, cashier: pages, inventory: pages } }); setD({ ...d, config: r.config }); setPages(r.config.cashier); await reloadAccess(); toast('Page access saved') } catch (e) { setErr(e.message) } finally { setBusy(false) }
   };
   return (
-    <section className="dpos-card sd-access">
-      <h2><Icon n="users" size={18} /> Staff dashboard: who sees what</h2>
-      <p className="muted small">Choose which pages each kind of staff member sees in the admin sidebar. The owner always sees everything. Tick a page to give that kind of staff the page and its data; untick it to take it away. Users, Sample data and Settings stay with admins.</p>
+    <section className="dpos-card sp-card">
+      <h2><Icon n="users" size={18} /> Staff permissions</h2>
+      <p className="sub">Tick the pages every Staff member can open from the admin sidebar. Admins always see everything.</p>
       {err && <p className="dpos-err" role="alert">{err}</p>}
-      {!cfg ? <p className="muted">Loading…</p> : (
-        <div className="dpos-tw"><table className="sd-table"><thead><tr><th>Page</th>{d.roles.map(r => <th key={r} className="c">{ROLE_LABEL[r]}</th>)}</tr></thead>
-          <tbody>{d.sections.map(g => [
-            <tr key={g.group} className="sd-gr"><td colSpan={d.roles.length + 1}>{g.group.toUpperCase()}</td></tr>,
-            ...g.items.map(i => <tr key={i.path}><td>{i.label}</td>{d.roles.map(r => <td key={r} className="c">{i.max.includes(r)
-              ? <input type="checkbox" aria-label={`${ROLE_LABEL[r]} can open ${i.label}`} checked={cfg[r].includes(i.path)} onChange={() => toggle(r, i.path)} />
-              : <span className="muted" title="This role cannot use this page">—</span>}</td>)}</tr>)])}</tbody></table></div>)}
-      <div style={{ marginTop: 14 }}><button type="button" className="dpos-btn" disabled={busy || !cfg} onClick={save}>{busy ? 'Saving…' : 'Save'}</button></div>
+      {!pages ? <p className="muted">Loading…</p> : (
+        <div className="sp-grid">{items.map(i => (
+          <label key={i.path} className={`sp-tile ${pages.includes(i.path) ? 'on' : ''}`}><input type="checkbox" checked={pages.includes(i.path)} onChange={() => toggle(i.path)} /> {i.label}</label>))}</div>)}
+      <div style={{ marginTop: 16 }}><button type="button" className="dpos-btn" disabled={busy || !pages} onClick={save}>{busy ? 'Saving…' : 'Save page access'}</button></div>
     </section>
   );
 }

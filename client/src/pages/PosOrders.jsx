@@ -102,7 +102,7 @@ export function OrderHistory({ tick, manager, openInvoice, onChanged }) {
   return (
     <>
       <div className="dpos-bar-tools">
-        {manager ? <PeriodFilter value={per} onChange={setPer} /> : <span className="sub">Cashiers see today’s bills. Owners and admins can search the full history.</span>}
+        {manager ? <PeriodFilter value={per} onChange={setPer} /> : <span className="sub">Staff see today’s bills. Owners and admins can search the full history.</span>}
         <button className="dpos-btn outline" onClick={exportCsv} disabled={!rows?.length}><Ico size={15}><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14" /></Ico>Export CSV</button>
       </div>
       <section className="dpos-card dpos-filters">

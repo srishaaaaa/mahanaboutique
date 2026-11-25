@@ -66,7 +66,7 @@ export const NAV = [
   { group: 'Settings', items: [['/admin/billing/settings', 'Settings', 'gear', true]] },
   { group: 'Staff', items: [['/admin/staff', 'Staff dashboard', 'user']] },
 ];
-export const ROLE_NAME = { owner: 'OWNER', admin: 'ADMIN', cashier: 'CASHIER', inventory: 'INVENTORY' };
+export const ROLE_NAME = { owner: 'OWNER', admin: 'ADMIN', cashier: 'STAFF', inventory: 'STAFF' };
 
 // Every admin page draws its own sidebar, so its scroll position is kept here: opening a panel near the bottom
 // no longer jumps the sidebar back to the top.

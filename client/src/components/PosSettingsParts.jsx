@@ -90,7 +90,8 @@ export function LoginPasswordCard() {
   );
 }
 
-const ROLES = [['admin', 'Admin', 'Everything, including settings and reports'], ['cashier', 'Cashier', 'Billing, advance orders, order history, customers'], ['inventory', 'Stock keeper', 'Inventory and stock adjustments']];
+// One kind of staff, like Dhanya: 'cashier' is shown as Staff. Older stock-staff accounts (role 'inventory') also show as Staff and get the same pages.
+const ROLES = [['admin', 'Admin', 'Everything, including settings and reports'], ['cashier', 'Staff', 'Only the pages ticked in Staff permissions below']];
 
 // Staff accounts for the POS. The owner and admins can add staff or change a role.
 export function StaffAccessCard() {
@@ -112,8 +113,8 @@ export function StaffAccessCard() {
       {!rows ? <p className="dpos-empty">Loading…</p> : (
         <ul className="pset-staff">{rows.map(u => (
           <li key={u.id}><span><b>{u.name || u.email}</b><em>{u.email}</em></span>
-            {u.role === 'owner' || !owner || u.id === user.id ? <span className="dpos-pill">{u.role === 'owner' ? 'Owner' : (ROLES.find(r => r[0] === u.role)?.[1] || u.role)}</span>
-              : <select aria-label={`Role for ${u.email}`} value={u.role} onChange={e => setRole(u, e.target.value)}>{ROLES.map(r => <option key={r[0]} value={r[0]}>{r[1]}</option>)}</select>}</li>))}</ul>)}
+            {u.role === 'owner' || !owner || u.id === user.id ? <span className="dpos-pill">{u.role === 'owner' ? 'Owner' : u.role === 'inventory' ? 'Staff' : (ROLES.find(r => r[0] === u.role)?.[1] || u.role)}</span>
+              : <select aria-label={`Role for ${u.email}`} value={u.role === 'inventory' ? 'cashier' : u.role} onChange={e => setRole(u, e.target.value)}>{ROLES.map(r => <option key={r[0]} value={r[0]}>{r[1]}</option>)}</select>}</li>))}</ul>)}
       {owner && (
         <form onSubmit={add} className="pset-add"><p className="pset-l">ADD A STAFF MEMBER</p>
           <div className="dpos-grid"><input aria-label="Name" placeholder="Name" value={nw.name} onChange={e => setNw({ ...nw, name: e.target.value })} /><input aria-label="Email" type="email" placeholder="Email" required value={nw.email} onChange={e => setNw({ ...nw, email: e.target.value })} /></div>
