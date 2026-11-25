@@ -3,7 +3,6 @@ import ExportCsv from '../components/ExportCsv';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAccess } from '../lib/access';
 import { useApp } from '../context/App';
-import { StaffAccessCard } from './AdminStaff';
 import { waLink, invoiceUrl, WaIcon, DocIcon, EyeIcon, ReturnIcon, PencilIcon, FulfilControl, OrderQuick } from './PosOrders';
 import ReturnModal from '../components/ReturnModal';
 import { ShipModal } from '../components/EasyParcel';
@@ -13,7 +12,6 @@ import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import AdminShell, { Icon } from '../components/AdminShell';
 import Modal from '../components/Modal';
-import LogoCard from '../components/LogoCard';
 import { Chips, PeriodFilter, inPeriod, usePeriod } from '../components/PeriodFilter';
 import { Stars } from '../components/CustomerReviews';
 import StaffOnly from '../components/StaffOnly';
@@ -157,12 +155,6 @@ export function AdminUsers() {
       {add && <AddUserModal onClose={() => setAdd(false)} onDone={() => { toast('User created.'); load() }} />}
     </AdminShell>
   );
-}
-
-export function AdminSettings() {
-  const gate = useGate();
-  if (gate) return gate;
-  return <AdminShell title="Store settings" sub="Logo, boutique location, hours and Instagram shown on the homepage, footer and map."><LogoCard /><Card><StoreSettingsForm /></Card><StaffAccessCard /></AdminShell>;
 }
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

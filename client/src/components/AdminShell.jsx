@@ -63,7 +63,7 @@ export const NAV = [
   { group: 'Stitching', items: [['/admin/billing/stitching', 'Stitching Dashboard', 'scissors'], ['/admin/billing/stitching-orders', 'Stitching Orders', 'orders'], ['/admin/billing/measurements', 'Measurements', 'ruler'], ['/admin/billing/stitching-reports', 'Stitching Reports', 'chart', true], ['/admin/billing/stitching-designs', 'Designs', 'ruler', true]] },
   { group: 'Website', items: [
     ['/admin/reviews', 'Reviews', 'star', true], ['/admin/categories', 'Categories', 'tag', true], ['/admin/billing/delivery', 'Delivery', 'truck', true], ['/admin/trending', 'Trending', 'star', true], ['/admin/site-text', 'Site text', 'edit', true], ['/admin/storefront', 'Storefront images', 'image', true], ['/admin/reels', 'Reels & Gallery', 'film', true], ['/admin/enquiries', 'Enquiries', 'mail', true], ['/admin/users', 'Users', 'users', true], ['/admin/sample', 'Sample data', 'flask', true]] },
-  { group: 'Settings', items: [['/admin/billing/settings', 'POS Settings', 'gear', true], ['/admin/settings', 'Store Settings', 'gear', true]] },
+  { group: 'Settings', items: [['/admin/billing/settings', 'Settings', 'gear', true]] },
   { group: 'Staff', items: [['/admin/staff', 'Staff dashboard', 'user']] },
 ];
 export const ROLE_NAME = { owner: 'OWNER', admin: 'ADMIN', cashier: 'CASHIER', inventory: 'INVENTORY' };

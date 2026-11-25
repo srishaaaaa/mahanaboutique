@@ -359,7 +359,7 @@ export function AdminSiteText() {
             {TEXT_GROUPS.map(([title, fields]) => (
               <section key={title} className="adm-block"><h2 className="serif adm-h2">{title}</h2><div className="st-fields">{fields.map(field)}</div></section>))}
             <button className="btn dark" onClick={save} disabled={busy}>{busy ? 'SAVING…' : 'SAVE SITE TEXT'}</button>
-            <p className="muted small" style={{ marginTop: 12 }}>Phone, email, address and Instagram are changed in <Link className="link-u" to="/admin/settings">Store settings</Link>. Photos are changed in <Link className="link-u" to="/admin/storefront">Storefront images</Link>.</p>
+            <p className="muted small" style={{ marginTop: 12 }}>Phone, email, address and Instagram are changed in <Link className="link-u" to="/admin/billing/settings">Settings</Link>. Photos are changed in <Link className="link-u" to="/admin/storefront">Storefront images</Link>.</p>
           </>}
           <h2 className="serif adm-h2" style={{ marginTop: 36 }}>Policy pages</h2>
           {POLICY_PAGES.map(([slug, label]) => <section key={slug} className="adm-block"><h3 className="adm-h3">{label}</h3><PolicyEditor slug={slug} label={label} toast={toast} /></section>)}

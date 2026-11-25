@@ -9,7 +9,9 @@ import Modal from '../components/Modal';
 import MeasureModal, { measureSummary } from '../components/MeasureModal';
 import LogoCard from '../components/LogoCard';
 import PosInventory from './PosInventory';
-import { AccentPicker, LoginPasswordCard, StaffAccessCard, StockAlertsCard, LowStockAlert } from '../components/PosSettingsParts';
+import { AccentPicker, LoginPasswordCard, StaffAccessCard as StaffAccountsCard, StockAlertsCard, LowStockAlert } from '../components/PosSettingsParts';
+import { StoreSettingsForm } from './AdminStore';
+import { StaffAccessCard as StaffPermissionsCard } from './AdminStaff';
 import PosExpenses from './PosExpenses';
 import PosCoupons from './PosCoupons';
 import CatalogPicker from '../components/CatalogPicker';
@@ -763,48 +765,54 @@ function Settings({ onSaved }) {
   return (
     <div className="pset">
       <section className="dpos-card pset-top"><span className="pset-ico"><Icon n="gear" /></span><div><h2 style={{ margin: 0 }}>Shop settings</h2><p className="sub">Update the shop profile, logo, colour and stock alerts used across the POS and invoices.</p></div></section>
-      <form onSubmit={save} className="pset-grid">
+      <div className="pset-grid">
         <div className="pset-col">
-          <AccentPicker value={s.accent || ''} onChange={v => setS({ ...s, accent: v })} />
           <StockAlertsCard />
+          <form onSubmit={save} className="pset-col">
+            <section className="dpos-card"><h2><Icon n="shop" />Shop profile</h2>
+              <p className="sub" style={{ marginBottom: 10 }}>Printed on POS bills. Leave a box empty to use your website’s store details.</p>
+              <div className="dpos-grid">{f('ownerName', 'Shop owner name')}{f('shopName', 'Shop name')}</div>
+              <div className="dpos-grid">{f('shopPhone', 'Contact number', { max: 30, mode: 'tel', ph: '98765 43210' })}{f('shopEmail', 'Email ID', { max: 120, type: 'email', ph: 'shop@example.com' })}</div>
+              <div className="dpos-grid">{f('ownerPhone', 'Owner phone number', { max: 30, mode: 'tel' })}{f('whatsapp', 'WhatsApp number', { max: 30, mode: 'tel', ph: 'Same as contact number' })}</div>
+              <label className="f">Shop address (one line per row)<textarea rows={3} maxLength={400} value={s.shopAddress || ''} onChange={e => setS({ ...s, shopAddress: e.target.value })} placeholder={'Street, area\nCity - PIN'} /></label>
+              <div className="dpos-grid">{f('city', 'City / location', { max: 80 })}{f('hours', 'Business hours', { max: 120, ph: 'e.g. Open daily, 10 AM – 9 PM' })}</div>
+              <div className="dpos-grid">{f('shopNameTamil', 'Shop name (second language)')}{f('instagram', 'Instagram ID', { max: 60, ph: 'yourshop.official' })}</div>
+              <label className="f">GST Reg. No. (on GST invoices)<input value={s.gstin} onChange={e => setS({ ...s, gstin: e.target.value })} maxLength={15} placeholder="Optional · e.g. M90312345A" style={{ fontFamily: 'monospace' }} /></label>
+              <LogoCard />
+            </section>
+            <section className="dpos-card"><h2><Icon n="doc" />GST &amp; invoice number</h2>
+              <p className="sub" style={{ marginBottom: 12 }}>Your GST registration number is in Shop profile above. Turn it on per bill type here. Amounts are unchanged.</p>
+              <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}><input type="checkbox" checked={s.showGstRetail} onChange={e => setS({ ...s, showGstRetail: e.target.checked })} /><span><b>Show on retail invoices</b><br /><span className="muted small">POS bills</span></span></label>
+              <label className="f" style={{ marginTop: 14 }}>Terms &amp; notes printed on the invoice (one point per line)<textarea rows={3} maxLength={600} value={s.terms || ''} onChange={e => setS({ ...s, terms: e.target.value })} placeholder="e.g. Custom-stitched and altered garments are made to order and are non-returnable." /></label>
+              <p className="sub" style={{ marginTop: 12 }}>Invoice numbers are created automatically, like INV-2026-G3AKL.</p>
+            </section>
+            <section className="dpos-card"><h2><Icon n="truck" />Delivery &amp; packing quick picks</h2>
+              {s.deliveryPresets.map((p, i) => (
+                <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                  <input aria-label="Name" value={p.name} onChange={e => preset(i, { name: e.target.value })} placeholder="e.g. Within Kumbakonam" />
+                  <input aria-label="Fee in dollars" style={{ maxWidth: 140 }} inputMode="decimal" defaultValue={rupees(p.fee)} onBlur={e => preset(i, { fee: toPaise(e.target.value) })} placeholder="$ fee" />
+                  <button type="button" className="dpos-btn ghost sm" aria-label="Remove" onClick={() => setS({ ...s, deliveryPresets: s.deliveryPresets.filter((_, n) => n !== i) })}>✕</button></div>))}
+              <button type="button" className="dpos-btn ghost sm" onClick={() => setS({ ...s, deliveryPresets: [...s.deliveryPresets, { name: '', fee: 0 }] })}>+ Add delivery option</button>
+              <p className="sub" style={{ marginTop: 10 }}>These appear as a quick pick on the billing screen. Online-store shipping is managed separately.</p>
+            </section>
+            <Err>{err}</Err>{ok && <p className="dpos-ok" role="status">Saved.</p>}
+            <div><button className="dpos-btn" disabled={busy} type="submit">{busy ? 'Saving…' : 'Save settings'}</button></div>
+          </form>
+          <LoginPasswordCard />
         </div>
         <div className="pset-col">
-          <section className="dpos-card"><h2><Icon n="shop" />Shop profile</h2>
-            <p className="sub" style={{ marginBottom: 10 }}>Printed on POS bills. Leave a box empty to use your website’s store details.</p>
-            <div className="dpos-grid">{f('ownerName', 'Shop owner name')}{f('shopName', 'Shop name')}</div>
-            <div className="dpos-grid">{f('shopPhone', 'Contact number', { max: 30, mode: 'tel', ph: '98765 43210' })}{f('shopEmail', 'Email ID', { max: 120, type: 'email', ph: 'shop@example.com' })}</div>
-            <div className="dpos-grid">{f('ownerPhone', 'Owner phone number', { max: 30, mode: 'tel' })}{f('whatsapp', 'WhatsApp number', { max: 30, mode: 'tel', ph: 'Same as contact number' })}</div>
-            <label className="f">Shop address (one line per row)<textarea rows={3} maxLength={400} value={s.shopAddress || ''} onChange={e => setS({ ...s, shopAddress: e.target.value })} placeholder={'Street, area\nCity - PIN'} /></label>
-            <div className="dpos-grid">{f('city', 'City / location', { max: 80 })}{f('hours', 'Business hours', { max: 120, ph: 'e.g. Open daily, 10 AM – 9 PM' })}</div>
-            <div className="dpos-grid">{f('shopNameTamil', 'Shop name (second language)')}{f('instagram', 'Instagram ID', { max: 60, ph: 'yourshop.official' })}</div>
-            <label className="f">GST Reg. No. (on GST invoices)<input value={s.gstin} onChange={e => setS({ ...s, gstin: e.target.value })} maxLength={15} placeholder="Optional · e.g. M90312345A" style={{ fontFamily: 'monospace' }} /></label>
-            <LogoCard />
+          <section className="dpos-card"><h2>Website &amp; store location</h2>
+            <p className="sub">Boutique location, hours and Instagram shown on the homepage, footer and map.</p>
+            <StoreSettingsForm />
           </section>
+          <StaffAccountsCard />
+          <form onSubmit={save} className="pset-col">
+            <AccentPicker value={s.accent || ''} onChange={v => setS({ ...s, accent: v })} />
+            <div style={{ justifySelf: 'start' }}><button className="dpos-btn" disabled={busy} type="submit">{busy ? 'Saving…' : 'Save colour'}</button></div>
+          </form>
         </div>
-        <div className="pset-wide">
-        <section className="dpos-card"><h2><Icon n="doc" />GST &amp; invoice number</h2>
-          <p className="sub" style={{ marginBottom: 12 }}>Your GST registration number is in Shop profile above. Turn it on per bill type here. Amounts are unchanged.</p>
-          <div className="dpos-grid" style={{ marginTop: 12 }}>
-            <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}><input type="checkbox" checked={s.showGstRetail} onChange={e => setS({ ...s, showGstRetail: e.target.checked })} /><span><b>Show on retail invoices</b><br /><span className="muted small">POS bills</span></span></label>
-          </div>
-          <label className="f" style={{ marginTop: 14 }}>Terms &amp; notes printed on the invoice (one point per line)<textarea rows={3} maxLength={600} value={s.terms || ''} onChange={e => setS({ ...s, terms: e.target.value })} placeholder="e.g. Custom-stitched and altered garments are made to order and are non-returnable." /></label>
-          <p className="sub" style={{ marginTop: 12 }}>Invoice numbers are created automatically, like INV-2026-G3AKL.</p>
-        </section>
-        <section className="dpos-card"><h2><Icon n="truck" />Delivery &amp; packing quick picks</h2>
-          {s.deliveryPresets.map((p, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input aria-label="Name" value={p.name} onChange={e => preset(i, { name: e.target.value })} placeholder="e.g. Within Kumbakonam" />
-              <input aria-label="Fee in dollars" style={{ maxWidth: 140 }} inputMode="decimal" defaultValue={rupees(p.fee)} onBlur={e => preset(i, { fee: toPaise(e.target.value) })} placeholder="$ fee" />
-              <button type="button" className="dpos-btn ghost sm" aria-label="Remove" onClick={() => setS({ ...s, deliveryPresets: s.deliveryPresets.filter((_, n) => n !== i) })}>✕</button></div>))}
-          <button type="button" className="dpos-btn ghost sm" onClick={() => setS({ ...s, deliveryPresets: [...s.deliveryPresets, { name: '', fee: 0 }] })}>+ Add delivery option</button>
-          <p className="sub" style={{ marginTop: 10 }}>These appear as a quick pick on the billing screen. Online-store shipping is managed separately.</p>
-        </section>
-        <Err>{err}</Err>{ok && <p className="dpos-ok" role="status">Saved.</p>}
-        <div><button className="dpos-btn" disabled={busy} type="submit">{busy ? 'Saving…' : 'Save settings'}</button></div>
-        </div>
-      </form>
-      <LoginPasswordCard />
-      <StaffAccessCard />
+      </div>
+      <StaffPermissionsCard />
     </div>
   );
 }

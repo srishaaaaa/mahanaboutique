@@ -1,14 +1,14 @@
 import { one } from '../db/index.js';
 
-// Which admin pages each staff role can open, set by the owner or an admin in Store settings -> Staff dashboard: who sees what.
+// Which admin pages each staff role can open, set by the owner or an admin in Settings -> Staff dashboard: who sees what.
 // The setting is real: a page granted to a role also opens the server routes behind that page for that role (see `grants`).
-// `max` is the ceiling. Pages that could hand out more power (Users, Sample data, both Settings pages) stay admin-only.
+// `max` is the ceiling. Pages that could hand out more power (Users, Sample data, Settings) stay admin-only.
 const A = ['admin'], ALLR = ['admin', 'cashier', 'inventory'];
 export const SECTIONS = [
   ['Online store', [['/admin/orders', 'Online orders', ALLR], ['/admin/reviews', 'Reviews', ALLR], ['/admin/categories', 'Categories', ALLR], ['/admin/billing/delivery', 'Delivery', A], ['/admin/trending', 'Trending', ALLR], ['/admin/site-text', 'Site text', ALLR], ['/admin/storefront', 'Storefront images', ALLR], ['/admin/reels', 'Reels & Gallery', ALLR], ['/admin/enquiries', 'Enquiries', ALLR], ['/admin/users', 'Users', A], ['/admin/sample', 'Sample data', A]]],
   ['Retail billing', [['/admin/billing', 'Billing', ALLR], ['/admin/billing/analytics', 'POS Analytics', ALLR], ['/admin/billing/advance', 'Advance Orders', ALLR], ['/admin/billing/orders', 'Order History', ALLR], ['/admin/billing/inventory', 'Inventory', ALLR], ['/admin/billing/customers', 'Customers', ALLR], ['/admin/billing/coupons', 'Coupons', ALLR], ['/admin/billing/expenses', 'Expenses', ALLR]]],
   ['Stitching', [['/admin/billing/stitching', 'Stitching Dashboard', ALLR], ['/admin/billing/stitching-orders', 'Stitching Orders', ALLR], ['/admin/billing/measurements', 'Measurements', ALLR], ['/admin/billing/stitching-reports', 'Stitching Reports', ALLR], ['/admin/billing/stitching-designs', 'Stitching Designs', A]]],
-  ['Settings', [['/admin/billing/settings', 'POS Settings', A], ['/admin/settings', 'Store Settings', A]]],
+  ['Settings', [['/admin/billing/settings', 'Settings', A]]],
 ].map(([group, items]) => ({ group, items: items.map(([path, label, max]) => ({ path, label, max })) }));
 const ALL = SECTIONS.flatMap(g => g.items);
 export const ROLES = ['admin', 'cashier', 'inventory'];
@@ -64,7 +64,7 @@ const ROUTES = [
   [/^\/sample-data/, ['/admin/sample']],
   [/^\/(products|variants|images)/, [B + '/inventory']],
   [/^\/media/, ['/admin/storefront', '/admin/reels', '/admin/site-text']],
-  [/^\/(store|settings|pages)/, ['/admin/settings', '/admin/site-text', '/admin/trending', '/admin/storefront']],
+  [/^\/(store|settings|pages)/, [B + '/settings', '/admin/site-text', '/admin/trending', '/admin/storefront']],
 ];
 
 // True when the owner / an admin has given this role the page that owns the route being called.
