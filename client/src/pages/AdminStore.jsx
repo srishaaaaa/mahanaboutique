@@ -11,14 +11,12 @@ import { InvoicePreview } from './InvoicePage';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import AdminShell, { Icon } from '../components/AdminShell';
-import Modal from '../components/Modal';
 import { Chips, PeriodFilter, inPeriod, usePeriod } from '../components/PeriodFilter';
 import { Stars } from '../components/CustomerReviews';
 import StaffOnly from '../components/StaffOnly';
 
 // Online-store admin panels (orders, reviews, users, store settings) in the shared admin layout. Authorization is enforced by the API.
 const STATUSES = ['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'];
-const when = d => new Date(d).toLocaleDateString('en-SG');
 
 function useGate() {
   const { user, authReady } = useApp(); const access = useAccess(user); const here = useLocation().pathname.replace(/\/$/, '');
@@ -107,52 +105,30 @@ export function AdminReviews() {
   );
 }
 
-const ROLES = [['admin', 'Admin'], ['cashier', 'Staff'], ['customer', 'Customer']];
-const ROLE_LABEL = { owner: 'Owner', inventory: 'Staff', ...Object.fromEntries(ROLES) };
-function AddUserModal({ onClose, onDone }) {
-  const [f, setF] = useState({ name: '', email: '', password: '', role: 'cashier' }); const [busy, setBusy] = useState(false); const [err, setErr] = useState(); const [show, setShow] = useState(false);
-  const submit = async e => {
-    e.preventDefault(); setBusy(true); setErr();
-    try { await api('/admin/users', { method: 'POST', body: { name: f.name.trim(), email: f.email.trim(), password: f.password, role: f.role } }); onDone(); onClose() }
-    catch (x) { setErr(x.issues?.[0]?.message || x.message) } finally { setBusy(false) }
-  };
-  return (
-    <Modal title="Add user" sub="Create a staff login. They sign in at the normal Sign in page." onClose={onClose}>
-      <form onSubmit={submit} style={{ display: 'grid', gap: 14 }}>
-        <label className="f">Full name<input autoFocus value={f.name} maxLength={120} onChange={e => setF({ ...f, name: e.target.value })} /></label>
-        <label className="f">Email<input required type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} autoComplete="off" /></label>
-        <label className="f">Temporary password (8+ characters)<span style={{ display: 'flex', gap: 8 }}><input required minLength={8} type={show ? 'text' : 'password'} value={f.password} onChange={e => setF({ ...f, password: e.target.value })} autoComplete="new-password" /><button type="button" className="dpos-btn ghost sm" onClick={() => setShow(!show)}>{show ? 'Hide' : 'Show'}</button></span></label>
-        <label className="f">Role<select value={f.role} onChange={e => setF({ ...f, role: e.target.value })}>
-          <option value="admin">Admin — manages the store</option><option value="cashier">Staff — billing: can bill, sees today’s bills</option><option value="inventory">Staff — stock: can adjust stock</option><option value="customer">Customer — no admin access</option></select></label>
-        {err && <p className="dpos-err" role="alert">{err}</p>}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}><button type="button" className="dpos-btn ghost" onClick={onClose}>Cancel</button><button className="dpos-btn" disabled={busy}>{busy ? 'Creating…' : 'Create user'}</button></div>
-      </form>
-    </Modal>
-  );
-}
-
 export function AdminUsers() {
-  const gate = useGate(); const { user, toast } = useApp(); const [list, setList] = useState(null); const [q, setQ] = useState(''); const [e, setE] = useState(); const [per, setPer] = usePeriod('all'); const [role, setRole_] = useState('all'); const [add, setAdd] = useState(false);
+  const gate = useGate(); const { user, toast } = useApp(); const [list, setList] = useState(null); const [q, setQ] = useState(''); const [e, setE] = useState(); const [role, setRole_] = useState('all');
   const load = () => api('/admin/users').then(setList).catch(x => setE(x.message));
   useEffect(() => { if (!gate) load() }, [gate]); // eslint-disable-line react-hooks/exhaustive-deps
+  // new sign-ins show up without reloading: refresh every 20 s and whenever this tab is opened again
+  useEffect(() => { if (gate) return; const t = setInterval(load, 20000); const f = () => document.visibilityState === 'visible' && load(); document.addEventListener('visibilitychange', f); return () => { clearInterval(t); document.removeEventListener('visibilitychange', f) } }, [gate]); // eslint-disable-line react-hooks/exhaustive-deps
   if (gate) return gate;
-  const isOwner = ['owner', 'admin'].includes(user.role); // owner and admin can do the same here
-  const shown = (list || []).filter(u => (!q.trim() || `${u.name} ${u.email}`.toLowerCase().includes(q.trim().toLowerCase())) && inPeriod(u.created_at, per) && (role === 'all' || (role === 'staff' ? ['cashier', 'inventory'].includes(u.role) : role === 'admin' ? ['admin', 'owner'].includes(u.role) : u.role === 'customer')));
-  const setRole = async (u, r) => { try { await api(`/admin/users/${u.id}/role`, { method: 'PATCH', body: { role: r } }); setList(l => l.map(x => x.id === u.id ? { ...x, role: r } : x)); toast(`${u.email} is now ${ROLE_LABEL[r] || r}`) } catch (x) { setE(x.message) } };
+  if (!['owner', 'admin'].includes(user.role)) return <StaffOnly />;
+  const ROLE_L = { owner: 'Admin', admin: 'Admin', cashier: 'Staff', inventory: 'Staff', customer: 'Customer' };
+  const seen = d => new Date(d).toLocaleString('en-SG', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Singapore' });
+  const shown = (list || []).filter(u => (!q.trim() || `${u.name} ${u.email}`.toLowerCase().includes(q.trim().toLowerCase())) && (role === 'all' || (role === 'admins' ? ['owner', 'admin'].includes(u.role) : role === 'staff' ? ['cashier', 'inventory'].includes(u.role) : u.role === 'customer')));
+  const setRole = async (u, r) => { try { await api(`/admin/users/${u.id}/role`, { method: 'PATCH', body: { role: r } }); setList(l => l.map(x => x.id === u.id ? { ...x, role: r } : x)); toast(`${u.email} is now ${ROLE_L[r] || r}`) } catch (x) { setE(x.message) } };
   return (
-    <AdminShell title="Users & Roles" sub="Roles: Admin manages the store, Staff bills or handles stock, Customer has no admin access. The owner and admins add users and change roles."
->
+    <AdminShell title="Users & Roles" sub="Staff with access to this admin. Everyone who signs in appears here automatically: set them to Staff or Admin to give access.">
       {e && <p role="alert" className="dpos-err">{e}</p>}
-      <div className="dpos-bar-tools"><input type="search" style={{ maxWidth: 260 }} value={q} onChange={ev => setQ(ev.target.value)} placeholder="Search users…" aria-label="Search users" />{isOwner && <button className="dpos-btn" onClick={() => setAdd(true)}><Icon n="plus" size={16} />Add user</button>}<Chips label="Show" value={role} onChange={setRole_} options={[['all', 'Everyone'], ['admin', 'Admins'], ['staff', 'Staff'], ['customer', 'Customers']]} /><PeriodFilter value={per} onChange={setPer} /><ExportCsv name="users" header={['Name', 'Email', 'Role', 'Joined']} rows={shown.map(u => [u.name || '', u.email, u.role, String(u.created_at).slice(0, 10)])} /></div>
+      <div className="dpos-bar-tools"><input type="search" style={{ maxWidth: 240 }} value={q} onChange={ev => setQ(ev.target.value)} placeholder="Search users…" aria-label="Search users" /><ExportCsv name="users" header={['Name', 'Email', 'Role', 'Joined', 'Last sign-in']} rows={shown.map(u => [u.name || '', u.email, ROLE_L[u.role] || u.role, u.created_at ? String(u.created_at).slice(0, 10) : '', u.lastLogin ? seen(u.lastLogin) : ''])} /><Chips label="Show" value={role} onChange={setRole_} options={[['all', 'Everyone'], ['admins', 'Admins'], ['staff', 'Staff'], ['customer', 'Customers']]} /></div>
       <Card>
         {!list ? <p className="dpos-empty">Loading…</p> : !shown.length ? <p className="dpos-empty">No users found.</p> : (
-          <div className="dpos-tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+          <div className="dpos-tw"><table><thead><tr><th>Name</th><th>Email</th><th>Last sign-in</th><th>Role</th><th>Status</th></tr></thead>
             <tbody>{shown.map(u => (
-              <tr key={u.id}><td><span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}><span className="dpos-av" style={{ width: 32, height: 32, fontSize: 13 }}>{(u.name || u.email)[0].toUpperCase()}</span><b>{u.name || '—'}</b></span></td><td>{u.email}</td>
-                <td>{u.role === 'owner' || !isOwner || u.id === user.id ? <span className={`dpos-pill ${u.role === 'customer' ? '' : 'ok'}`}>{ROLE_LABEL[u.role] || u.role}</span>
-                  : <select aria-label={`Role for ${u.email}`} value={u.role === 'inventory' ? 'cashier' : u.role} onChange={ev => setRole(u, ev.target.value)} style={{ maxWidth: 150 }}>{ROLES.map(([r, l]) => <option key={r} value={r}>{l}</option>)}</select>}</td><td>{when(u.created_at)}</td></tr>))}</tbody></table></div>)}
+              <tr key={u.id}><td><span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}><span className="dpos-av" style={{ width: 32, height: 32, fontSize: 13 }}>{(u.name || u.email)[0].toUpperCase()}</span><b>{u.name || '—'}</b></span></td><td>{u.email}</td><td className="usr-seen">{u.lastLogin ? seen(u.lastLogin) : <span className="muted">Not since this update</span>}</td>
+                <td>{u.id === user.id || u.role === 'owner' ? <span className={`usr-role ${['owner', 'admin'].includes(u.role) ? 'adm' : ''}`}>{ROLE_L[u.role] || u.role}</span>
+                  : <select className={`usr-role ${['owner', 'admin'].includes(u.role) ? 'adm' : u.role === 'customer' ? 'cust' : 'stf'}`} aria-label={`Role for ${u.email}`} value={u.role === 'inventory' ? 'cashier' : u.role === 'owner' ? 'admin' : u.role} onChange={ev => setRole(u, ev.target.value)}>{[['customer', 'Customer'], ['cashier', 'Staff'], ['admin', 'Admin']].map(([r, l]) => <option key={r} value={r}>{l}</option>)}</select>}</td><td><span className="usr-status">ACTIVE</span></td></tr>))}</tbody></table></div>)}
       </Card>
-      {add && <AddUserModal onClose={() => setAdd(false)} onDone={() => { toast('User created.'); load() }} />}
     </AdminShell>
   );
 }
