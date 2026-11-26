@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import PrintSettings from '../components/PrintSettings';
+import { InvoicePreview } from './InvoicePage';
+import { EyeIcon } from './PosOrders';
 import { api } from '../lib/api';
 import { inr } from '../lib/format';
 import { longDate, money } from '../lib/invoiceFormat';
@@ -49,13 +53,15 @@ export default function PosMeasurements() {
   const c = data?.counts;
   const tiles = [['all', 'TOTAL BILLS', c?.all, ''], ['pending', 'PENDING', c?.pending, 'warn'], ['completed', 'COMPLETED', c?.completed, 'ok'], ['cancelled', 'CANCELLED', c?.cancelled, 'bad']];
   const bills = data?.bills || [];
+  const [pv, setPv] = useState(null); const [ps, setPs] = useState(null); // invoice preview / print settings for one bill
   return (
     <div className="ms">
       <div className="ms-top">
         <span />
         <div className="ms-top-a"><PeriodFilter value={per} onChange={setPer} />
           <ExportCsv name="measurements" header={['Invoice', 'Date', 'Customer', 'Mobile', 'Status', 'Item', 'Price ($)', 'Measurements']}
-            rows={bills.flatMap(b => b.items.map(i => [b.invoiceNo, b.billDate, b.customerName, b.customerPhone, STATUS[b.status], i.name, (i.lineTotal / 100).toFixed(2), measureSummary(i.measure)]))} /></div>
+            rows={bills.flatMap(b => b.items.map(i => [b.invoiceNo, b.billDate, b.customerName, b.customerPhone, STATUS[b.status], i.name, (i.lineTotal / 100).toFixed(2), measureSummary(i.measure)]))} />
+          <Link className="dpos-btn outline" to="/admin/billing/stitching-designs" title="Your own neck designs and sleeve options">Options</Link></div>
       </div>
       <div className="ms-tiles">{tiles.map(([v, l, k, tone]) => <button key={v} type="button" className={`ms-tile ${tone} ${f.status === v ? 'on' : ''}`} aria-pressed={f.status === v} onClick={() => setF({ ...f, status: v })}><small>{l}</small><b>{k ?? '…'}</b></button>)}</div>
       <section className="dpos-card ms-filters">
@@ -74,11 +80,15 @@ export default function PosMeasurements() {
               <div className="ms-act">
                 {b.status === 'cancelled' ? <span className="ms-st bad">Cancelled</span>
                   : <select className={`ms-st ${b.status === 'completed' ? 'ok' : 'warn'}`} value={b.status} aria-label={`Status of ${b.invoiceNo}`} onChange={e => setStatus(b, e.target.value)}><option value="pending">Pending</option><option value="completed">Completed</option></select>}
+                {b.shareToken && <button type="button" className="ms-ib" title="Preview invoice" aria-label={`Preview invoice ${b.invoiceNo}`} onClick={() => setPv(b)}><EyeIcon /></button>}
+                {b.shareToken && <button type="button" className="ms-ib print" title="Print" aria-label={`Print ${b.invoiceNo}`} onClick={() => setPs(b)}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" /><rect x="7" y="14" width="10" height="7" rx="1" /></svg></button>}
                 <button type="button" className="ms-chev" aria-expanded={!!open[b.invoiceNo]} aria-label={open[b.invoiceNo] ? 'Hide measurements' : 'Show measurements'} onClick={() => setOpen({ ...open, [b.invoiceNo]: !open[b.invoiceNo] })}>{open[b.invoiceNo] ? '⌃' : '⌄'}</button>
               </div>
             </div>
             {open[b.invoiceNo] && <div className="ms-body">{b.customerAddress && <p className="ms-addr">Address: {b.customerAddress}</p>}{b.items.map((it, i) => <Line key={i} it={it} />)}</div>}
           </li>))}</ul>)}
+      {pv && <InvoicePreview token={pv.shareToken} invoiceNo={pv.invoiceNo} onClose={() => setPv(null)} />}
+      {ps && <PrintSettings onClose={() => setPs(null)} onPrint={({ type, paper }) => { const t = ps.shareToken; setPs(null); window.open(`/invoice/${t}?fmt=${type === 'thermal' ? 'thermal' : 'a4'}&size=${paper}&print=1`, '_blank') }} />}
     </div>
   );
 }

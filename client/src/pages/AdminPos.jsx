@@ -17,7 +17,7 @@ import PosCoupons from './PosCoupons';
 import CatalogPicker from '../components/CatalogPicker';
 import PosMeasurements from './PosMeasurements';
 import { EasyParcelCard } from '../components/EasyParcel';
-import { StitchingDashboard, StitchingOrders, StitchingReports, StitchingDesigns } from './PosStitching';
+import { StitchingDesigns } from './PosStitching';
 import { InvoicePreview } from './InvoicePage';
 import { AdvanceDone, AdvanceModal, AdvanceOrders, BillDone, CouponPanel, OrderHistory } from './PosOrders';
 import { Chips, PeriodFilter, inPeriod, periodRange, todayStr, usePeriod } from '../components/PeriodFilter';
@@ -40,7 +40,7 @@ const k = p => p >= 100000000 ? `$${(p / 100000000).toFixed(1).replace(/\.0$/, '
 const MODES = [['cash', 'Cash'], ['upi', 'QR / PayNow'], ['card', 'Card'], ['split', 'Split']];
 const MODE_LABEL = { cash: 'Cash', upi: 'QR / PayNow', card: 'Card', split: 'Split' };
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, stitching: false, 'stitching-orders': false, 'stitching-reports': true, 'stitching-designs': true, inventory: true, customers: false, coupons: true, expenses: true, delivery: true, settings: true };
+const TABS = { billing: false, analytics: true, advance: false, orders: false, measurements: false, 'stitching-designs': true, inventory: true, customers: false, coupons: true, expenses: true, delivery: true, settings: true };
 
 // ---- live preview of the bill (the server recomputes everything on checkout) ----
 function preview(lines, { isGst, gstRate, discountType, discountValue, deliveryFee }) {
@@ -57,7 +57,6 @@ function preview(lines, { isGst, gstRate, discountType, discountValue, deliveryF
 const Err = ({ children }) => children ? <p className="dpos-err" role="alert">{children}</p> : null;
 const Empty = ({ children }) => <p className="dpos-empty">{children}</p>;
 
-const WaI = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.2 18.7L4 20Z" /></svg>;
 const CheckI = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>;
 const ClockI = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></svg>;
 
@@ -169,7 +168,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
 
   const body = useMemo(() => ({
     channel, source: ws ? 'offline' : source, billDate,
-    items: priced.map(l => l.custom ? { name: l.name.trim(), price: l.price, qty: l.qty, taxRate: l.taxRate, ...(l.service && l.measure ? { measure: l.measure } : {}) } : { variantId: l.variantId, qty: l.qty }),
+    items: priced.map(l => l.custom ? { name: l.name.trim(), price: l.price, qty: l.qty, taxRate: l.taxRate, ...(l.measure ? { measure: l.measure } : {}) } : { variantId: l.variantId, qty: l.qty, ...(l.measure ? { measure: l.measure } : {}) }),
     customerName: cust.name.trim(), customerPhone: cust.phone.trim(),
     isGst, ...(flat != null ? { gstRate: flat } : {}), ...(coupon ? { couponCode: coupon.code } : { discountType: disc.type, discountValue }), deliveryFee,
     paymentMode: mode, ...(mode === 'cash' ? { cashTendered: tenderedP } : {}),
@@ -217,7 +216,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
   });
   const patch = (kk, p) => setLines(ls => ls.map(l => l.key === kk ? { ...l, ...p } : l));
   const setQty = (l, n) => { const max = l.stock ?? 99999; patch(l.key, { qty: Math.max(1, Math.min(max, Math.floor(n) || 1)) }) };
-  const drop = kk => setLines(ls => ls.filter(l => l.key !== kk));
+  const drop = kk => setLines(ls => ls.filter(l => l.key !== kk && l.chargeFor !== kk)); // an item's modification charge goes with it
   const onSearchEnter = e => { // a barcode scanner / typed SKU followed by Enter adds the exact match straight away
     if (e.key !== 'Enter' || !results) return;
     const exact = results.find(r => r.sku.toLowerCase() === q.trim().toLowerCase()) || (results.length === 1 ? results[0] : null);
@@ -275,10 +274,6 @@ function Billing({ channel, shop, onSale, onAdvance }) {
           <input aria-label="Item name or description" autoFocus={!ws && !l.name} placeholder={l.service ? 'Service (alteration, stitching…)' : 'Item name / description…'} list={ws ? 'dpos-ws-list' : undefined} value={l.name} onChange={e => patch(l.key, { name: e.target.value })} />
           <input aria-label="Price in dollars" inputMode="decimal" placeholder="Price $" value={l.priceStr} onChange={e => patch(l.key, { priceStr: e.target.value })} />
           <select aria-label="GST rate" value={l.taxRate} onChange={e => patch(l.key, { taxRate: +e.target.value })}>{GST_RATES.map(r => <option key={r} value={r}>{r}% GST</option>)}</select>
-          {l.service && <div className="msr-line">
-            <button type="button" className="dpos-btn ghost sm" onClick={() => setMeasureFor(l.key)}><Icon n="ruler" size={15} /> {l.measure ? 'Edit measurements' : 'Add measurements'}</button>
-            {l.measure && <span className="msr-sum">{measureSummary(l.measure)}</span>}
-          </div>}
         </div>
       ) : (
         <div><b>{l.name}</b><div className="muted small">{l.detail}{l.sku ? ` · ${l.sku}` : ''} · {inr(l.price)} each · {l.stock} in stock</div></div>
@@ -286,8 +281,11 @@ function Billing({ channel, shop, onSale, onAdvance }) {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifySelf: 'end' }}>
         <div className="dpos-qty"><button aria-label="Decrease quantity" onClick={() => setQty(l, l.qty - 1)}>−</button>
           <input aria-label="Quantity" inputMode="numeric" value={l.qty} onChange={e => setQty(l, +e.target.value)} /><button aria-label="Increase quantity" onClick={() => setQty(l, l.qty + 1)}>+</button></div>
-        <button className="dpos-btn ghost sm" aria-label="Remove item" onClick={() => ws && lines.length === 1 ? setLines([blankCustom()]) : drop(l.key)}>✕</button>
+        {!ws && !l.chargeFor && <button type="button" className={`bp-ruler ${l.measure ? 'on' : ''}`} title={l.measure ? 'Measurements added: click to edit' : 'Add measurements / modification charge'} aria-label={l.measure ? 'Edit measurements' : 'Add measurements'} onClick={() => setMeasureFor(l.key)}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 17 17 3l4 4L7 21z" /><path d="M7 13l2 2M10 10l2 2M13 7l2 2" /></svg>{l.measure && <i aria-hidden="true">✓</i>}</button>}
+        {!ws && l.chargeFor && <span className="bp-ruler-gap" aria-hidden="true" />}
+        <button type="button" className="bp-trash" aria-label="Remove item" title="Remove item" onClick={() => ws && lines.length === 1 ? setLines([blankCustom()]) : drop(l.key)}><Icon n="trash" size={17} /></button>
       </div>
+      {l.measure && <div className="msr-line"><span className="msr-sum">{measureSummary(l.measure)}</span></div>}
     </div>));
 
   return (
@@ -307,14 +305,22 @@ function Billing({ channel, shop, onSale, onAdvance }) {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button className="dpos-btn ghost sm" onClick={clearOrder}><Icon n="trash" size={14} />Clear order</button>
               {!ws && <button className="dpos-btn sm" onClick={() => setCatalogOpen(true)}>☰ Catalog</button>}
-              {!ws && <button className="dpos-btn ghost sm" onClick={() => setLines(ls => ls.some(x => x.service && !x.name.trim() && !x.priceStr && !x.measure) ? ls : [...ls, blankCustom(true)])}>✂ Add service</button>}
               <button className="dpos-btn ghost sm" onClick={() => setLines(ls => [...ls, blankCustom()])}>+ Add {ws ? 'item' : 'custom item'}</button></div></div>
           {!ws && <Suspense fallback={null}><ScanBox onItemScanned={p => scanCode(p.barcode)} onNotFound={setQaCode} clearSignal={scanTick} onCode={scanCode} /></Suspense>}
           {qaCode && <Suspense fallback={null}><QuickAdd barcode={qaCode} categories={catNames} onClose={() => setQaCode(null)} onCreated={p => { setQaCode(null); setScanTick(t => t + 1); scanCode(p.barcode) }} /></Suspense>}
           {ws && <datalist id="dpos-ws-list">{wsItems.map(i => <option key={i.id} value={[i.code, i.company, i.colour].filter(Boolean).join(' · ')} />)}</datalist>}
           {lines.length ? lineEls : <Empty>No items yet. Press Catalog to pick products, or add a service or custom item.</Empty>}
           {catalogOpen && <CatalogPicker onClose={() => setCatalogOpen(false)} onOk={addMany} />}
-          {measureLine && <MeasureModal value={measureLine.measure} onClose={() => setMeasureFor(null)} onSave={m => patch(measureLine.key, { measure: m || undefined })} />}
+          {measureLine && <MeasureModal value={measureLine.measure} charge={lines.find(x => x.chargeFor === measureLine.key)?.priceStr || ''} onClose={() => setMeasureFor(null)} onSave={(m, charge) => {
+            // the extra charge for modifications is its own bill line, linked to the item it is for (so it shows on the invoice)
+            setLines(ls => {
+              const next = ls.map(l => l.key === measureLine.key ? { ...l, measure: m || undefined } : l).filter(l => l.chargeFor !== measureLine.key || charge);
+              if (!charge) return next;
+              const name = `Modification charge · ${measureLine.name || 'item'}`.slice(0, 160);
+              return next.some(l => l.chargeFor === measureLine.key) ? next.map(l => l.chargeFor === measureLine.key ? { ...l, priceStr: charge, name } : l)
+                : [...next, { ...blankCustom(true), taxRate: measureLine.taxRate ?? 5, name, priceStr: charge, chargeFor: measureLine.key }];
+            });
+          }} />}
         </section>
       </div>
 
@@ -380,8 +386,7 @@ function Billing({ channel, shop, onSale, onAdvance }) {
           <p className="sub" style={{ margin: '8px 2px 14px' }}>QR / PayNow and card are confirmed by the cashier at the counter; no payment gateway is attached.</p>
           <Err>{err}</Err>
           {problem && priced.length > 0 && <p className="sub" role="status" style={{ marginBottom: 10 }}>{problem}</p>}
-          <button className="dpos-cta wa" disabled={!!problem || busy} onClick={() => submit('wa')}><WaI /> {busy ? 'SAVING…' : 'COMPLETE SALE & WHATSAPP'}</button>
-          <div className="dpos-cta2"><button className="dpos-btn outline" disabled={!!problem || busy} onClick={() => submit('print')}>PRINT</button><button className="dpos-btn outline" disabled={!!problem || busy} onClick={() => submit()}>SAVE ONLY</button></div>
+          <button className="dpos-cta wa" disabled={!!problem || busy} onClick={() => submit()}>{busy ? 'SAVING…' : 'COMPLETE SALE'}</button>
           {!ws && <button className="dpos-cta amber" disabled={!priced.length || busy} onClick={() => setAdvOpen(true)}><ClockI /> SAVE AS ADVANCE ORDER</button>}
         </section>
       </div>
@@ -870,6 +875,7 @@ export default function AdminPos() {
   if (!authReady) return <div className="page-pad"><p className="muted">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
   if (!['owner', 'admin', 'cashier', 'inventory'].includes(user.role)) return <StaffOnly />;
+  if (['stitching', 'stitching-orders', 'stitching-reports'].includes(tab)) return <Navigate to="/admin/billing/measurements" replace />; // the old stitching pages now live in Measurements
   if (!(tab in TABS)) return <Navigate to="/admin/staff" replace />;
   // a page the owner / an admin has not given this role: back to the staff dashboard
   if (!manager) { if (!access.loaded) return <div className="page-pad"><p className="muted">Loading…</p></div>; if (!access.can(tabPath)) return <Navigate to="/admin/staff" replace /> }
@@ -883,9 +889,6 @@ export default function AdminPos() {
     analytics: <Analytics channel="retail" openInvoice={openInvoice} tick={tick} goExpenses={goExpenses} />,
     advance: <AdvanceOrders manager={manager} tick={tick} onBilled={onBilled} openInvoice={openInvoice} />,
     measurements: <PosMeasurements />,
-    stitching: <StitchingDashboard openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} goBilling={() => nav('/admin/billing?new=stitching')} goTab={t => nav('/admin/billing/' + t)} />,
-    'stitching-orders': <StitchingOrders openInvoice={openInvoice} goAdvance={code => nav('/admin/billing/advance?code=' + encodeURIComponent(code))} />,
-    'stitching-reports': <StitchingReports />,
     'stitching-designs': <StitchingDesigns />,
     orders: <OrderHistory manager={manager} tick={tick} openInvoice={openInvoice} onChanged={() => setTick(t => t + 1)} />,
     inventory: <PosInventory manager={manager} stocker={stocker} />, customers: <Customers manager={manager} openInvoice={openInvoice} />, coupons: <PosCoupons />,

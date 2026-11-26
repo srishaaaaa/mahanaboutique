@@ -6,15 +6,14 @@ import { one } from '../db/index.js';
 const A = ['admin'], ALLR = ['admin', 'cashier', 'inventory'];
 export const SECTIONS = [
   ['Online store', [['/admin/orders', 'Online orders', ALLR], ['/admin/reviews', 'Reviews', ALLR], ['/admin/categories', 'Categories', ALLR], ['/admin/billing/delivery', 'Delivery', A], ['/admin/trending', 'Trending', ALLR], ['/admin/site-text', 'Site text', ALLR], ['/admin/storefront', 'Storefront images', ALLR], ['/admin/reels', 'Reels & Gallery', ALLR], ['/admin/enquiries', 'Enquiries', ALLR], ['/admin/users', 'Users', A], ['/admin/sample', 'Sample data', A]]],
-  ['Retail billing', [['/admin/billing', 'Billing', ALLR], ['/admin/billing/analytics', 'POS Analytics', ALLR], ['/admin/billing/advance', 'Advance Orders', ALLR], ['/admin/billing/orders', 'Order History', ALLR], ['/admin/billing/inventory', 'Inventory', ALLR], ['/admin/billing/customers', 'Customers', ALLR], ['/admin/billing/coupons', 'Coupons', ALLR], ['/admin/billing/expenses', 'Expenses', ALLR]]],
-  ['Stitching', [['/admin/billing/stitching', 'Stitching Dashboard', ALLR], ['/admin/billing/stitching-orders', 'Stitching Orders', ALLR], ['/admin/billing/measurements', 'Measurements', ALLR], ['/admin/billing/stitching-reports', 'Stitching Reports', ALLR], ['/admin/billing/stitching-designs', 'Stitching Designs', A]]],
+  ['Retail billing', [['/admin/billing', 'Billing', ALLR], ['/admin/billing/analytics', 'POS Analytics', ALLR], ['/admin/billing/advance', 'Advance Orders', ALLR], ['/admin/billing/orders', 'Order History', ALLR], ['/admin/billing/measurements', 'Measurements', ALLR], ['/admin/billing/inventory', 'Inventory', ALLR], ['/admin/billing/customers', 'Customers', ALLR], ['/admin/billing/coupons', 'Coupons', ALLR], ['/admin/billing/expenses', 'Expenses', ALLR]]],
   ['Settings', [['/admin/billing/settings', 'Settings', A]]],
 ].map(([group, items]) => ({ group, items: items.map(([path, label, max]) => ({ path, label, max })) }));
 const ALL = SECTIONS.flatMap(g => g.items);
 export const ROLES = ['admin', 'cashier', 'inventory'];
 const DEFAULTS = {
   admin: ALL.map(i => i.path),
-  cashier: ['/admin/billing', '/admin/billing/advance', '/admin/billing/orders', '/admin/billing/customers', '/admin/billing/stitching', '/admin/billing/stitching-orders', '/admin/billing/measurements'],
+  cashier: ['/admin/billing', '/admin/billing/advance', '/admin/billing/orders', '/admin/billing/customers', '/admin/billing/measurements'],
   inventory: ['/admin/billing/inventory'],
 };
 
@@ -38,11 +37,11 @@ export async function saveAccess(db, body) {
 }
 
 // The pages whose data a server route belongs to (path after /api/admin). A role granted any one of them may use the route.
-const B = '/admin/billing', BILL = [B, B + '/orders'], STITCH = [B + '/stitching', B + '/stitching-orders', B + '/measurements', B + '/stitching-reports'];
+const B = '/admin/billing', BILL = [B, B + '/orders'], STITCH = [B + '/measurements'];
 const ROUTES = [
   [/^\/access/, []], // never granted: only owner / admin
   [/^\/users/, []],
-  [/^\/pos\/reports/, [B + '/analytics', B + '/stitching-reports']],
+  [/^\/pos\/reports/, [B + '/analytics']],
   [/^\/pos\/(expenses|expense-categories)/, [B + '/expenses']],
   [/^\/pos\/coupons\/check/, [...BILL, B + '/coupons']],
   [/^\/pos\/coupons/, [B + '/coupons']],
@@ -52,7 +51,7 @@ const ROUTES = [
   [/^\/pos\/delivery-rules/, [B + '/delivery']],
   [/^\/pos\/(products|stock|categories|catalog)/, [B + '/inventory', ...BILL, B + '/advance']],
   [/^\/pos\/advances/, [B + '/advance', B]],
-  [/^\/pos\/stitch-designs/, [...STITCH, B + '/stitching-designs']],
+  [/^\/pos\/stitch-designs/, STITCH],
   [/^\/pos\/(measurements|stitching)/, STITCH],
   [/^\/stitching/, STITCH],
   [/^\/pos\/sales\/[^/]+\/tailoring/, [...STITCH, ...BILL]],

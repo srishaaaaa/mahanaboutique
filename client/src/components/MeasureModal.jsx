@@ -25,7 +25,9 @@ function Chips({ options, value, onChange, label }) {
   );
 }
 
-export default function MeasureModal({ value, onSave, onClose }) {
+// charge: the extra charge for modifications already on the bill for this item (dollars text, '' = none). onSave(measure, charge).
+export default function MeasureModal({ value, onSave, onClose, charge = '' }) {
+  const [extra, setExtra] = useState(charge ? 'extra' : 'free'); const [amt, setAmt] = useState(charge || '');
   const [m, setM] = useState(() => ({ frontNeck: '', backNeck: '', sleeveType: '', sleeveLength: '', dueDate: '', ...value, cm: { ...(value?.cm || {}) }, remarks: [...(value?.remarks || [])] }));
   const [sheet, setSheet] = useState(null);
   const [mine, setMine] = useState({ front: [], back: [], sleeveTypes: [], sleeveLengths: [] });
@@ -54,16 +56,28 @@ export default function MeasureModal({ value, onSave, onClose }) {
       ...(m.dueDate ? { dueDate: m.dueDate } : {}), cm, remarks: m.remarks.map(r => r.trim()).filter(Boolean),
     };
     const empty = !Object.keys(cm).length && !out.remarks.length && Object.keys(out).length === 2;
-    onSave(empty ? null : out); onClose();
+    onSave(empty ? null : out, extra === 'extra' && parseFloat(amt) > 0 ? String(parseFloat(amt)) : ''); onClose();
   };
 
   return (
     <Modal title="Measurements" sub="For this stitching service. Sizes in cm." wide onClose={onClose}
-      footer={<><button type="button" className="dpos-btn ghost" onClick={onClose}>Cancel</button><button type="button" className="dpos-btn" onClick={save}>Save measurements</button></>}>
+      footer={<>{(value || charge) && <button type="button" className="dpos-btn ghost msr-remove" onClick={() => { if (confirm('Remove the measurements and any extra charge from this item?')) { onSave(null, ''); onClose() } }}>Remove</button>}
+        <button type="button" className="dpos-btn ghost" onClick={onClose}>Cancel</button><button type="button" className="dpos-btn" onClick={save}>Save measurements</button></>}>
       <div className="msr">
+        <h4 className="msr-h">Patterns</h4>
         <div className="msr-two">{neck('Front neck type', 'frontNeck', FRONT, 'front')}{neck('Back neck type', 'backNeck', BACK, 'back')}</div>
         <div className="msr-f"><span className="msr-l">Sleeve type</span><Chips label="Sleeve type" options={[...SLEEVE_TYPES, ...(mine.sleeveTypes || []).filter(o => !SLEEVE_TYPES.includes(o))]} value={m.sleeveType} onChange={v => set({ sleeveType: v })} /></div>
         <div className="msr-f"><span className="msr-l">Sleeve length</span><Chips label="Sleeve length" options={[...SLEEVE_LENGTHS, ...(mine.sleeveLengths || []).filter(o => !SLEEVE_LENGTHS.includes(o))]} value={m.sleeveLength} onChange={v => set({ sleeveLength: v })} /></div>
+        <div className="msr-f"><span className="msr-l">Extra charge for modifications</span>
+          <div className="msr-charge">
+            <div className="msr-chips" role="radiogroup" aria-label="Extra charge for modifications">
+              <button type="button" role="radio" aria-checked={extra === 'free'} className={extra === 'free' ? 'on' : ''} onClick={() => setExtra('free')}>No extra charge</button>
+              <button type="button" role="radio" aria-checked={extra === 'extra'} className={extra === 'extra' ? 'on' : ''} onClick={() => setExtra('extra')}>Extra charge</button>
+            </div>
+            {extra === 'extra' && <span className="msr-cm msr-amt"><em>$</em><input autoFocus inputMode="decimal" aria-label="Extra charge in dollars" placeholder="0" value={amt} onChange={e => setAmt(e.target.value.replace(/[^\d.]/g, '').slice(0, 8))} /></span>}
+          </div>
+          {extra === 'extra' && <small className="msr-note">Added to the bill and the invoice as a separate “Modification charge” line.</small>}
+        </div>
         <label className="msr-f"><span className="msr-l">Due date (optional)</span><input type="date" value={m.dueDate} onChange={e => set({ dueDate: e.target.value })} /></label>
 
         <h4 className="msr-h">Measurements (cm)</h4>

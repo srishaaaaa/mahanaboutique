@@ -693,3 +693,19 @@ div.dpos select.usr-role.adm { background-image: url("data:image/svg+xml,%3Csvg 
 div.dpos select.usr-role.cust { background-color: #f1eff2 !important; color: #55505a !important }
 div.dpos select.usr-role.stf { background-color: #e8ecf7 !important; border-color: #b9c3e0 !important; color: #1c284f !important }
 .usr-status { display: inline-block; padding: 3px 9px; border-radius: 6px; background: #e4f5ea; color: #1c7a4b; font-weight: 700; font-size: 10px; letter-spacing: .08em }
+
+/* ---- Stitching in Billing: ruler + trash on every line, extra charge in the measurements window ---- */
+.bp-ruler, .bp-trash { position: relative; width: 38px; height: 38px; flex: none; display: inline-grid; place-items: center; border-radius: 10px; border: 1px solid #e3e2ef; background: #fff; color: #1c284f; cursor: pointer; transition: background .15s, border-color .15s, color .15s }
+.bp-ruler:hover { border-color: #1c284f } .bp-trash:hover { border-color: #b91c1c; color: #b91c1c }
+.bp-ruler.on { background: #1c284f; border-color: #1c284f; color: #fff }
+.bp-ruler i { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; background: #15803d; color: #fff; font-size: 10px; font-style: normal; font-weight: 800 }
+.msr-charge { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.msr-charge .msr-amt { width: 150px; display: inline-flex; align-items: center; gap: 6px } .msr-charge .msr-amt em { position: static; font-style: normal; font-weight: 800; color: #1c284f }
+.msr-charge .msr-amt input { height: 38px; width: 100%; padding: 0 10px }
+.msr-note { font-size: 11.5px; color: #6f6875 }
+.msr-remove { margin-right: auto; color: #b91c1c !important; border-color: #f3c6c6 !important }
+.ms-ib { width: 38px; height: 38px; flex: none; display: inline-grid; place-items: center; border-radius: 10px; border: 1px solid #e3e2ef; background: #f4f5fa; color: #1c284f; cursor: pointer }
+.ms-ib.print { background: #eef1fb } .ms-ib:hover { border-color: #1c284f }
+.ms-top-a { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.msr-charge .msr-amt em { position: static !important; transform: none !important; inset: auto !important; font-size: 15px }
+.bp-ruler-gap { width: 38px; flex: none }

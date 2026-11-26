@@ -103,7 +103,7 @@ function Thermal({ sale, shop, paper }) {
       <div className="inv-tr b"><span>Item</span><span className="q">Qty</span><span>Amt</span></div>
       <hr className="soft" />
       {sale.items.map((i, n) => (
-        <div key={n} className="inv-ti"><div className="inv-tr"><span className="nm">{i.name}</span><span className="q">{i.quantity}</span><span>{num2(i.lineTotal)}</span></div>{i.returnedQty > 0 && <div className="inv-tr sub"><span>  returned {i.returnedQty} of {i.quantity}</span></div>}<hr className="soft" /></div>))}
+        <div key={n} className="inv-ti"><div className="inv-tr"><span className="nm">{i.name}</span><span className="q">{i.quantity}</span><span>{num2(i.lineTotal)}</span></div>{i.variant?.measure && <div className="inv-tr sub inv-tmsr"><span>{measureSummary(i.variant.measure)}</span></div>}{i.returnedQty > 0 && <div className="inv-tr sub"><span>  returned {i.returnedQty} of {i.quantity}</span></div>}<hr className="soft" /></div>))}
       {sale.returns?.length > 0 && <div><div className="inv-tr b"><span>RETURNS</span></div>{sale.returns.map(r => <div key={r.returnNo}><div className="inv-tr sub"><span>{r.returnNo}</span><span>- {num2(r.total)}</span></div><div className="inv-tr sub"><span>  {(r.items || []).map(x => `${x.name} x${x.qty}`).join(', ')}</span></div></div>)}<hr className="soft" /></div>}
       {billRows(sale).map((r, n) => r.kind === 'total'
         ? <div key={n}><hr />{row('TOTAL:', money(r.value), 'tot')}<hr /></div>

@@ -124,3 +124,4 @@
 
 /* a customer opening the link sees only the invoice: the staff / share bar stays hidden (Ctrl+P still prints) */
 .inv-bar.inv-cust { display: none }
+.inv-tmsr span { white-space: normal; font-size: .85em; line-height: 1.35 }
