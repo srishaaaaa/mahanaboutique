@@ -1,7 +1,7 @@
 # DHANYA — React + R3F + GSAP + Express + PostgreSQL
 
 ## Run
-1. `cp .env.example .env` and set `JWT_SECRET`, `ADMIN_EMAIL`/`ADMIN_PASSWORD`, a Stripe **test** key (`STRIPE_SECRET_KEY`).
+1. `cp .env.example .env` and set `JWT_SECRET`, `ADMIN_EMAIL`/`ADMIN_PASSWORD`, HitPay **sandbox** keys (`HITPAY_API_KEY`, `HITPAY_SALT`, `HITPAY_ENV=sandbox`).
    - `DATABASE_URL` set → managed Postgres (Neon/Supabase). Empty → embedded PGlite (real Postgres, stored in `server/data`).
    - `DB_SCHEMA=dhanya` keeps DHANYA in its own schema when sharing a database with something else.
 2. `npm run install:all && npm run seed && npm run dev` → site http://localhost:5173, API :4000
@@ -18,7 +18,7 @@ Portal intro, 3D hero, scroll choreography, mega-menu, live search, catalog, PDP
 - Server-side catalog: filters, sort, pagination, facets, collections, live search suggestions.
 - httpOnly cookie sessions + CSRF header, role-based admin APIs (role re-read from DB), rate limits, zod validation.
 - Server-persisted cart (guest cookie → merged into the account cart on sign-in), server-priced and stock-capped; wishlist synced for signed-in users.
-- Checkout builds the order from the server cart; stock is reserved atomically (no overselling) and released on failure/expiry; payments marked paid only after the server confirms them with Stripe or a signed Stripe webhook (pluggable provider interface; Stripe Checkout implemented: PayNow, cards, GrabPay, Apple/Google Pay).
+- Checkout builds the order from the server cart; stock is reserved atomically (no overselling) and released on failure/expiry; payments marked paid only after the server confirms them with HitPay or a signed HitPay webhook (HitPay payment requests: PayNow and cards).
 - Reviews: verified-purchase only, moderated in /admin.
 
 ## Homepage redesign (latest)
@@ -58,7 +58,7 @@ Portal intro, 3D hero, scroll choreography, mega-menu, live search, catalog, PDP
 
 ## Not yet built
 Full checkout redesign, discounts, email, password reset, address book UI, admin product/inventory/content screens (Phase 4–5), Next.js/TypeScript migration, optional sound, 3D product models, policy/FAQ/contact pages, e2e tests.
-Before production: set `NODE_ENV=production`, a 32+ char `JWT_SECRET`, `STRIPE_WEBHOOK_SECRET`, `SITE_URL`, review CSP, rotate any credential that was shared in chat.
+Before production: set `NODE_ENV=production`, a 32+ char `JWT_SECRET`, `HITPAY_API_KEY`, `HITPAY_SALT`, `HITPAY_ENV=live`, `SITE_URL`, review CSP, rotate any credential that was shared in chat.
 
 ## Stitching Studio (admin only)
 Made-to-measure workflow inside the existing admin (sidebar group **Stitching Studio**). The public site is untouched: only `AdminShell` (sidebar entry), `App.jsx` (admin routes) and `app.js` (one API mount) were edited; everything else is new (`server/lib/stitching.js`, `server/routes/stitching.js`, migration `016_stitching.sql`, `client/src/pages/stitching/*`, `client/src/stitching.css`).

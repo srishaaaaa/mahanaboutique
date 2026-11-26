@@ -15,7 +15,7 @@ const address = z.object({
   city: z.string().trim().max(80).default('Singapore').transform(v => v || 'Singapore'), state: z.string().trim().max(80).default(''), pin: z.string().regex(/^\d{6}$/, 'Postal code must be 6 digits'), regionId: z.string().trim().max(40).optional(),
 });
 
-// Where Stripe sends the customer back to: SITE_URL when set, else this request's own origin, else the dev client.
+// Where HitPay sends the customer back to: SITE_URL when set, else this request's own origin, else the dev client.
 function returnUrl(cfg, req) {
   if (cfg.SITE_URL) return cfg.SITE_URL.replace(/\/$/, '');
   const origin = req.get('origin');
@@ -78,7 +78,7 @@ export function commerceRoutes(ctx) {
 export function webhookRoute({ db, payments }) {
   const r = Router();
   r.post('/payments/webhook', express.raw({ type: '*/*', limit: '1mb' }), wrap(async (req, res) => {
-    const ev = payments.parseWebhook(req.body, req.get('stripe-signature') || req.get('hitpay-signature'));
+    const ev = payments.parseWebhook(req.body, req.get('hitpay-signature'));
     if (ev?.type === 'captured') { await markPaid(db, { provider: payments.name, providerOrderId: ev.providerOrderId, providerPaymentId: ev.providerPaymentId }); await syncWebOrders(db, { force: true }).catch(() => {}) }
     if (ev?.type === 'failed') {
       const o = await one(db, `SELECT o.order_number FROM payments p JOIN orders o ON o.id = p.order_id WHERE p.provider = $1 AND p.provider_order_id = $2`, [payments.name, ev.providerOrderId]);

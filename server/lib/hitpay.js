@@ -5,7 +5,7 @@ const safeEqual = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(
 const UUID = /^[0-9a-f-]{8,64}$/i;
 const ORDER_NO = /^[A-Za-z0-9_-]{4,40}$/;
 
-// HitPay payment provider (same contract as Stripe: name, configured, testMode, createOrder, confirm, parseWebhook).
+// HitPay payment provider (contract: name, configured, testMode, createOrder, confirm, parseWebhook).
 // HitPay "payment request": the customer is sent to HitPay's secure page (PayNow, cards...), pays, and returns to
 // /checkout?hitpay_order=<order>&reference=<payment request id>&status=... . The browser's word is never trusted:
 // confirm() asks HitPay for the payment request and checks it is completed and belongs to that order; the signed webhook is the backup.

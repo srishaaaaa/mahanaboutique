@@ -10,9 +10,7 @@ const schema = z.object({
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
   ADMIN_EMAIL: z.string().email().optional().or(z.literal('').transform(() => undefined)),
   ADMIN_PASSWORD: z.string().min(8).optional().or(z.literal('').transform(() => undefined)),
-  STRIPE_SECRET_KEY: z.string().optional().transform(v => v || undefined), // sk_test_… / sk_live_… (Stripe Dashboard → Developers → API keys)
-  STRIPE_WEBHOOK_SECRET: z.string().optional().transform(v => v || undefined), // whsec_… for https://<domain>/api/payments/webhook
-  SITE_URL: z.string().url().optional().or(z.literal('').transform(() => undefined)), // public site address Stripe returns customers to
+  SITE_URL: z.string().url().optional().or(z.literal('').transform(() => undefined)), // public site address HitPay returns customers to
   GOOGLE_MAPS_API_KEY: z.string().optional().transform(v => v || undefined), // browser Embed API key (restrict by referrer)
   GOOGLE_CLIENT_ID: z.string().optional().transform(v => v || undefined), // OAuth 2.0 Web client ID for "Sign in with Google"; the button is hidden until set
   HITPAY_API_KEY: z.string().optional().transform(v => v || undefined), // HitPay Dashboard -> Developers -> API Keys
@@ -20,11 +18,10 @@ const schema = z.object({
   HITPAY_ENV: z.enum(['sandbox', 'live']).default('sandbox'),
   HITPAY_METHODS: z.string().optional().transform(v => v || undefined), // e.g. paynow_online,card
   HITPAY_BASE: z.string().url().optional().or(z.literal('').transform(() => undefined)), // only to point tests at a stub
-  PAYMENT_PROVIDER: z.enum(['hitpay', 'stripe']).optional(), // which provider checkout uses; default: HitPay when its key is set, else Stripe
   EASYPARCEL_CLIENT_ID: z.string().optional().transform(v => v || undefined), // Developer Hub -> Apps -> your app (courier booking)
   EASYPARCEL_CLIENT_SECRET: z.string().optional().transform(v => v || undefined),
   EASYPARCEL_BASE: z.string().url().optional().or(z.literal('').transform(() => undefined)), // only to point tests at a stub
-  RESERVATION_MINUTES: z.coerce.number().default(35), // stock hold during payment; Stripe needs at least 30
+  RESERVATION_MINUTES: z.coerce.number().default(35), // stock hold while the customer pays on HitPay
 });
 
 export function loadConfig(env = process.env) {

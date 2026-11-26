@@ -30,7 +30,7 @@ export default function ImmersiveHero() {
   // Trust row: only statements that are true of this store; figures come from the database.
   const trust = [
     [<I key="t"><path d="M3 6h11v10H3z" /><path d="M14 9h4l3 3v4h-7" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></I>, ship?.freeOver ? 'FREE SHIPPING' : 'SHIPPING', ship?.freeOver ? `On orders over ${inr(ship.freeOver)}` : 'Across Singapore'],
-    [<I key="s"><path d="M12 3 5 6v5c0 4.4 2.8 8.2 7 10 4.2-1.8 7-5.6 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></I>, 'SECURE PAYMENT', 'Verified by Stripe'],
+    [<I key="s"><path d="M12 3 5 6v5c0 4.4 2.8 8.2 7 10 4.2-1.8 7-5.6 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></I>, 'SECURE PAYMENT', 'Verified by HitPay'],
     [<I key="c"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></I>, 'HELD AT CHECKOUT', mins ? `Reserved for ${mins} minutes` : 'Reserved while you pay'],
   ];
   const [left, right] = media.heroSides;

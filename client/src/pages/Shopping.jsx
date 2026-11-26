@@ -59,12 +59,12 @@ export function Checkout() {
   const { cart, cartInfo, clearCart, loadCart, bagSubtotal, user } = useApp();
   const [f, setF] = useState({ email: user?.email || '', name: user?.name || '', phone: '', line1: '', city: '', state: '', pin: '' });
   const [err, setErr] = useState(); const [busy, setBusy] = useState(false); const [done, setDone] = useState();
-  // Back from the payment page: Stripe ?session_id=…, HitPay ?hitpay_order=…&reference=…&status=…, or ?cancelled=<order> after pressing back.
+  // Back from the HitPay payment page: ?hitpay_order=…&reference=…&status=…, or ?cancelled=<order> after pressing back.
   const [params, setParams] = useSearchParams();
   const hpOrder = params.get('hitpay_order'), hpStatus = String(params.get('status') || '').toLowerCase();
   const hpBack = hpOrder && /cancel|fail|expire/.test(hpStatus); // pressed back / failed on HitPay's page
-  const sessionId = params.get('session_id') || (hpOrder && !hpBack ? 'hitpay' : null), cancelled = params.get('cancelled') || (hpBack ? hpOrder : null);
-  const verifyBody = params.get('session_id') ? { session_id: params.get('session_id') } : hpOrder ? { hitpay_order: hpOrder, reference: params.get('reference') || '' } : null;
+  const sessionId = hpOrder && !hpBack ? 'hitpay' : null, cancelled = params.get('cancelled') || (hpBack ? hpOrder : null);
+  const verifyBody = hpOrder ? { hitpay_order: hpOrder, reference: params.get('reference') || '' } : null;
   const [confirming, setConfirming] = useState(!!sessionId); const [pending, setPending] = useState(false);
   useEffect(() => {
     if (!sessionId) return;
@@ -96,7 +96,7 @@ export function Checkout() {
     try {
       const { email, ...address } = f;
       const o = await api('/checkout', { method: 'POST', body: { email, address: { ...address, regionId: region || cartInfo.shipping?.region?.id || undefined } } });
-      window.location.assign(o.redirectUrl); // the provider's secure payment page (HitPay or Stripe): PayNow, cards ...
+      window.location.assign(o.redirectUrl); // HitPay's secure payment page: PayNow, cards ...
     } catch (x) { setErr(x.message); setBusy(false); loadCart() }
   }
   if (confirming) return <div className="empty page-pad" role="status"><p className="serif big">Confirming your payment…</p><p className="muted">Please keep this page open.</p></div>;
@@ -111,7 +111,7 @@ export function Checkout() {
         <h2 className="eyebrow">Your bag · {cartInfo.count} {cartInfo.count === 1 ? 'item' : 'items'}</h2>
         <BagLines compact />
         <BagTotals />
-        <ul className="co-trust"><li>Prices include GST</li><li>Secure payment by Stripe</li><li>Totals calculated on our server</li></ul>
+        <ul className="co-trust"><li>Prices include GST</li><li>Secure payment by HitPay</li><li>Totals calculated on our server</li></ul>
       </section>
       <form onSubmit={e => { e.preventDefault(); setErr(); setConfirm(true) }} className="co-form">
         <h2 className="eyebrow">Delivery details</h2>
@@ -120,16 +120,16 @@ export function Checkout() {
         {cartInfo.hasIssues && <p role="alert" className="err">Some items in your bag are no longer available in the requested quantity. Please review your bag.</p>}
         {err && <p role="alert" className="err">{err}</p>}
         <button className="btn solid wide" disabled={busy || cartInfo.hasIssues}>{`PAY ${inr(cartInfo.total ?? bagSubtotal)}`}</button>
-        <p className="muted small">You will pay on Stripe's secure page by PayNow, card, GrabPay, Apple Pay or Google Pay. Totals and delivery are calculated on our server, and an order is confirmed only after Stripe confirms the payment.</p>
+        <p className="muted small">You will pay on HitPay's secure page by PayNow or card. Totals and delivery are calculated on our server, and an order is confirmed only after HitPay confirms the payment.</p>
       </form>
       {confirm && (
         <div className="co-modal" role="dialog" aria-modal="true" aria-labelledby="co-m-h" onClick={e => { if (e.target === e.currentTarget && !busy) setConfirm(false) }}>
           <div className="co-modal-card">
             <button type="button" className="co-x" aria-label="Close" onClick={() => !busy && setConfirm(false)}>✕</button>
             <h2 id="co-m-h">SECURE CHECKOUT</h2>
-            <p>You will be securely redirected to Stripe to complete your payment.</p>
+            <p>You will be securely redirected to HitPay to complete your payment.</p>
             <div className="co-method"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5" /><path d="M3 10.5h18" /></svg>
-              <div><strong>PayNow, Cards, GrabPay, Apple Pay &amp; Google Pay</strong><small>100% secure payments powered by Stripe</small></div></div>
+              <div><strong>PayNow &amp; Cards</strong><small>100% secure payments powered by HitPay</small></div></div>
             {err && <p role="alert" className="err">{err}</p>}
             <button type="button" className="co-confirm" disabled={busy || cartInfo.hasIssues} onClick={pay}>{busy ? 'OPENING SECURE PAYMENT…' : `CONFIRM ORDER ${inr(cartInfo.total ?? bagSubtotal)}`}</button>
           </div>

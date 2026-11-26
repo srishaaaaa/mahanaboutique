@@ -18,7 +18,7 @@ export function About() {
   const steps = [
     ['01', 'Browse', 'Filter by category, size, colour, price and fabric.'],
     ['02', 'Choose your size', 'Every size shows live availability, so what you see is what can be yours.'],
-    ['03', 'Pay securely', 'Checkout is calculated on our server and paid through Stripe (PayNow, cards, GrabPay, Apple Pay and Google Pay). An order is only confirmed once payment is verified.'],
+    ['03', 'Pay securely', 'Checkout is calculated on our server and paid through HitPay (PayNow and cards). An order is only confirmed once payment is verified.'],
     ['04', 'Track it', 'Sign in to see your orders, keep a wishlist and find your bag waiting on any device.'],
   ];
   return (
