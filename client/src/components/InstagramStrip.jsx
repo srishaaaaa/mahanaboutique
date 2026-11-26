@@ -10,16 +10,38 @@ const IgIcon = ({ size = 18 }) => <svg width={size} height={size} viewBox="0 0 2
 const Speaker = ({ off }) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />{off ? <path d="m16 9.5 5 5m0-5-5 5" /> : <path d="M16 9a4.5 4.5 0 0 1 0 6m2.5-9a8 8 0 0 1 0 12" />}</svg>;
 const Play = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>;
 
+// Our own uploaded videos (/api/media/…) are downloaded whole once and played from that copy. A <video> on its own
+// asks for the file in pieces, and the hosting CDN never caches pieces, so every viewer would reach the server and its
+// database; a whole-file download is cached by the CDN, so each video leaves the database about once.
+const blobs = new Map(); // url -> Promise<object URL>
+const wholeFile = url => {
+  if (!/^\/api\/media\/\d+$/.test(url || '')) return Promise.resolve(url);
+  if (!blobs.has(url)) blobs.set(url, fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.blob() }).then(b => URL.createObjectURL(b)).catch(() => { blobs.delete(url); return url }));
+  return blobs.get(url);
+};
+function useWholeFile(url, ready = true) {
+  const [src, setSrc] = useState(() => /^\/api\/media\/\d+$/.test(url || '') ? null : url);
+  useEffect(() => { if (!ready || !url) return; let on = true; wholeFile(url).then(u => on && setSrc(u)); return () => { on = false } }, [url, ready]);
+  return src;
+}
+
 // A vertical reel: muted autoplay while on screen, paused otherwise; the viewer can unmute (never autoplays with sound).
 // With reduced motion it does not autoplay and shows the native controls. If the file cannot load, it links to Instagram.
 function Reel({ post, label, fallbackUrl }) {
   const v = useRef(); const reduced = useReduced();
   const [muted, setMuted] = useState(true); const [failed, setFailed] = useState(false);
+  const [near, setNear] = useState(false); const box = useRef();
+  useEffect(() => { // start the download a little before the reel scrolls into view
+    const el = box.current; if (!el || typeof IntersectionObserver === 'undefined') { setNear(true); return }
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setNear(true); io.disconnect() } }, { rootMargin: '400px 0px' });
+    io.observe(el); return () => io.disconnect();
+  }, []);
+  const src = useWholeFile(post.video, near);
   useEffect(() => {
-    const el = v.current; if (!el || reduced || typeof IntersectionObserver === 'undefined') return;
+    const el = v.current; if (!el || !src || reduced || typeof IntersectionObserver === 'undefined') return;
     const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) el.play().catch(() => {}); else el.pause() }, { threshold: 0.55 });
     io.observe(el); return () => io.disconnect();
-  }, [reduced]);
+  }, [reduced, src]);
   if (failed) {
     if (post.image) return <img src={post.image} alt={label} loading="lazy" />;
     const url = post.href || fallbackUrl;
@@ -27,7 +49,8 @@ function Reel({ post, label, fallbackUrl }) {
   }
   return (
     <>
-      <video ref={v} src={post.video} poster={post.image || undefined} muted={muted} loop playsInline preload="metadata" controls={reduced} aria-label={label} onError={() => setFailed(true)} />
+      <span ref={box} className="ni-anchor" aria-hidden="true" />
+      <video ref={v} src={src || undefined} poster={post.image || undefined} muted={muted} loop playsInline preload="metadata" controls={reduced} aria-label={label} onError={() => setFailed(true)} />
       {!reduced && <button className="ni-mute" onClick={() => { const next = !muted; setMuted(next); if (v.current) { v.current.muted = next; v.current.play().catch(() => {}) } }} aria-pressed={!muted} aria-label={muted ? 'Turn sound on' : 'Mute'}><Speaker off={muted} /></button>}
     </>
   );
@@ -39,6 +62,8 @@ function EmbedReel({ post, label }) {
   if (on) return <iframe className="ni-embed" src={post.embed} title={label} scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen />;
   return <button className="ni-facade" onClick={() => setOn(true)} aria-label={`Play ${label}`}><span className="ni-facade-play" aria-hidden="true"><Play /></span><b>Tap to play</b><small>Instagram reel</small></button>;
 }
+
+const ViewerVideo = ({ url, ...rest }) => { const src = useWholeFile(url); return <video src={src || undefined} {...rest} /> };
 
 // Full-screen viewer for a reel or photo: Back arrow, close, previous / next, Esc and arrow keys.
 function MediaViewer({ items, index, setIndex, onClose }) {
@@ -54,7 +79,7 @@ function MediaViewer({ items, index, setIndex, onClose }) {
       <button className="mv-x" onClick={onClose} aria-label="Close viewer">✕</button>
       {N > 1 && <button className="mv-nav mv-prev" onClick={() => setIndex(i => (i + N - 1) % N)} aria-label="Previous">‹</button>}
       <div className={`mv-stage ${cur.video || cur.embed ? 'is-reel' : 'is-photo'}`} key={index}>
-        {cur.embed ? <iframe src={cur.embed} title={cur.alt || 'Instagram reel'} scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen /> : cur.video ? <video src={cur.video} poster={cur.image || undefined} controls autoPlay loop playsInline aria-label={cur.alt || 'Boutique video'} /> : <img src={cur.image} alt={cur.alt || 'Boutique photo'} />}
+        {cur.embed ? <iframe src={cur.embed} title={cur.alt || 'Instagram reel'} scrolling="no" allow="autoplay; encrypted-media; fullscreen" allowFullScreen /> : cur.video ? <ViewerVideo key={cur.video} url={cur.video} poster={cur.image || undefined} controls autoPlay loop playsInline aria-label={cur.alt || 'Boutique video'} /> : <img src={cur.image} alt={cur.alt || 'Boutique photo'} />}
       </div>
       {N > 1 && <button className="mv-nav mv-next" onClick={() => setIndex(i => (i + 1) % N)} aria-label="Next">›</button>}
       <p className="mv-count" aria-live="polite">{index + 1} / {N}</p>

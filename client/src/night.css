@@ -1948,3 +1948,8 @@ html body .wb, html body .wb-hero { padding: 0 }
 }
 @keyframes wb-drift { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
 @media (prefers-reduced-motion: reduce) { .wb-motif { animation: none } }
+.ni-anchor { position: absolute; width: 1px; height: 1px; pointer-events: none }
+
+/* One cream ground for every homepage section (Trending, Instagram, details… were still white, so the colour jumped between sections) */
+.home > section.nx, .home > section.nx::before { background-color: #f5ebdd }
+.home > section.nx::before { background-image: none }
