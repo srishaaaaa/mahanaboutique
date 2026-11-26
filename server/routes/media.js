@@ -32,27 +32,46 @@ async function dropIfOrphan(db, url) {
   if (!used) await db.query('DELETE FROM media_files WHERE id = $1', [id]);
 }
 
+// Uploaded files never change (a new upload gets a new id), so they are cached hard everywhere:
+// - Vercel's CDN keeps a copy (Vercel-CDN-Cache-Control), so repeat visitors do not reach this function at all;
+// - each warm server keeps recently used files in memory, so the many partial (Range) requests a video player makes
+//   are answered from memory instead of each one reading the database.
+// Every byte read from the database counts against the database's monthly network-transfer allowance.
+const IMMUTABLE = 'public, max-age=31536000, immutable';
+const MEM_LIMIT = 120 * 1024 * 1024, MEM_FILE_MAX = 8 * 1024 * 1024;
+const mem = new Map(); let memBytes = 0; // id -> { mime, data }, oldest first
+const remember = (id, f) => {
+  if (f.data.length > MEM_FILE_MAX) return;
+  mem.set(id, f); memBytes += f.data.length;
+  for (const [k, v] of mem) { if (memBytes <= MEM_LIMIT) break; mem.delete(k); memBytes -= v.data.length }
+};
+
 export function mediaPublic({ db }) {
   const r = Router();
   r.get('/media/:id', wrap(async (req, res) => {
     const id = z.coerce.number().int().positive().parse(req.params.id);
     const etag = `"m${id}"`;
     if (req.get('if-none-match') === etag) return res.status(304).end();
-    const f = await one(db, 'SELECT mime, octet_length(data) AS total FROM media_files WHERE id = $1', [id]); // metadata only; the bytes are read below, and only the part that was asked for
-    if (!f) throw new HttpError(404, 'Image not found');
-    const total = Number(f.total);
-    const base = { 'Content-Type': f.mime, 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=31536000, immutable', ETag: etag, 'X-Content-Type-Options': 'nosniff', 'Cross-Origin-Resource-Policy': 'cross-origin' };
+    let f = mem.get(id);
+    if (f) { mem.delete(id); mem.set(id, f) } // most recently used goes to the back
+    else {
+      const row = await one(db, 'SELECT mime, data FROM media_files WHERE id = $1', [id]); // read once, then served from memory
+      if (!row) throw new HttpError(404, 'Image not found');
+      f = { mime: row.mime, data: Buffer.from(row.data) }; remember(id, f);
+    }
+    const total = f.data.length;
+    const base = { 'Content-Type': f.mime, 'Accept-Ranges': 'bytes', 'Cache-Control': IMMUTABLE, 'CDN-Cache-Control': IMMUTABLE, 'Vercel-CDN-Cache-Control': IMMUTABLE,
+      ETag: etag, 'X-Content-Type-Options': 'nosniff', 'Cross-Origin-Resource-Policy': 'cross-origin' };
     const rg = /^bytes=(\d*)-(\d*)$/.exec(req.get('range') || '');
     if (rg && (rg[1] || rg[2])) {
       let s = rg[1] === '' ? total - Number(rg[2]) : Number(rg[1]), e = rg[1] === '' || rg[2] === '' ? total - 1 : Math.min(Number(rg[2]), total - 1);
       s = Math.max(0, s);
       if (s > e || s >= total) { res.statusCode = 416; res.setHeader('Content-Range', `bytes */${total}`); return res.end() }
       res.statusCode = 206; for (const [k, v] of Object.entries({ ...base, 'Content-Range': `bytes ${s}-${e}/${total}`, 'Content-Length': e - s + 1 })) res.setHeader(k, v);
-      const part = await one(db, 'SELECT substring(data from $2::int for $3::int) AS part FROM media_files WHERE id = $1', [id, s + 1, e - s + 1]);
-      return res.end(part.part);
+      return res.end(f.data.subarray(s, e + 1));
     }
     res.statusCode = 200; for (const [k, v] of Object.entries({ ...base, 'Content-Length': total })) res.setHeader(k, v);
-    res.end((await one(db, 'SELECT data FROM media_files WHERE id = $1', [id])).data);
+    res.end(f.data);
   }));
   return r;
 }
