@@ -40,6 +40,7 @@ async function dropIfOrphan(db, url) {
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 const MEM_LIMIT = 120 * 1024 * 1024, MEM_FILE_MAX = 8 * 1024 * 1024;
 const mem = new Map(); let memBytes = 0; // id -> { mime, data }, oldest first
+const warmed = new Set(); // files this server has already pushed whole into Vercel's CDN
 const remember = (id, f) => {
   if (f.data.length > MEM_FILE_MAX) return;
   mem.set(id, f); memBytes += f.data.length;
@@ -64,6 +65,13 @@ export function mediaPublic({ db }) {
       ETag: etag, 'X-Content-Type-Options': 'nosniff', 'Cross-Origin-Resource-Policy': 'cross-origin' };
     const rg = /^bytes=(\d*)-(\d*)$/.exec(req.get('range') || '');
     if (rg && (rg[1] || rg[2])) {
+      // Vercel's CDN does not store partial (Range) responses, but once it holds the whole file it answers every
+      // Range request from its copy. Video players only ever ask for ranges, so the first time a file is asked for
+      // in pieces, fetch it whole through our own public address once: later viewers then never reach this server.
+      if (req.get('x-vercel-id') && !warmed.has(id)) {
+        warmed.add(id);
+        await fetch(`https://${req.get('host')}/api/media/${id}`, { signal: AbortSignal.timeout(8000) }).then(x => x.arrayBuffer()).catch(() => warmed.delete(id));
+      }
       let s = rg[1] === '' ? total - Number(rg[2]) : Number(rg[1]), e = rg[1] === '' || rg[2] === '' ? total - 1 : Math.min(Number(rg[2]), total - 1);
       s = Math.max(0, s);
       if (s > e || s >= total) { res.statusCode = 416; res.setHeader('Content-Range', `bytes */${total}`); return res.end() }
