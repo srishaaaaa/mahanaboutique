@@ -735,3 +735,4 @@ div.dpos select.usr-role.stf { background-color: #e8ecf7 !important; border-colo
 .ms-act .ms-chev:hover { background: #2d3e76 }
 .ms-head { cursor: default }
 .dpos-sheet.od .od-h { margin: 18px 0 0 !important; font-size: 11px !important; letter-spacing: .02em }
+.dpos-bars2.wide .dpos-b2 { grid-template-columns: 104px minmax(0, 1fr) auto } .dpos-bars2.wide .n { white-space: nowrap; text-align: right; letter-spacing: 0; text-transform: none }

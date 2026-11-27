@@ -579,6 +579,10 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
           <Stat icon="orders" label="Total online bills" value={v(r => r.onlineBills)} sub="Online channel orders" />
           <Stat icon="box" label="Total items sold" value={v(r => r.units)} sub="From completed bills" />
           <Stat icon="star" label="Top product" txt value={v(r => r.topProduct || '—')} sub="Most sold item" />
+          <Stat icon="chart" label="Average bill" value={v(r => inr(r.bills ? Math.round(r.revenue / r.bills) : 0))} sub="Revenue ÷ completed bills" />
+          <Stat icon="doc" label="GST collected" value={v(r => inr(r.tax || 0))} sub={v(r => `On ${r.gstBills || 0} GST bill${r.gstBills === 1 ? '' : 's'}`, ' ')} />
+          <Stat icon="tag" label="Discounts given" value={v(r => inr(r.discounts || 0))} sub={v(r => `${r.discountedBills || 0} discounted bill${r.discountedBills === 1 ? '' : 's'}`, ' ')} />
+          <Stat icon="users" label="Customers" value={v(r => r.customers || 0)} sub="Different customers billed" />
         </div>
       </>}
 
@@ -596,6 +600,10 @@ function Analytics({ channel, openInvoice, tick, goExpenses }) {
               <div className="dpos-bars2">{[['Offline', rep.offlineBills, '#0d0d10'], ['Online', rep.onlineBills, '#0a8a5c']].map(([l, n, c]) => <div className="dpos-b2" key={l}><span style={{ color: c }}>{l}</span><span className="tr"><i style={{ width: `${rep.bills ? n / rep.bills * 100 : 0}%` }} /></span><span className="n">{n}</span></div>)}</div></section>
             <section className="dpos-card"><h2>Top items by revenue</h2>
               {!rep.products.length ? <Empty>No sales in this period.</Empty> : <div className="dpos-rank">{rep.products.slice(0, 5).map((p, i) => <div className="dpos-rk" key={p.name}><b>{i + 1}</b><div><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontWeight: 700 }}><span>{p.name}</span><b>{inr(p.revenue)}</b></div><div className="tr"><i style={{ width: `${p.revenue / rep.products[0].revenue * 100}%` }} /></div></div><span className="muted small">{p.qty} pcs</span></div>)}</div>}</section>
+            <section className="dpos-card"><h2>Payment methods</h2>
+              <div className="dpos-bars2 wide">{[['Cash', rep.byMethod?.cash?.net || 0, '#0d0d10'], ['QR / PayNow', rep.byMethod?.upi?.net || 0, '#2d3e76'], ['Card', rep.byMethod?.card?.net || 0, '#0a8a5c']].map(([l, n, c]) => <div className="dpos-b2" key={l}><span style={{ color: c }}>{l}</span><span className="tr"><i style={{ width: `${rep.revenue > 0 ? Math.max(0, n) / rep.revenue * 100 : 0}%`, background: c }} /></span><span className="n">{inr(n)}</span></div>)}</div></section>
+            <section className="dpos-card"><h2>Bill type</h2>
+              <div className="dpos-bars2 wide">{[['GST', rep.gstBills || 0, inr(rep.gstSales || 0), '#2d3e76'], ['Non-GST', rep.nonGstBills || 0, inr(rep.nonGstSales || 0), '#8a5a1c']].map(([l, n, amt, c]) => <div className="dpos-b2" key={l}><span style={{ color: c }}>{l}</span><span className="tr"><i style={{ width: `${rep.bills ? n / rep.bills * 100 : 0}%`, background: c }} /></span><span className="n">{n} · {amt}</span></div>)}</div></section>
           </div>
         </div>
       </>}
