@@ -74,7 +74,7 @@ function HomePicks({ onSaved, toast, only }) {
       <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search a product to add to Trending…" aria-label="Search products to add" />
       <div className="inv-chips" role="group" aria-label="Category" style={{ margin: '10px 0' }}><button type="button" className={cat === 'all' ? 'on' : ''} onClick={() => setCat('all')}>ALL</button>{cats.map(([slug, name]) => <button key={slug} type="button" className={cat === slug ? 'on' : ''} onClick={() => setCat(slug)}>{String(name).toUpperCase()}</button>)}</div>
       {trend.length >= 4 && <p className="muted small">Trending holds 4 pieces. Remove one above to add another.</p>}
-      <ul className="adm-picks">{found.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{p.image ? <img src={p.image} alt="" width="40" height="50" /> : <i className="sg-ph" />}<span><b>{p.name}</b><br /><small className="muted">{p.category || 'Product'}</small></span></span><span className="adm-pick-act"><button type="button" disabled={trend.length >= 4} onClick={() => { setNames(n => ({ ...n, [p.slug]: p.name })); setPics(x => ({ ...x, [p.slug]: p.image })); setTrend([...trend, p.slug]) }}>+ Add</button></span></li>)}</ul>
+      <ul className="adm-picks adm-found">{found.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{p.image ? <img src={p.image} alt="" width="40" height="50" /> : <i className="sg-ph" />}<span><b>{p.name}</b><br /><small className="muted">{p.category || 'Product'}</small></span></span><span className="adm-pick-act"><button type="button" disabled={trend.length >= 4} onClick={() => { setNames(n => ({ ...n, [p.slug]: p.name })); setPics(x => ({ ...x, [p.slug]: p.image })); setTrend([...trend, p.slug]) }}>+ Add</button></span></li>)}</ul>
       {!only && <>
       <h3 className="adm-h3">Categories ({catSel.length} of 12)</h3>
       <p className="muted small">The categories in the “Categories” menu and the “Featured categories” section, in this order. Leave empty to list every category.</p>
@@ -104,7 +104,7 @@ function FlagPicks({ flag, title, sub, onSaved, toast }) {
       <ol className="adm-picks">{items?.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{(p.image || p.images?.[0]) && <img src={p.image || p.images[0].url || p.images[0]} alt="" width="40" height="50" />}{p.name}</span><span className="adm-pick-act"><button type="button" className="danger" onClick={() => set(p.id, false)}>Remove</button></span></li>)}</ol>
       <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={`Search a product to add to ${title}…`} aria-label={`Search products to add to ${title}`} />
       <div className="inv-chips" role="group" aria-label="Category" style={{ margin: '10px 0' }}><button type="button" className={cat === 'all' ? 'on' : ''} onClick={() => setCat('all')}>ALL</button>{cats.map(([slug, name]) => <button key={slug} type="button" className={cat === slug ? 'on' : ''} onClick={() => setCat(slug)}>{String(name).toUpperCase()}</button>)}</div>
-      <ul className="adm-picks">{found.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{p.image ? <img src={p.image} alt="" width="40" height="50" /> : <i className="sg-ph" />}<span><b>{p.name}</b><br /><small className="muted">{p.category || 'Product'}</small></span></span><span className="adm-pick-act"><button type="button" onClick={() => set(p.id, true)}>+ Add</button></span></li>)}</ul>
+      <ul className="adm-picks adm-found">{found.map(p => <li key={p.id} className="adm-pick"><span className="adm-pick-n">{p.image ? <img src={p.image} alt="" width="40" height="50" /> : <i className="sg-ph" />}<span><b>{p.name}</b><br /><small className="muted">{p.category || 'Product'}</small></span></span><span className="adm-pick-act"><button type="button" onClick={() => set(p.id, true)}>+ Add</button></span></li>)}</ul>
     </section>
   );
 }
@@ -148,7 +148,7 @@ export function AdminStorefront() {
   return (
     <Gate state={state}>
       <AdminShell title="Storefront images">
-      <div className="adm">
+      <div className="adm sf">
         {err && <p role="alert" className="err">{err}</p>}
         {b && (
           <div className="adm-slots">
@@ -189,7 +189,7 @@ export function AdminStorefront() {
               const save = list => run(`show${i}`, async () => { const next = { ...b, showcase: list }; await saveBranding(next); setB(next) }, 'Slideshow saved.');
               const upload = f => run(`show${i}`, async () => { const up = await uploadImage(f); const list = [...(b.showcase || [])]; if (ph) list[i] = { ...ph, image: up.url }; else list.push({ image: up.url, alt: '' }); const next = { ...b, showcase: list }; await saveBranding(next); setB(next) }, 'Photo added to the slideshow.');
               const pos = ph ? i : (b.showcase || []).length;
-              if (!ph && i > pos) return null;
+              if (!ph && i > pos) return <li key={i} className="adm-later"><div className="adm-cover"><i>Empty</i></div><b>Photo {i + 1}</b><small className="muted">Fill Photo {pos + 1} first</small></li>; // later slots shown (faded) so the row is complete
               return (
                 <li key={i}>
                   <div className="adm-cover">{ph ? <img src={ph.image} alt="" /> : <i>Empty</i>}</div>
@@ -205,7 +205,7 @@ export function AdminStorefront() {
           </section>
         )}
 
-        {[['Category covers', 'categories', cats], ['Collection covers', 'collections', cols]].map(([title, kind, rows]) => (
+        {[['Category covers', 'categories', cats], ['Collection covers', 'collections', cols]].filter(([, , rows]) => rows.length).map(([title, kind, rows]) => (
           <section key={kind} className="adm-block">
             <h2 className="serif adm-h2">{title}</h2>
             <p className="muted small">Click a photo on the part that must stay visible (a face, the zari border). The website frames the photo around that point.</p>
