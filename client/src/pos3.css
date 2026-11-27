@@ -749,3 +749,27 @@ div.dpos select.usr-role.stf { background-color: #e8ecf7 !important; border-colo
 .adm.sf .adm-act { flex-wrap: nowrap; gap: 6px } .adm.sf .adm-act > * { padding: 7px 12px !important; font-size: 11px !important; white-space: nowrap }
 .adm.sf .adm-later { opacity: .45 } .adm.sf .adm-later small { font-size: 11px }
 .adm.sf .adm-alt { width: 100%; box-sizing: border-box }
+
+/* ---- POS Analytics filters: three compact matching pill groups, side by side ---- */
+.an-all { display: flex !important; flex-wrap: wrap !important; align-items: center; gap: 8px !important; margin: 4px 0 12px !important; padding: 0 !important; background: none !important; border: 0 !important }
+.an-all .an-grp, .an-all .an-gst .dpos-pg { display: inline-flex !important; align-items: center; gap: 2px !important; flex-wrap: nowrap !important; margin: 0 !important; padding: 3px !important; border-radius: 999px !important; background: #fff !important; border: 1px solid #e3e2ef !important; box-shadow: none !important }
+.an-all .an-gst { margin: 0 !important; display: inline-flex }
+.an-all .an-pay { margin-left: 0 !important }
+.an-all .an-grp button, .an-all .an-gst .dpos-pg button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px !important; border-radius: 999px !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: .02em; color: #4a4742; background: none; border: 0 !important; white-space: nowrap; line-height: 1 }
+.an-all .an-grp button.on, .an-all .an-gst .dpos-pg button.on, .an-all .an-gst .dpos-pg button[aria-checked="true"] { background: #1c284f !important; color: #fff !important }
+.an-all .an-grp > b, .an-all .an-gst .dpos-pg .lab { padding: 0 6px 0 9px !important; font-size: 10px !important; font-weight: 800; letter-spacing: .12em; color: #6f7287 !important }
+.an-all .dot { width: 6px; height: 6px }
+.an-all .an-grp button, .an-all .an-gst .dpos-pg button { text-transform: uppercase; letter-spacing: .05em }
+
+/* ---- "Net profit, step by step": a compact sheet ---- */
+.dpos-sheet.money { width: min(560px, 94vw) !important; max-width: none !important }
+.dpos-sheet.money .money-sum { gap: 6px; padding: 12px 14px; font-size: 13.5px }
+.dpos-sheet.money .money-sum > div { padding: 2px 0 } .dpos-sheet.money .money-sum .muted { font-size: 11.5px }
+.dpos-sheet.money .money-sum .tot { margin-top: 4px; padding: 9px 12px; border-radius: 10px; background: #e8ecf7; color: #1c284f; font-size: 15px }
+.dpos-sheet.money .money-h { margin: 16px 0 6px; font-size: 10.5px; color: #6f7287 }
+.dpos-sheet.money .ex-bars { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none }
+.dpos-sheet.money .ex-bars li { display: grid; grid-template-columns: minmax(90px, 140px) 1fr auto; align-items: center; gap: 10px; font-size: 12.5px }
+.money-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; border: 1px solid #ececf2; border-radius: 12px }
+.money-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 12px; border-bottom: 1px solid #f1f1f5; font-size: 13px }
+.money-list li:last-child { border-bottom: 0 } .money-list li > span { display: grid; gap: 1px; min-width: 0 } .money-list small { font-size: 11px; color: #77736d }
+.money-f { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px }

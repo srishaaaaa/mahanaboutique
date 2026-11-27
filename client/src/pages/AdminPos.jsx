@@ -486,7 +486,7 @@ function MoneyDetail({ kind, rep, from, to, onClose, goExpenses }) {
   useEffect(() => { api(`/admin/pos/expenses?from=${from}&to=${to}`).then(setRows).catch(() => setRows([])) }, [from, to]);
   const cats = rep.expenseByCategory || [];
   return (
-    <Modal wide className="money" title={kind === 'net' ? 'Net profit, step by step' : 'Where the money went'} sub={`${dmy(from)} to ${dmy(to)}`} onClose={onClose}>
+    <Modal className="money" title={kind === 'net' ? 'Net profit, step by step' : 'Where the money went'} sub={from <= '2000-01-01' ? `All time, up to ${dmy(to)}` : `${dmy(from)} to ${dmy(to)}`} onClose={onClose}>
       <div className="money-sum">
         <div><span>Sales (revenue, after returns)</span><b>{inr(rep.revenue)}</b></div>
         {rep.returned?.count > 0 && <div><span className="muted">of which returns refunded ({rep.returned.count}): {inr(rep.grossRevenue)} sold − {inr(rep.returned.total)}</span><b className="muted">—</b></div>}
@@ -498,9 +498,8 @@ function MoneyDetail({ kind, rep, from, to, onClose, goExpenses }) {
       {!cats.length ? <p className="dpos-empty">No expenses in this period.</p> : <ul className="ex-bars">{cats.map(c => <li key={c.category}><span>{c.category}</span><i><u style={{ width: `${c.amount / cats[0].amount * 100}%` }} /></i><b>{inr(c.amount)}</b></li>)}</ul>}
       <h4 className="money-h">Every expense</h4>
       {!rows ? <p className="dpos-empty">Loading…</p> : !rows.length ? <p className="dpos-empty">Nothing recorded.</p> : (
-        <div className="dpos-tw" style={{ maxHeight: 260, overflow: 'auto' }}><table><thead><tr><th>Date</th><th>Expense</th><th>Category</th><th className="r">Amount</th></tr></thead>
-          <tbody>{rows.map(x => <tr key={x.id}><td>{dmy(x.date)}</td><td><b>{x.title}</b></td><td>{x.category}</td><td className="r"><b>{inr(x.amount)}</b></td></tr>)}</tbody></table></div>)}
-      <div style={{ marginTop: 14 }}><button type="button" className="dpos-btn" onClick={() => { onClose(); goExpenses() }}>Open Expense Tracker</button></div>
+        <ul className="money-list">{rows.map(x => <li key={x.id}><span><b>{x.title}</b><small>{dmy(x.date)} · {x.category}</small></span><b>{inr(x.amount)}</b></li>)}</ul>)}
+      <div className="money-f"><button type="button" className="dpos-btn ghost" onClick={onClose}>Close</button><button type="button" className="dpos-btn" onClick={() => { onClose(); goExpenses() }}>Open Expense Tracker</button></div>
     </Modal>
   );
 }
