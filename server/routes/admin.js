@@ -38,6 +38,17 @@ export default function admin({ db, auth }) {
            (SELECT COUNT(*)::int FROM order_items oi WHERE oi.order_id = o.id) AS item_count, to_jsonb(o) -> 'shipment' AS shipment
     FROM orders o ORDER BY o.id DESC LIMIT 200`))));
 
+  // One website order for the eye button's "Order Details" sheet (orders that have no bill yet: unpaid or cancelled).
+  r.get('/orders/:number', staff, wrap(async (req, res) => {
+    const o = await one(db, `SELECT o.id, o.order_number AS "orderNumber", o.email, o.status, o.payment_status AS "paymentStatus", o.subtotal, o.discount_amount AS discount,
+        o.shipping_amount AS delivery, o.tax_amount AS tax, o.total_amount AS total, o.created_at AS "createdAt", o.shipping_address_snapshot AS address FROM orders o WHERE o.order_number = $1`, [req.params.number]);
+    if (!o) throw new HttpError(404, 'Order not found');
+    o.items = await rows(db, `SELECT product_name_snapshot AS name, variant_snapshot AS variant, unit_price AS "unitPrice", quantity, line_total AS "lineTotal"
+      FROM order_items WHERE order_id = $1 ORDER BY id`, [o.id]);
+    delete o.id;
+    res.json(o);
+  }));
+
   r.patch('/orders/:number', staff, wrap(async (req, res) => {
     const { status } = z.object({ status: z.enum(['confirmed', 'packed', 'shipped', 'delivered', 'cancelled']) }).parse(req.body);
     const o = await one(db, 'SELECT status, payment_status FROM orders WHERE order_number = $1', [req.params.number]);

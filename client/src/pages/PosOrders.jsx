@@ -39,20 +39,24 @@ export function OrderQuick({ r, onClose, openInvoice, manager, onEdited }) {
   useEffect(() => { api('/admin/pos/sales/' + encodeURIComponent(r.invoiceNo)).then(x => setSale(x.sale || x)).catch(e => setErr(e.message)) }, [r.invoiceNo, n]);
   return (
     <div className="dpos-modal" role="dialog" aria-modal="true" aria-label={`Order ${r.invoiceNo}`} onMouseDown={e => e.target === e.currentTarget && onClose()}>
-      <div className="dpos-mbox oq">
-        <div className="oq-h"><b>{r.invoiceNo}</b><span className="oq-tag">{r.source === 'online' ? 'ONLINE' : 'IN-STORE'}</span><button type="button" aria-label="Close" onClick={onClose}>✕</button></div>
-        <div className="oq-g">
-          <div><small>CUSTOMER</small><b>{r.customerName || 'Guest'}</b></div><div><small>PHONE</small><b>{r.customerPhone || '—'}</b></div>
-          <div><small>DATE</small><b>{longDate(r.billDate)}</b></div><div><small>STATUS</small><b>{r.status === 'voided' ? 'Void' : 'Completed'}</b></div>
-        </div>
-        {err && <p className="dpos-err" role="alert">{err}</p>}
-        {!sale && !err ? <p className="muted">Loading…</p> : sale && (
-          <div className="oq-box">
-            {sale.items.map((i, n) => <div key={n} className="oq-it"><span>{i.name}{i.variant?.size ? ` (${i.variant.size})` : ''} <small>× {i.quantity}</small></span><b>{money(i.lineTotal)}</b></div>)}
-            <BillSummary bill={sale} />
-          </div>)}
-        <div className="oq-f"><button type="button" className="dpos-btn ghost" onClick={onClose}>Close</button>
-          {manager && sale && sale.status === 'completed' && !sale.returns?.length && <button type="button" className="dpos-btn outline" onClick={() => setEditing(true)}>✎ Edit invoice</button>}<button type="button" className="dpos-btn" onClick={() => { onClose(); openInvoice(r.invoiceNo, r) }}>View invoice</button></div>
+      <div className="dpos-sheet od">
+        <div className="od-head"><div><h2>Order Details</h2><p>{r.invoiceNo}</p></div><button type="button" aria-label="Close" onClick={onClose}>✕</button></div>
+        {err && <p className="dpos-err" role="alert" style={{ margin: '14px 22px 0' }}>{err}</p>}
+        {!sale && !err ? <p className="od-load">Loading…</p> : sale && <div className="od-body">
+          <div className="od-grid">
+            <div><small>Customer name</small><b>{sale.customerName || r.customerName || 'Walk-in customer'}</b></div>
+            {(sale.customerPhone || r.customerPhone) && <div><small>Contact number</small><b>{sale.customerPhone || r.customerPhone}</b></div>}
+            {sale.customerAddress && <div><small>Address</small><b>{sale.customerAddress}</b></div>}
+            <div><small>Bill type</small><span className="od-pill">{sale.isGst ? 'GST INVOICE' : 'NON-GST BILL'}</span></div>
+          </div>
+          <h3 className="od-h">Order items</h3>
+          <ul className="od-items">{sale.items.map((i, k) => (
+            <li key={k}><span><b>{i.name}</b>{(i.variant?.size || (i.variant?.color && i.variant.color !== 'Default')) && <em>{[i.variant.size, i.variant.color !== 'Default' ? i.variant.color : null].filter(Boolean).join(', ')}</em>}</span>
+              <span className="od-amt"><b>{money(i.lineTotal)}</b><small>{i.quantity} x {money(i.unitPrice ?? Math.round(i.lineTotal / (i.quantity || 1)))}</small></span></li>))}</ul>
+          <div className="od-sums"><BillSummary bill={sale} /></div>
+          <div className="od-f"><button type="button" className="dpos-btn ghost" onClick={onClose}>Close</button>
+            {manager && sale.status === 'completed' && !sale.returns?.length && <button type="button" className="dpos-btn outline" onClick={() => setEditing(true)}>✎ Edit invoice</button>}<button type="button" className="dpos-btn" onClick={() => { onClose(); openInvoice(r.invoiceNo, r) }}>View invoice</button></div>
+        </div>}
       </div>
       {editing && <EditSaleModal invoiceNo={r.invoiceNo} onClose={() => setEditing(false)} onSaved={() => { setN(x => x + 1); onEdited?.() }} />}
     </div>

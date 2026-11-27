@@ -28,9 +28,47 @@ function useGate() {
 }
 const Card = ({ children }) => <section className="dpos-card">{children}</section>;
 
+// Eye button for a website order that has no bill yet (unpaid / cancelled): the same compact "Order Details" sheet, from the order itself.
+function WebOrderDetails({ no, onClose }) {
+  const [o, setO] = useState(null); const [err, setErr] = useState();
+  useEffect(() => { api('/admin/orders/' + encodeURIComponent(no)).then(setO).catch(e => setErr(e.message)) }, [no]);
+  useEffect(() => { const k = e => e.key === 'Escape' && onClose(); document.addEventListener('keydown', k); return () => document.removeEventListener('keydown', k) }, [onClose]);
+  const a = o?.address || {};
+  const addr = [a.line1, a.line2, a.city, a.state, a.pin].filter(Boolean).join(', ');
+  const st = o ? (o.paymentStatus === 'paid' ? 'Paid' : o.status === 'cancelled' ? 'Cancelled' : 'Unpaid') : '';
+  return (
+    <div className="dpos-modal" role="dialog" aria-modal="true" aria-label={`Order ${no}`} onMouseDown={e => e.target === e.currentTarget && onClose()}>
+      <div className="dpos-sheet od">
+        <div className="od-head"><div><h2>Order Details</h2><p>{no}</p></div><button type="button" aria-label="Close" onClick={onClose}>✕</button></div>
+        {err && <p className="dpos-err" role="alert" style={{ margin: '14px 22px 0' }}>{err}</p>}
+        {!o && !err ? <p className="od-load">Loading…</p> : o && <div className="od-body">
+          <div className="od-grid">
+            <div><small>Customer name</small><b>{a.name || '—'}</b></div>
+            {a.phone && <div><small>Contact number</small><b>{a.phone}</b></div>}
+            <div><small>Email</small><b>{o.email}</b></div>
+            {addr && <div><small>Address</small><b>{addr}</b></div>}
+            <div><small>Payment</small><span className="od-pill">{st.toUpperCase()}</span></div>
+          </div>
+          <h3 className="od-h">Order items</h3>
+          <ul className="od-items">{o.items.map((i, k) => (
+            <li key={k}><span><b>{i.name}</b>{(i.variant?.size || (i.variant?.color && i.variant.color !== 'Default')) && <em>{[i.variant.size, i.variant.color !== 'Default' ? i.variant.color : null].filter(Boolean).join(', ')}</em>}</span>
+              <span className="od-amt"><b>{inr(i.lineTotal)}</b><small>{i.quantity} x {inr(i.unitPrice)}</small></span></li>))}</ul>
+          <div className="od-sums"><div className="bsum">
+            <div><span>Subtotal</span><b className="mono">{inr(o.subtotal)}</b></div>
+            {o.discount > 0 && <div><span>Discount</span><b className="mono">−{inr(o.discount)}</b></div>}
+            <div><span>Delivery</span><b className="mono">{o.delivery > 0 ? inr(o.delivery) : 'Free'}</b></div>
+            <div className="bsum-total"><span>TOTAL</span><b className="mono">{inr(o.total)}</b></div>
+          </div></div>
+          <p className="od-note muted small">Placed {new Date(o.createdAt).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' })}. A bill is made once the order is paid.</p>
+        </div>}
+      </div>
+    </div>
+  );
+}
+
 export function AdminOrders() {
   const gate = useGate(); const [s, setS] = useState(); const [o, setO] = useState(null); const [e, setE] = useState(); const [per, setPer] = usePeriod('all'); const [pay, setPay] = useState('all');
-  const [bills, setBills] = useState({}); const [pv, setPv] = useState(null); const [ret, setRet] = useState(null); const [edit, setEdit] = useState(null); const [quick, setQuick] = useState(null); const [ship, setShip] = useState(null); const [n, setN] = useState(0);
+  const [bills, setBills] = useState({}); const [pv, setPv] = useState(null); const [ret, setRet] = useState(null); const [edit, setEdit] = useState(null); const [quick, setQuick] = useState(null); const [ship, setShip] = useState(null); const [web, setWeb] = useState(null); const [n, setN] = useState(0);
   const { user } = useApp(); const manager = ['owner', 'admin'].includes(user?.role);
   useEffect(() => { if (!gate) Promise.all([api('/admin/stats'), api('/admin/orders')]).then(([a, b]) => { setS(a); setO(b) }).catch(x => setE(x.message)) }, [gate, n]);
   // each paid website order has an online bill: its invoice, returns and edits live there
@@ -63,13 +101,14 @@ export function AdminOrders() {
                   {x.phone && <a className="ra wa" title="Message on WhatsApp" aria-label="Message on WhatsApp" href={waLink(x.phone, bl ? `Hello${x.name ? ' ' + x.name : ''}, here is your invoice ${bl.invoiceNo} for ${inr(bl.total)}: ${invoiceUrl(bl.shareToken)}` : `Hello${x.name ? ' ' + x.name : ''}, your order ${x.order_number} (${inr(x.total)}) is ${x.status}. Thank you!`)} target="_blank" rel="noopener noreferrer"><WaIcon /></a>}
                   {x.payment_status === 'paid' && <button type="button" className="ra ship" title={x.shipment?.awb ? `${x.shipment.courier || 'Courier'} · ${x.shipment.awb}` : x.shipment ? 'Courier booked' : 'Book a courier (EasyParcel)'} aria-label="Courier" onClick={() => setShip(x)}><Icon n="truck" size={20} /></button>}
                   {bl && <a className="ra doc" title="Open the invoice" aria-label="Open the invoice" href={`/invoice/${bl.shareToken}`} onClick={e => { if (!(e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); setPv(bl) } }}><DocIcon /></a>}
-                  {bl && <button type="button" className="ra eye" title="Quick details" aria-label="Quick details" onClick={() => setQuick(bl)}><EyeIcon /></button>}
+                  <button type="button" className="ra eye" title="Order details" aria-label="Order details" onClick={() => bl ? setQuick(bl) : setWeb(x.order_number)}><EyeIcon /></button>
                   {bl && <button type="button" className="ra ret" title="Return items" aria-label="Return items" disabled={voided} onClick={() => setRet(bl.invoiceNo)}><ReturnIcon /></button>}
                   {bl && manager && <button type="button" className="ra edit" title="Edit this invoice" aria-label="Edit invoice" disabled={voided} onClick={() => setEdit(bl.invoiceNo)}><PencilIcon /></button>}
                 </div>) })()}</td>
             </tr>))}</tbody></table></div></section>)}
       {pv && <InvoicePreview token={pv.shareToken} invoiceNo={pv.invoiceNo} onClose={() => setPv(null)} />}
       {quick && <OrderQuick r={quick} onClose={() => setQuick(null)} openInvoice={(no, row) => { setQuick(null); setPv(row || { invoiceNo: no }) }} manager={manager} onEdited={() => setN(x => x + 1)} />}
+      {web && <WebOrderDetails no={web} onClose={() => setWeb(null)} />}
       {ship && <ShipModal order={ship} onClose={() => setShip(null)} onDone={() => setN(v => v + 1)} />}
       {ret && <ReturnModal invoiceNo={ret} onClose={() => setRet(null)} onDone={() => setN(x => x + 1)} />}
       {edit && <EditSaleModal invoiceNo={edit} onClose={() => setEdit(null)} onSaved={() => setN(x => x + 1)} />}

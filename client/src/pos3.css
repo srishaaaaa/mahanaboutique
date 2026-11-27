@@ -709,3 +709,29 @@ div.dpos select.usr-role.stf { background-color: #e8ecf7 !important; border-colo
 .ms-top-a { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
 .msr-charge .msr-amt em { position: static !important; transform: none !important; inset: auto !important; font-size: 15px }
 .bp-ruler-gap { width: 38px; flex: none }
+
+/* ---- Eye button: compact "Order Details" sheet, as on Dhanya (Mahana navy) ---- */
+.dpos-modal .dpos-sheet.od { width: min(560px, 94vw); max-width: none; padding: 0; border-radius: 20px; overflow: hidden auto; max-height: 88vh; background: #fff; text-align: left }
+.od-head { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 22px; background: #1c284f; color: #fff }
+.od-head h2 { margin: 0; font-size: 17px; font-weight: 700; color: #fff } .od-head p { margin: 3px 0 0; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #e9cd8d }
+.od-head button { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .16); color: #fff; font-size: 15px; cursor: pointer } .od-head button:hover { background: rgba(255, 255, 255, .28) }
+.od-body { padding: 18px 22px 22px } .od-load { padding: 28px 22px; color: #77736d }
+.od-grid { display: grid; gap: 14px; padding: 14px 16px; border: 1px solid #e6e8f2; border-radius: 14px; background: #f8f9fc }
+.od-grid small { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #6f7287 }
+.od-grid b { font-size: 13.5px; font-weight: 600; color: #17131a; overflow-wrap: anywhere }
+.od-pill { display: inline-block; padding: 4px 10px; border-radius: 7px; background: #e8ecf7; color: #1c284f; font-size: 10.5px; font-weight: 700; letter-spacing: .04em }
+.od-h { margin: 18px 0 0; padding-bottom: 8px; border-bottom: 1px solid #ececec; font-size: 10.5px; font-weight: 600; color: #6f7287 }
+.od-items { list-style: none; margin: 0; padding: 0 } .od-items li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0 8px; border-bottom: 1px solid #f0f0f0 }
+.od-items li > span:first-child b { display: block; font-size: 13.5px; font-weight: 700 } .od-items em { display: block; font-style: normal; font-size: 12px; color: #77736d }
+.od-amt { text-align: right; white-space: nowrap } .od-amt b { display: block; font-size: 13.5px; font-weight: 700 } .od-amt small { font-size: 11px; color: #6f6b66 }
+.od-sums { margin-top: 12px; font-size: 13px }
+.od-sums .bsum { max-width: none; margin: 0 }
+.od-sums .bsum { font-size: 13px } .od-sums .bsum > div { padding: 5px 0 }
+.od-sums .bsum-total { padding: 10px 14px !important; border: 0; border-radius: 12px; background: #e8ecf7; color: #1c284f; font-size: 15px; margin: 6px 0 }
+.od-f { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 16px }
+/* Measurements: a clear down arrow to open each bill; it turns up when open */
+.ms-act .ms-chev { width: 38px; height: 38px; flex: none; display: inline-grid; place-items: center; border-radius: 10px; border: 1px solid #1c284f; background: #1c284f; color: #fff; font-size: 0; cursor: pointer; transition: background .15s }
+.ms-act .ms-chev svg { transition: transform .2s ease } .ms-act .ms-chev.on svg { transform: rotate(180deg) }
+.ms-act .ms-chev:hover { background: #2d3e76 }
+.ms-head { cursor: default }
+.dpos-sheet.od .od-h { margin: 18px 0 0 !important; font-size: 11px !important; letter-spacing: .02em }
