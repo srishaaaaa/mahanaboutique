@@ -773,3 +773,9 @@ div.dpos select.usr-role.stf { background-color: #e8ecf7 !important; border-colo
 .money-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 12px; border-bottom: 1px solid #f1f1f5; font-size: 13px }
 .money-list li:last-child { border-bottom: 0 } .money-list li > span { display: grid; gap: 1px; min-width: 0 } .money-list small { font-size: 11px; color: #77736d }
 .money-f { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px }
+
+/* Taxonomy: departments across the top, categories in a grid beneath, so there is no empty column */
+.dpos-tx { grid-template-columns: 1fr; gap: 26px }
+.dpos-tx > div { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); gap: 14px; align-items: stretch; align-content: start }
+.dpos-tx > div > h2, .dpos-tx > div > .dpos-empty { grid-column: 1 / -1; margin-bottom: 0 }
+.dpos-tx .dpos-txc { margin-bottom: 0 }
