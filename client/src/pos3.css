@@ -779,3 +779,9 @@ div.dpos select.usr-role.stf { background-color: #e8ecf7 !important; border-colo
 .dpos-tx > div { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); gap: 14px; align-items: stretch; align-content: start }
 .dpos-tx > div > h2, .dpos-tx > div > .dpos-empty { grid-column: 1 / -1; margin-bottom: 0 }
 .dpos-tx .dpos-txc { margin-bottom: 0 }
+/* two roomy columns; cards may shrink (no sideways overflow), text on the left, actions together on the right */
+.dpos-tx > div { grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)) }
+.dpos-tx .dpos-txc { min-width: 0; padding: 18px 20px; gap: 16px }
+.dpos-tx .dpos-txc > div:first-child { min-width: 0; flex: 1 }
+.dpos-tx .dpos-txc > div:last-child { flex: none }
+.dpos-tx .dpos-txc small { display: block; margin-top: 4px; line-height: 1.5 }
