@@ -149,7 +149,7 @@ export function AdminUsers() {
   const load = () => api('/admin/users').then(setList).catch(x => setE(x.message));
   useEffect(() => { if (!gate) load() }, [gate]); // eslint-disable-line react-hooks/exhaustive-deps
   // new sign-ins show up without reloading: refresh every 30 s while the tab is open on screen, and whenever it is opened again
-  useEffect(() => { if (gate) return; const t = setInterval(() => document.visibilityState === 'visible' && load(), 30000); const f = () => document.visibilityState === 'visible' && load(); document.addEventListener('visibilitychange', f); return () => { clearInterval(t); document.removeEventListener('visibilitychange', f) } }, [gate]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (gate) return; const t = setInterval(() => document.visibilityState === 'visible' && load(), 120000); const f = () => document.visibilityState === 'visible' && load(); document.addEventListener('visibilitychange', f); return () => { clearInterval(t); document.removeEventListener('visibilitychange', f) } }, [gate]); // eslint-disable-line react-hooks/exhaustive-deps
   if (gate) return gate;
   if (!['owner', 'admin'].includes(user.role)) return <StaffOnly />;
   const ROLE_L = { owner: 'Admin', admin: 'Admin', cashier: 'Staff', inventory: 'Staff', customer: 'Customer' };

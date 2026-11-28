@@ -57,8 +57,14 @@ test('CDN caching: public catalogue reads are cacheable, personal and admin resp
   const c = client();
   for (const path of ['/store', '/categories', '/collections', '/products?limit=3', '/products/focus-test-saree', '/reviews?page=1&limit=3']) {
     const r = await c('GET', path, undefined, true);
-    assert.match(r.headers['cache-control'] ?? '', /s-maxage=30/, path);
+    // Guard for the database's monthly allowance (it ran out once with a 30-second cache): keep at least 5 minutes at the edge
+    // plus a long stale-while-revalidate, so busy pages do not reach the database for every visitor.
+    const cc = r.headers['cache-control'] ?? '';
+    assert.ok(Number(/s-maxage=(\d+)/.exec(cc)?.[1]) >= 300, `${path}: s-maxage must be at least 300 (got "${cc}")`);
+    assert.ok(Number(/stale-while-revalidate=(\d+)/.exec(cc)?.[1]) >= 3600, `${path}: stale-while-revalidate must be at least 3600 (got "${cc}")`);
   }
+  const health = await c('GET', '/health', undefined, true);
+  assert.equal(health.status, 200); assert.equal(health.body.storeConfigured, null, '/health must not query the database unless ?db=1');
   for (const path of ['/cart', '/auth/me', '/wishlist', '/reviews/eligible', '/admin/orders', '/health']) {
     const r = await c('GET', path, undefined, true);
     assert.doesNotMatch(r.headers['cache-control'] ?? '', /s-maxage/, path + ' must not be edge-cached');

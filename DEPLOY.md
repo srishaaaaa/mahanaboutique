@@ -39,3 +39,16 @@ Migrations are not run on every cold start in production; run `npm run migrate` 
 * Uploaded images are stored in Postgres (see Admin → Products & images), so there is no disk to persist.
   Vercel limits a request body to ~4.5 MB; the admin uploader shrinks photos before sending.
 * The admin owner account is created by the seed from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (set them only for that step).
+
+## Keeping database usage low (read before changing caching, media or polling)
+The database is on Neon's free plan, which has a monthly allowance for compute time and network transfer.
+In November 2026 it ran out and the whole site showed "could not be loaded" (Neon error 53000, "exceeded the quota")
+until the plan was upgraded or the month reset. These rules keep that from happening again:
+
+- **Public catalogue reads stay edge-cached** (`server/app.js`, `PUBLIC_CACHE`): at least `s-maxage=300` with a long
+  `stale-while-revalidate`. A test (`server/test/focus.test.js`) fails if this is shortened.
+- **Uploaded photos and videos are read from the database as rarely as possible**: they are cached by Vercel's CDN and in
+  server memory (`server/routes/media.js`). Keep videos small (4 MB); every byte read from the database counts against the allowance.
+- **`/api/health` does not touch the database** (add `?db=1` for a database check). Point uptime monitors at it, never at a data endpoint.
+- **No fast polling.** Admin pages refresh at most every 2 minutes, and only while the tab is visible.
+- If the site suddenly can't load data, check the Neon dashboard's usage page first.

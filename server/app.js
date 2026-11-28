@@ -36,16 +36,21 @@ export function createApp({ db, cfg, payments = createHitpayProvider(cfg) }) {
 
   // Public, non-personal catalogue reads are cached at the CDN edge: after the first visitor, everyone gets them in milliseconds,
   // and a slightly stale copy is served instantly while a fresh one is fetched in the background. Nothing user-specific is listed here.
+  // Kept for 5 minutes at the edge, then a stale copy is served instantly (up to a day) while one fresh read runs in the background,
+  // so the database is asked at most about once per 5 minutes per page, however many people visit. This is what keeps the
+  // database's monthly compute and transfer allowance from running out (it did once, in Nov 2026, with a 30-second cache).
+  const PUBLIC_CACHE = 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400';
   const PUBLIC_READS = /^\/(store|categories|collections(\/[a-z0-9-]+)?|products(\/[a-z0-9-]+)?|reviews)$/;
   app.use('/api', (req, res, next) => {
-    if (req.method === 'GET' && PUBLIC_READS.test(req.path)) res.set('Cache-Control', '_' in req.query ? 'no-store' : 'public, max-age=0, s-maxage=30, stale-while-revalidate=60'); // ?_= means "fresh please" (staff, or right after a change)
+    if (req.method === 'GET' && PUBLIC_READS.test(req.path)) res.set('Cache-Control', '_' in req.query ? 'no-store' : PUBLIC_CACHE); // ?_= means "fresh please" (staff, or right after a change)
     next();
   });
 
   // Health + a quick configuration check (no secrets): shows which schema is read and whether the boutique location is set.
-  app.get('/api/health', async (_req, res) => {
+  // Uptime checkers call this often, so it does not touch the database (that would keep it awake all day); add ?db=1 to check the database too.
+  app.get('/api/health', async (req, res) => {
     let storeConfigured = null;
-    try { const r = await db.query("SELECT value FROM store_settings WHERE key = 'store'"); storeConfigured = !!(r.rows[0]?.value?.address?.length || r.rows[0]?.value?.location) } catch { storeConfigured = 'unreadable' }
+    if (req.query.db === '1') try { const r = await db.query("SELECT value FROM store_settings WHERE key = 'store'"); storeConfigured = !!(r.rows[0]?.value?.address?.length || r.rows[0]?.value?.location) } catch { storeConfigured = 'unreadable' }
     res.json({ ok: true, db: db.kind, schema: db.kind === 'postgres' ? cfg.DB_SCHEMA : null, storeConfigured });
   });
   app.use('/api/auth', authRoutes(ctx));
