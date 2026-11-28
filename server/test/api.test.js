@@ -261,6 +261,23 @@ test('media: short videos upload (validated), stream with Range, and can be used
   assert.equal((await api('PUT', '/admin/settings/social', { ...social, instagram: { ...social.instagram, posts: [{ alt: 'empty' }] } })).status, 400, 'a post needs an image or a video');
 });
 
+test('media: Vercel Blob upload tokens are staff-only, sized and typed, and off until storage is set up', async () => {
+  const api = client(); await api('POST', '/auth/login', { email: 'owner@test.dev', password: 'OwnerPass123!' });
+  const saved = process.env.BLOB_READ_WRITE_TOKEN; delete process.env.BLOB_READ_WRITE_TOKEN;
+  try {
+    assert.equal((await api('GET', '/admin/media/storage')).body.blob, false);
+    assert.equal((await api('POST', '/admin/media/blob-token', { name: 'reel.mp4', type: 'video/mp4', size: 1000 })).status, 503, 'no token: falls back to database uploads');
+    process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_rw_TESTSTORE123_secretsecretsecret';
+    assert.equal((await api('GET', '/admin/media/storage')).body.blob, true);
+    const ok = await api('POST', '/admin/media/blob-token', { name: 'My Reel!.MP4', type: 'video/mp4', size: 20 * 1024 * 1024 });
+    assert.equal(ok.status, 200); assert.match(ok.body.token, /^vercel_blob_client_/); assert.equal(ok.body.pathname, 'media/videos/my-reel.mp4');
+    assert.equal((await api('POST', '/admin/media/blob-token', { name: 'big.mp4', type: 'video/mp4', size: 51 * 1024 * 1024 })).status, 413, 'videos over 50 MB refused');
+    assert.equal((await api('POST', '/admin/media/blob-token', { name: 'big.jpg', type: 'image/jpeg', size: 9 * 1024 * 1024 })).status, 413, 'images over 8 MB refused');
+    assert.equal((await api('POST', '/admin/media/blob-token', { name: 'x.svg', type: 'image/svg+xml', size: 100 })).status, 400, 'only jpeg/png/webp/mp4/webm');
+    assert.ok([401, 403].includes((await client()('POST', '/admin/media/blob-token', { name: 'a.mp4', type: 'video/mp4', size: 10 })).status), 'signed-out visitors cannot get a token');
+  } finally { if (saved === undefined) delete process.env.BLOB_READ_WRITE_TOKEN; else process.env.BLOB_READ_WRITE_TOKEN = saved }
+});
+
 test('enquiries: validated, spam-trapped, stored, and visible only to staff', async () => {
   const c = client();
   const ok = await c('POST', '/enquiries', { kind: 'retail', name: 'Test Buyer', phone: '98765 43210', interest: 'Red silk saree' });

@@ -191,7 +191,7 @@ export function AdminReels() {
     <AdminShell title="Reels & Photo Gallery" sub="Add up to 6 reels (videos) and up to 6 photos. On the home page the reels come first, then the photo gallery.">
       <Err>{err}</Err>
       <input ref={input} type="file" hidden onChange={e => { const f = e.target.files[0]; e.target.value = ''; if (f) upload(target.current.kind, target.current.i, f) }} />
-      <h2 className="serif adm-h2">Reels <span className="muted small">({lists.video.length} of {REEL_MAX} · MP4 or WebM, max 4 MB each; compress to 720p first)</span></h2>
+      <h2 className="serif adm-h2">Reels <span className="muted small">({lists.video.length} of {REEL_MAX} · MP4 or WebM, up to 50 MB each)</span></h2>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '0 0 14px' }}>
         <input value={link} onChange={e => setLink(e.target.value)} onKeyDown={e => e.key === 'Enter' && addLink()} placeholder="Paste an Instagram reel link, e.g. https://www.instagram.com/reel/…" aria-label="Instagram reel link" style={{ flex: '1 1 320px', padding: '11px 14px', borderRadius: 10, border: '1px solid rgba(0,0,0,.2)' }} />
         <button className="dpos-btn" disabled={busy !== null || !link.trim() || !s} onClick={addLink}>{busy === 'link' ? 'Adding…' : '+ Add reel link'}</button>

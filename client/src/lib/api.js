@@ -52,8 +52,21 @@ async function shrink(file, max = 2000) {
 }
 
 // Admin: uploads one image and returns { id, url, bytes }.
+// File storage: when Vercel Blob is set up, files go straight from the browser to it (not through the API or the database).
+let storage;
+const blobReady = () => (storage ??= api('/admin/media/storage').then(s => !!s.blob).catch(() => { storage = undefined; return false }));
+async function toBlobStore(file, name) {
+  if (!(await blobReady())) return null;
+  const t = await api('/admin/media/blob-token', { method: 'POST', body: { name: name || file.name || 'file', type: file.type, size: file.size } });
+  const { put } = await import('@vercel/blob/client');
+  const out = await put(t.pathname, file, { access: 'public', token: t.token, contentType: file.type, multipart: file.size > 5 * 1024 * 1024 });
+  return { url: out.url, bytes: file.size };
+}
+
 export async function uploadImage(file) {
   const blob = await shrink(file);
+  const stored = await toBlobStore(blob, file.name || 'image');
+  if (stored) return stored;
   const r = await fetch('/api/admin/media?name=' + encodeURIComponent(file.name || 'image'), {
     method: 'POST', credentials: 'include', headers: { 'Content-Type': blob.type, 'X-Requested-With': 'dhanya' }, body: blob,
   });
@@ -65,7 +78,10 @@ export async function uploadImage(file) {
 // Admin: uploads an image OR a short video (MP4/WebM up to 4 MB) and returns { id, url, bytes, video }.
 export async function uploadMedia(file) {
   if (!/^video\/(mp4|webm)$/.test(file.type)) return { ...(await uploadImage(file)), video: false };
-  if (file.size > 3.9 * 1024 * 1024) throw new Error('Videos must be under 4 MB here. Trim or compress the clip, or paste a video link instead.');
+  if (file.size > 50 * 1024 * 1024) throw new Error('Videos must be under 50 MB. Trim or compress the clip, or paste an Instagram reel link instead.');
+  const stored = await toBlobStore(file, file.name || 'video');
+  if (stored) return { ...stored, video: true };
+  if (file.size > 3.9 * 1024 * 1024) throw new Error('Videos must be under 4 MB until file storage is set up. Trim or compress the clip, or paste an Instagram reel link instead.');
   const r = await fetch('/api/admin/media?name=' + encodeURIComponent(file.name || 'video'), {
     method: 'POST', credentials: 'include', headers: { 'Content-Type': file.type, 'X-Requested-With': 'dhanya' }, body: file,
   });
