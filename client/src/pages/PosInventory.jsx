@@ -289,7 +289,7 @@ function StockAlert({ list, stocker, manager, onClose, onEdit, onRestock }) {
 function ProductsStock({ manager, stocker }) {
   const { toast } = useApp();
   const [q, setQ] = useState(''); const [stock, setStock] = useState('all'); const [list, setList] = useState(null); const [cats, setCats] = useState([]);
-  const [view, setView] = useState('grid'); const [alertOpen, setAlertOpen] = useState(false); const [catF, setCatF] = useState(''); const [sort, setSort] = useState('name');
+  const view = 'grid'; /* grid only: the list view was removed */ const [alertOpen, setAlertOpen] = useState(false); const [catF, setCatF] = useState(''); const [sort, setSort] = useState('name');
   const [bcGen, setBcGen] = useState(null); const [bcPrint, setBcPrint] = useState(null);
   const [open, setOpen] = useState(null); const [modal, setModal] = useState(null); const [err, setErr] = useState(); const [nv, setNv] = useState({ size: '', color: '', sku: '', stock: '' });
   const load = useCallback(() => api('/admin/pos/products?q=' + encodeURIComponent(q)).then(r => { setList(r); setErr() }).catch(e => setErr(e.message)), [q]);
@@ -322,7 +322,6 @@ function ProductsStock({ manager, stocker }) {
         <div className="inv-chips" role="group" aria-label="Stock filter">{[['all', 'All'], ['best', `Best Sellers (${counts.best})`], ['low', 'Low Stock'], ['out', 'Out of Stock']].map(([v, l]) => <button key={v} type="button" className={`${stock === v ? 'on' : ''} ${v === 'new' || v === 'best' ? 'hl' : ''}`} aria-pressed={stock === v} onClick={() => setStock(v)}>{l}</button>)}</div>
         <select value={catF} onChange={e => setCatF(e.target.value)} aria-label="Category">{[['', 'All Categories'], ...cats.map(c => [c.slug, c.name])].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort">{[['name', 'Name A–Z'], ['stock-asc', 'Stock: low to high'], ['stock-desc', 'Stock: high to low'], ['price-asc', 'Price: low to high'], ['price-desc', 'Price: high to low']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
-        <div className="inv-view" role="group" aria-label="View">{[['grid', 'Grid'], ['list', 'List']].map(([v, l]) => <button key={v} type="button" className={view === v ? 'on' : ''} aria-pressed={view === v} onClick={() => setView(v)}>{l}</button>)}</div>
         <label className="inv-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search products…" aria-label="Search products" /></label>
       </div>
       <Err>{err}</Err>

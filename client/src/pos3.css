@@ -785,3 +785,5 @@ div.dpos select.usr-role.stf { background-color: #e8ecf7 !important; border-colo
 .dpos-tx .dpos-txc > div:first-child { min-width: 0; flex: 1 }
 .dpos-tx .dpos-txc > div:last-child { flex: none }
 .dpos-tx .dpos-txc small { display: block; margin-top: 4px; line-height: 1.5 }
+/* role dropdown: one arrow on the right, never tiled (also while focused or hovered) */
+div.dpos select.usr-role, div.dpos select.usr-role:focus, div.dpos select.usr-role:hover { background-repeat: no-repeat !important; background-position: right 12px center !important; background-size: 12px 12px !important }
