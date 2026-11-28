@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { one, rows } from '../db/index.js';
 import { HttpError, wrap } from '../lib/http.js';
 import { audit } from '../lib/orders.js';
-import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client';
 
 const MAX_BYTES = 4 * 1024 * 1024; // stays under typical serverless request limits
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -96,28 +95,6 @@ export function mediaAdmin({ db, auth }) {
     const name = String(req.query.name || '').slice(0, 120) || null;
     const f = await one(db, 'INSERT INTO media_files (data, mime, bytes, original_name, created_by) VALUES ($1,$2,$3,$4,$5) RETURNING id, bytes', [req.body, mime, req.body.length, name, req.user.id]);
     res.status(201).json({ id: f.id, url: ref(f.id), bytes: f.bytes });
-  }));
-
-  // ---- file storage (Vercel Blob) ----
-  // When BLOB_READ_WRITE_TOKEN is set, the browser uploads straight to Vercel Blob with a short-lived token from here,
-  // and only the file's https link is saved. Files then never pass through (or are served from) the database.
-  // Without the token, uploads fall back to POST /media above (stored in Postgres, 4 MB max).
-  const BLOB_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'video/mp4': 'mp4', 'video/webm': 'webm' };
-  const BLOB_MAX = { image: 8 * 1024 * 1024, video: 50 * 1024 * 1024 };
-  r.get('/media/storage', staff, (_req, res) => res.json({ blob: !!process.env.BLOB_READ_WRITE_TOKEN }));
-  r.post('/media/blob-token', staff, wrap(async (req, res) => {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) throw new HttpError(503, 'File storage is not set up yet');
-    const d = z.object({ name: z.string().max(200).default('file'), type: z.enum(Object.keys(BLOB_TYPES)), size: z.number().int().positive() }).parse(req.body);
-    const kind = d.type.startsWith('video/') ? 'video' : 'image';
-    if (d.size > BLOB_MAX[kind]) throw new HttpError(413, kind === 'video' ? 'Videos can be up to 50 MB' : 'Images can be up to 8 MB');
-    const base = d.name.replace(/\.[a-z0-9]+$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || kind;
-    const pathname = `media/${kind}s/${base}.${BLOB_TYPES[d.type]}`;
-    const token = await generateClientTokenFromReadWriteToken({
-      token: process.env.BLOB_READ_WRITE_TOKEN, pathname, allowedContentTypes: [d.type], maximumSizeInBytes: BLOB_MAX[kind],
-      addRandomSuffix: true, validUntil: Date.now() + 15 * 60 * 1000, cacheControlMaxAge: 365 * 24 * 60 * 60,
-    });
-    await audit(db, req.user.id, 'media.blob.token', 'media', null, { pathname, size: d.size });
-    res.json({ token, pathname });
   }));
 
   // ---- products: list + image gallery management ----

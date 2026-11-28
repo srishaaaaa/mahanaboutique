@@ -10,7 +10,6 @@
   "dependencies": {
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.0",
-    "@vercel/blob": "^2.9.0",
     "@zxing/browser": "^0.2.1",
     "dhanya": "file:..",
     "framer-motion": "^11.11.0",
