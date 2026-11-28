@@ -52,3 +52,12 @@ until the plan was upgraded or the month reset. These rules keep that from happe
 - **`/api/health` does not touch the database** (add `?db=1` for a database check). Point uptime monitors at it, never at a data endpoint.
 - **No fast polling.** Admin pages refresh at most every 2 minutes, and only while the tab is visible.
 - If the site suddenly can't load data, check the Neon dashboard's usage page first.
+
+## Moving to a new database
+
+1. Create the new Postgres database (e.g. a new Neon project in Singapore) and copy its connection string.
+2. In `.env`, put the current database's address in `OLD_DATABASE_URL` and the new one in `DATABASE_URL`.
+3. `npm run copy-db --prefix server` creates every table on the new database (all migrations) and copies every table
+   from the old one: products, bills, customers, settings and uploaded photos and videos. Anything already in the new
+   database is replaced. The old database is only read. It ends by checking that every table has the same number of rows.
+4. In Vercel → Settings → Environment Variables, set `DATABASE_URL` to the new address and redeploy.
