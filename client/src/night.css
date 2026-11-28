@@ -1954,10 +1954,19 @@ html body .wb, html body .wb-hero { padding: 0 }
 .home > section.nx, .home > section.nx::before { background-color: #f5ebdd }
 .home > section.nx::before { background-image: none }
 
-/* Phones: home banner spacing. The pill clears the floating header and sits on one line, so it no longer covers the headline;
-   the text keeps to the left and the model moves right, so the copy sits beside her instead of over her face and body. */
+/* Phones: home banner as a stacked, centred "magazine cover". The copy box dissolves (display: contents) so its pieces join the
+   banner's grid: pill, headline, divider, description and promise line on top, then the model in full, then the two buttons laid
+   over her lower saree on a soft fade. Desktop is untouched. */
 @media (max-width: 767px) {
-  .wb-copy { top: 0; left: 0; width: 56%; padding: 18px 0 24px 16px }
-  .wb-badge { align-self: center }
-  .wb-photo { margin: 0 -18% 0 auto }
+  .wb-in { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; row-gap: 12px; height: auto; min-height: 0; padding: 112px 20px 0 }
+  .wb-copy { display: contents }
+  .wb-badge, .wb-t, .wb-orn, .wb-desc, .wb-sub, .wb-photo, .wb-acts { grid-column: 1 }
+  .wb-badge { grid-row: 1; position: relative; z-index: 2 }
+  .wb-t { grid-row: 2; position: relative; z-index: 2; text-align: center }
+  .wb-orn { grid-row: 3; position: relative; z-index: 2 }
+  .wb-desc { grid-row: 4; position: relative; z-index: 2; max-width: 300px; text-align: center }
+  .wb-sub { grid-row: 5; position: relative; z-index: 2; max-width: 300px; text-align: center }
+  .wb-photo { grid-row: 6; position: relative; inset: auto; width: 100%; height: auto; max-width: none; margin: 4px 0 0; object-fit: contain; object-position: center top;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 66%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 66%, transparent 100%) }
+  .wb-acts { grid-row: 6; align-self: end; position: relative; z-index: 2; flex-direction: column; justify-content: center; gap: 18px; margin: 0; padding-bottom: 28px }
 }
