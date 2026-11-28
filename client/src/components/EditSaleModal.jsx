@@ -6,6 +6,8 @@ import PayPicker, { blankPay, payParts } from './PayPicker';
 
 const toPaise = s => { const n = Math.round(parseFloat(String(s ?? '').replace(/,/g, '')) * 100); return Number.isFinite(n) && n > 0 ? n : 0 };
 const rupees = p => (p / 100).toFixed(2);
+// a line's quantity may be '' while it is being typed; anything empty, 0 or invalid counts as 1
+const qtyOf = l => Math.max(1, Math.floor(+l.qty) || 1);
 
 // Edit an issued bill (owner/admin): customer details, note, delivery fee, discount and every line's quantity / price / removal.
 // Stock follows the quantity change; if the total moves, say how the new total was paid.
@@ -25,11 +27,11 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
   const bill = useMemo(() => {
     if (!sale || !f) return null;
     const live = lines.filter(l => !l.remove);
-    const subtotal = live.reduce((s, l) => s + toPaise(l.price) * l.qty, 0);
+    const subtotal = live.reduce((s, l) => s + toPaise(l.price) * qtyOf(l), 0);
     const dv = f.dType === 'percent' ? Math.min(100, Math.round(+f.dValue || 0)) : toPaise(f.dValue);
     const discount = sale.couponCode ? sale.discount : Math.min(subtotal, f.dType === 'percent' ? Math.round(subtotal * dv / 100) : dv);
     let tax = 0;
-    if (sale.isGst && subtotal) for (const l of live) { const lt = toPaise(l.price) * l.qty; tax += Math.round((lt - Math.floor(discount * lt / subtotal)) * (sale.gstRate ?? l.taxRate) / 100) }
+    if (sale.isGst && subtotal) for (const l of live) { const lt = toPaise(l.price) * qtyOf(l); tax += Math.round((lt - Math.floor(discount * lt / subtotal)) * (sale.gstRate ?? l.taxRate) / 100) }
     return { subtotal, discount, tax, total: subtotal - discount + tax + toPaise(f.delivery) };
   }, [sale, f, lines]);
   if (!sale || !f || !bill) return <Modal title="Edit invoice" sub={invoiceNo} onClose={onClose}>{err ? <p className="dpos-err" role="alert">{err}</p> : <p className="muted">Loading…</p>}</Modal>;
@@ -40,7 +42,7 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
     if (reason.trim().length < 3) return setErr('Give a reason for the edit.');
     if (moved && parts.problem) return setErr(parts.problem);
     setBusy(true);
-    const items = lines.map(l => { const o = sale.items.find(i => i.id === l.id); return l.remove ? { id: l.id, remove: true } : { id: l.id, ...(l.qty !== o.quantity ? { qty: l.qty } : {}), ...(toPaise(l.price) !== o.unitPrice ? { price: toPaise(l.price) } : {}) } }).filter(i => i.remove || i.qty != null || i.price != null);
+    const items = lines.map(l => { const o = sale.items.find(i => i.id === l.id); return l.remove ? { id: l.id, remove: true } : { id: l.id, ...(qtyOf(l) !== o.quantity ? { qty: qtyOf(l) } : {}), ...(toPaise(l.price) !== o.unitPrice ? { price: toPaise(l.price) } : {}) } }).filter(i => i.remove || i.qty != null || i.price != null);
     const body = { reason: reason.trim(), customerName: f.name.trim(), customerPhone: f.phone.trim(), notes: f.notes.trim() || null,
       ...(items.length ? { items } : {}), ...(toPaise(f.delivery) !== (sale.deliveryFee || 0) ? { deliveryFee: toPaise(f.delivery) } : {}),
       ...(!couponed && (f.dType !== sale.discountType || (f.dType === 'percent' ? Math.round(+f.dValue || 0) : toPaise(f.dValue)) !== sale.discountValue) ? { discountType: f.dType, discountValue: f.dType === 'percent' ? Math.round(+f.dValue || 0) : toPaise(f.dValue) } : {}),
@@ -62,9 +64,9 @@ export default function EditSaleModal({ invoiceNo, onClose, onSaved }) {
           <tbody>{lines.map((l, i) => (
             <tr key={l.id} style={l.remove ? { opacity: .45, textDecoration: 'line-through' } : null}>
               <td><b>{l.name}</b>{l.variant?.size ? <span className="muted small"> ({l.variant.size}{l.variant.color && l.variant.color !== 'Default' ? `, ${l.variant.color}` : ''})</span> : null}</td>
-              <td className="r"><input aria-label={`Quantity of ${l.name}`} type="number" min="1" style={{ width: 80, textAlign: 'right' }} value={l.qty} disabled={locked || l.remove} onChange={e => setL(i, { qty: Math.max(1, Math.floor(+e.target.value) || 1) })} /></td>
-              <td className="r"><input aria-label={`Price of ${l.name}`} inputMode="decimal" style={{ width: 110, textAlign: 'right' }} value={l.price} disabled={locked || l.remove} onChange={e => setL(i, { price: e.target.value })} /></td>
-              <td className="r">{inr(toPaise(l.price) * l.qty)}</td>
+              <td className="r"><input aria-label={`Quantity of ${l.name}`} type="number" min="1" style={{ width: 80, textAlign: 'right' }} inputMode="numeric" value={l.qty} disabled={locked || l.remove} onFocus={e => e.target.select()} onChange={e => setL(i, { qty: e.target.value.replace(/\D/g, '') })} onBlur={() => setL(i, { qty: qtyOf(l) })} /></td>
+              <td className="r"><input aria-label={`Price of ${l.name}`} inputMode="decimal" style={{ width: 110, textAlign: 'right' }} value={l.price} disabled={locked || l.remove} onFocus={e => e.target.select()} onChange={e => setL(i, { price: e.target.value })} onBlur={() => setL(i, { price: rupees(toPaise(l.price)) })} /></td>
+              <td className="r">{inr(toPaise(l.price) * qtyOf(l))}</td>
               <td className="r"><button type="button" className="dpos-btn ghost sm" disabled={locked || (!l.remove && lines.filter(x => !x.remove).length < 2)} onClick={() => setL(i, { remove: !l.remove })}>{l.remove ? 'Undo' : 'Remove'}</button></td></tr>))}</tbody></table></div>
         <div className="dpos-grid">
           <label className="f">Discount {couponed ? `(coupon ${sale.couponCode}, fixed)` : ''}<div style={{ display: 'flex', gap: 8 }}>
