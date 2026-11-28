@@ -14,7 +14,7 @@ const gstFor = rupees => (rupees <= 2500 ? 5 : 18);
 async function addProduct(t, { slug, name, category, price, gst, featured, material, variants }) {
   const c = await one(t, 'SELECT id FROM categories WHERE slug = $1', [category]);
   const p = await one(t, `INSERT INTO products (slug, name, description, category_id, base_price, tax_rate, material, status, featured, is_sample)
-    VALUES ($1,$2,'Sample product. Replace with your real product description.',$3,$4,$5,$6,'active',$7,true) ON CONFLICT (slug) DO NOTHING RETURNING id`, [slug, name, c.id, price, gst, material ?? null, featured]);
+    VALUES ($1,$2,'Sample product. Replace with your real product description.',$3,$4,$5,$6,'active',$7,true) ON CONFLICT (slug) DO NOTHING RETURNING id`, [slug, name, c.id, price, gst ? 9 : 0, material ?? null, featured]);
   if (!p) return false;
   const params = [], values = [];
   for (const v of variants) { params.push(p.id, v.sku, v.size, v.color, v.stock); const n = params.length; values.push(`($${n - 4},$${n - 3},$${n - 2},$${n - 1},$${n})`) }
