@@ -1953,3 +1953,11 @@ html body .wb, html body .wb-hero { padding: 0 }
 /* One cream ground for every homepage section (Trending, Instagram, details… were still white, so the colour jumped between sections) */
 .home > section.nx, .home > section.nx::before { background-color: #f5ebdd }
 .home > section.nx::before { background-image: none }
+
+/* Phones: home banner spacing. The pill clears the floating header and sits on one line, so it no longer covers the headline;
+   the text keeps to the left and the model moves right, so the copy sits beside her instead of over her face and body. */
+@media (max-width: 767px) {
+  .wb-copy { top: 0; left: 0; width: 56%; padding: 18px 0 24px 16px }
+  .wb-badge { align-self: center }
+  .wb-photo { margin: 0 -18% 0 auto }
+}
