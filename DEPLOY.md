@@ -17,7 +17,7 @@ project: the client is built to static files and the API runs as one serverless 
 | `DATABASE_URL` | Postgres URL (Neon/Supabase). Required in production. |
 | `DB_SCHEMA` | Optional, e.g. `dhanya` to keep DHANYA in its own schema of a shared database. |
 | `JWT_SECRET` | 32+ random characters. |
-| `HITPAY_API_KEY`, `HITPAY_SALT`, `HITPAY_ENV` | HitPay keys (HitPay Dashboard → Developers → API Keys; use `sandbox` first, then `live`). Webhook URL: `https://<your-domain>/api/payments/webhook`; the salt checks its signature. Optional `HITPAY_METHODS` (default `paynow_online,card`). |
+| `HITPAY_API_KEY`, `HITPAY_SALT`, `HITPAY_ENV` | HitPay keys (HitPay Dashboard → Developers → API Keys; use `sandbox` first, then `live`). Webhook URL: `https://<your-domain>/api/payments/webhook`; the salt checks its signature. Optional `HITPAY_METHODS` to limit the methods (e.g. `paynow_online,card`); leave it unset to offer whatever is switched on in HitPay. |
 | `SITE_URL` | Public site address, e.g. `https://mahana.sg`, where HitPay returns customers after paying. |
 | `GOOGLE_CLIENT_ID` | Turns on "Continue with Google" on the sign-in and register pages. Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web application). Add `https://<your-domain>` and `http://localhost:5173` under **Authorised JavaScript origins**. No client secret is needed. |
 | `GOOGLE_MAPS_API_KEY` | Optional Maps Embed key (restrict it by HTTP referrer). |

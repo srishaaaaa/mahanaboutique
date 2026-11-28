@@ -22,7 +22,7 @@ test('HitPay: creates a payment request in dollars, confirms only a completed re
   assert.deepEqual(o, { providerOrderId: ID, redirectUrl: 'https://securecheckout.sandbox.hit-pay.com/pay/abc' });
   const c = s.calls[0]; assert.equal(c.url, 'https://api.sandbox.hit-pay.com/v1/payment-requests'); assert.equal(c.headers['X-BUSINESS-API-KEY'], 'k-test');
   const f = new URLSearchParams(c.body); assert.equal(f.get('amount'), '105.50', 'dollars, not cents'); assert.equal(f.get('currency'), 'SGD'); assert.equal(f.get('reference_number'), 'MHM-123');
-  assert.equal(f.get('redirect_url'), 'https://shop.test/checkout?hitpay_order=MHM-123'); assert.deepEqual(f.getAll('payment_methods[]'), ['paynow_online', 'card']);
+  assert.equal(f.get('redirect_url'), 'https://shop.test/checkout?hitpay_order=MHM-123'); assert.deepEqual(f.getAll('payment_methods[]'), [], 'no fixed list: HitPay offers the methods switched on for the business');
   assert.deepEqual(await p.confirm({ hitpay_order: 'MHM-123', reference: ID }), { providerOrderId: ID, providerPaymentId: 'pay-1' });
   // another order's payment cannot be used, and junk is refused before any call
   await assert.rejects(p.confirm({ hitpay_order: 'MHM-999', reference: ID }), /Invalid payment reference/);

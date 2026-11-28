@@ -14,7 +14,9 @@ export function createHitpayProvider(cfg, fetchImpl = fetch) {
   const live = String(cfg.HITPAY_ENV || 'sandbox').toLowerCase() === 'live';
   const base = (cfg.HITPAY_BASE || (live ? 'https://api.hit-pay.com' : 'https://api.sandbox.hit-pay.com')).replace(/\/$/, '');
   const configured = !!key;
-  const methods = String(cfg.HITPAY_METHODS || 'paynow_online,card').split(',').map(s => s.trim()).filter(Boolean);
+  // Which methods to offer. Unset = whatever is switched on for the business in HitPay (asking for one that is not
+  // switched on, e.g. card on a new account, makes HitPay reject the whole payment).
+  const methods = String(cfg.HITPAY_METHODS || '').split(',').map(s => s.trim()).filter(Boolean);
 
   async function call(method, path, form) {
     if (!configured) throw new HttpError(503, 'Payments are not configured yet', 'payments_unconfigured');
